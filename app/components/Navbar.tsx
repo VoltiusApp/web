@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
+import { GITHUB_API_REPO_URL, GITHUB_REPO_URL } from "../lib/github";
 
 const links = [
   { label: "Features", href: "#features" },
@@ -27,7 +28,7 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    fetch("https://api.github.com/repos/Voltius/voltius")
+    fetch(GITHUB_API_REPO_URL)
       .then((r) => r.json())
       .then((d) => typeof d.stargazers_count === "number" && setStars(d.stargazers_count))
       .catch(() => {});
@@ -62,7 +63,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
-            href="https://github.com/Voltius/voltius"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white border border-border hover:border-zinc-600 px-3 py-1.5 rounded-lg transition-colors"

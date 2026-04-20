@@ -2,6 +2,7 @@
 
 import { Icon } from "@iconify/react";
 import { useFadeIn } from "../hooks/useFadeIn";
+import { GITHUB_REPO_URL } from "../lib/github";
 
 const features = [
   {
@@ -78,7 +79,7 @@ function OpenSourceCard({ index }: { index: number }) {
         </p>
       </div>
       <a
-        href="https://github.com/Voltius/voltius"
+        href={GITHUB_REPO_URL}
         target="_blank"
         rel="noopener noreferrer"
         className="shrink-0 flex items-center gap-2 text-sm font-medium text-green-400 hover:text-green-300 border border-green-500/30 hover:border-green-500/60 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap"

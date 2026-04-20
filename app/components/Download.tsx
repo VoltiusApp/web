@@ -1,6 +1,8 @@
 import { Icon } from "@iconify/react";
-
-const GITHUB_REPO = "Voltius/voltius";
+import {
+  GITHUB_LATEST_RELEASE_API_URL,
+  GITHUB_REPO_URL,
+} from "../lib/github";
 
 type Asset = { name: string; browser_download_url: string };
 type Release = { tag_name: string; assets: Asset[] };
@@ -8,10 +10,14 @@ type Release = { tag_name: string; assets: Asset[] };
 async function getLatestRelease(): Promise<Release | null> {
   try {
     const res = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
+      GITHUB_LATEST_RELEASE_API_URL,
       { next: { revalidate: 3600 } }
     );
     if (!res.ok) return null;
+
+    const contentType = res.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) return null;
+
     return res.json();
   } catch {
     return null;
@@ -63,7 +69,7 @@ export default async function Download() {
             return (
               <a
                 key={p.name}
-                href={asset?.browser_download_url ?? `https://github.com/${GITHUB_REPO}/releases/latest`}
+                href={asset?.browser_download_url ?? GITHUB_REPO_URL}
                 className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border bg-surface hover:border-zinc-600 hover:bg-[#16161f] transition-all group"
               >
                 <Icon icon={p.icon} className="text-4xl text-zinc-300 group-hover:text-cyan-400 transition-colors" />
@@ -81,7 +87,7 @@ export default async function Download() {
         <p className="mt-8 text-xs text-zinc-600 font-mono">
           {version} · AGPLv3 ·{" "}
           <a
-            href={`https://github.com/${GITHUB_REPO}`}
+            href={GITHUB_REPO_URL}
             className="hover:text-zinc-400 transition-colors"
           >
             View on GitHub ↗

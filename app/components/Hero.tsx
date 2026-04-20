@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { useFadeIn } from "../hooks/useFadeIn";
+import { GITHUB_REPO_URL } from "../lib/github";
 
 const badges = [
   { label: "Built with Rust", color: "text-orange-400 border-orange-400/30 bg-orange-400/10" },
   { label: "E2EE", color: "text-green-400 border-green-400/30 bg-green-400/10" },
   { label: "Cross-platform", color: "text-violet-400 border-violet-400/30 bg-violet-400/10" },
   { label: "Local-first", color: "text-zinc-300 border-zinc-600 bg-zinc-800/50" },
-  { label: "Open-core · AGPLv3", color: "text-green-400 border-green-500/30 bg-green-500/10", href: "https://github.com/Voltius/voltius" },
+  { label: "Open-core · AGPLv3", color: "text-green-400 border-green-500/30 bg-green-500/10", href: GITHUB_REPO_URL },
 ];
 
 export default function Hero() {

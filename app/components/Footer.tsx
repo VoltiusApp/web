@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import { GITHUB_REPO_URL } from "../lib/github";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -18,7 +19,7 @@ export default function Footer() {
 
         <div className="flex items-center gap-6">
           <a
-            href="https://github.com/Voltius/voltius"
+            href={GITHUB_REPO_URL}
             className="flex items-center gap-1.5 hover:text-zinc-300 transition-colors"
           >
             <Icon icon="lucide:github" className="text-base" />
