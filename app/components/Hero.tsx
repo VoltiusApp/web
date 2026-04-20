@@ -36,7 +36,7 @@ export default function Hero() {
         ref={badgesRef as React.RefObject<HTMLDivElement>}
         className="fade-in flex flex-col items-center gap-6 mb-8"
       >
-        <Image src="/logo.png" alt="Voltius" width={72} height={72} className="shadow-lg shadow-black/40" />
+        <Image src="/logo.png" alt="Voltius" width={72} height={72} loading="eager" className="shadow-lg shadow-black/40" />
 
         {/* Badges */}
         <div className="flex flex-wrap justify-center gap-2">
