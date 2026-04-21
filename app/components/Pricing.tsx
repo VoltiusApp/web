@@ -5,7 +5,7 @@ import { useFadeIn } from "../hooks/useFadeIn";
 const plans = [
   {
     name: "Free",
-    price: "€0",
+    price: "$0",
     period: "forever",
     desc: "Everything you need, no account required.",
     highlight: false,
@@ -26,10 +26,10 @@ const plans = [
   },
   {
     name: "Pro",
-    price: "€7",
+    price: "$7",
     period: "/ month",
     billingNote: "billed annually",
-    monthlyOption: "or €9 billed monthly",
+    monthlyOption: "or $9 billed monthly",
     savings: "Save 22% with annual billing",
     desc: "Real-time sync and unlimited vaults for power users.",
     highlight: true,
@@ -46,10 +46,10 @@ const plans = [
   },
   {
     name: "Teams",
-    price: "€15",
+    price: "$15",
     period: "/ user / month",
     billingNote: "billed annually",
-    monthlyOption: "or €18 billed monthly",
+    monthlyOption: "or $18 billed monthly",
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
     highlight: false,
@@ -65,9 +65,9 @@ const plans = [
   },
   {
     name: "Business",
-    price: "Custom",
-    period: "",
-    desc: "Self-hosted backend with SLA and dedicated support. Pricing based on your needs.",
+    price: "$30",
+    period: "/ user / month",
+    desc: "Self-hosted backend with SLA and dedicated support.",
     highlight: false,
     cta: "Contact us",
     ctaHref: "mailto:contact@voltius.app",
@@ -163,6 +163,11 @@ export default function Pricing() {
             <PricingCard key={p.name} plan={p} index={i} />
           ))}
         </div>
+
+        <p className="mt-8 text-center text-xs text-zinc-600">
+          Prices in USD. VAT/Sales Tax may be added at checkout depending on your country.{" "}
+          <span className="text-zinc-500">EU Business? Enter your VAT ID at checkout for tax-free purchasing.</span>
+        </p>
       </div>
     </section>
   );
