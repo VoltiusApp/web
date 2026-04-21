@@ -39,10 +39,27 @@ export async function unbanUserAction(userId: string) {
   revalidatePath(`/admin/users/${userId}`);
 }
 
+export async function clearTrialAction(userId: string) {
+  await adminFetch(`/v1/admin/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ clear_trial: true, trial_used: true }),
+  });
+  revalidatePath(`/admin/users/${userId}`);
+}
+
 export async function extendTrialAction(userId: string, days: number) {
   await adminFetch(`/v1/admin/users/${userId}/extend-trial`, {
     method: "POST",
     body: JSON.stringify({ days }),
+  });
+  revalidatePath(`/admin/users/${userId}`);
+}
+
+export async function setTrialAction(userId: string, days: number) {
+  const trial_ends_at = new Date(Date.now() + days * 86400000).toISOString();
+  await adminFetch(`/v1/admin/users/${userId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ trial_ends_at, trial_used: false }),
   });
   revalidatePath(`/admin/users/${userId}`);
 }

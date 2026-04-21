@@ -4,7 +4,8 @@ import {
   patchUserAction,
   banUserAction,
   unbanUserAction,
-  extendTrialAction,
+  setTrialAction,
+  clearTrialAction,
   setFlagAction,
 } from "./actions";
 
@@ -159,18 +160,58 @@ export default async function UserDetailPage({
               />
             </Field>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
+          <div className="flex items-center gap-2 text-sm text-gray-400 flex-wrap">
             <span>Trial used:</span>
-            <span
-              className={user.trial_used ? "text-gray-300" : "text-green-400"}
-            >
+            <span className={user.trial_used ? "text-gray-300" : "text-green-400"}>
               {user.trial_used ? "yes" : "no"}
             </span>
-            {user.trial_ends_at && (
-              <span className="ml-2">
-                ends {new Date(user.trial_ends_at).toLocaleDateString()}
-              </span>
+            {user.trial_ends_at ? (
+              <>
+                <span>— ends {new Date(user.trial_ends_at).toLocaleDateString()}</span>
+                <form
+                  action={async () => {
+                    "use server";
+                    await clearTrialAction(id);
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="text-xs text-red-500 hover:text-red-400 underline"
+                  >
+                    Clear
+                  </button>
+                </form>
+              </>
+            ) : (
+              <span className="text-gray-600">no trial set</span>
             )}
+          </div>
+          <div className="flex items-center gap-2">
+            <form
+              action={async (fd: FormData) => {
+                "use server";
+                const days = parseInt(fd.get("days") as string, 10);
+                if (days > 0) await setTrialAction(id, days);
+              }}
+              className="flex gap-2 items-center"
+            >
+              <label className="text-xs text-gray-500">Set trial to</label>
+              <input
+                name="days"
+                type="number"
+                min={1}
+                max={3650}
+                placeholder="days"
+                className="w-20 bg-gray-900 border border-gray-700 rounded px-2 py-1 text-sm text-white"
+              />
+              <label className="text-xs text-gray-500">days from now</label>
+              <button
+                type="submit"
+                className="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded"
+              >
+                Set
+              </button>
+            </form>
           </div>
           {user.ls_customer_id && (
             <div className="text-sm">
@@ -204,29 +245,16 @@ export default async function UserDetailPage({
         </form>
       </Section>
 
-      {/* Quick Actions */}
-      <Section title="Quick Actions">
-        <div className="flex flex-wrap gap-3">
-          {/* Extend trial */}
-          {([7, 14, 30] as const).map((days) => (
-            <form
-              key={days}
-              action={async () => {
-                "use server";
-                await extendTrialAction(id, days);
-              }}
-            >
-              <button
-                type="submit"
-                className="bg-gray-800 hover:bg-gray-700 text-white text-xs px-3 py-1.5 rounded"
-              >
-                +{days}d trial
-              </button>
-            </form>
-          ))}
-
-          {/* Ban / unban */}
-          {user.is_banned ? (
+      {/* Ban / Unban */}
+      <Section title="Ban">
+        {user.is_banned ? (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-red-400">
+              Banned: {user.ban_reason ?? "no reason given"}
+              {user.banned_at && (
+                <span className="text-gray-500 ml-2">— {fmt(user.banned_at)}</span>
+              )}
+            </p>
             <form
               action={async () => {
                 "use server";
@@ -240,32 +268,22 @@ export default async function UserDetailPage({
                 Unban
               </button>
             </form>
-          ) : (
-            <form action={banUser} className="flex gap-2 items-center">
-              <input
-                name="reason"
-                placeholder="Ban reason"
-                required
-                className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white w-48"
-              />
-              <button
-                type="submit"
-                className="bg-red-900 hover:bg-red-800 text-red-300 text-xs px-3 py-1.5 rounded"
-              >
-                Ban
-              </button>
-            </form>
-          )}
-        </div>
-        {user.is_banned && user.ban_reason && (
-          <p className="text-xs text-red-400 mt-2">
-            Reason: {user.ban_reason}
-            {user.banned_at && (
-              <span className="text-gray-500 ml-2">
-                — {fmt(user.banned_at)}
-              </span>
-            )}
-          </p>
+          </div>
+        ) : (
+          <form action={banUser} className="flex gap-2 items-center">
+            <input
+              name="reason"
+              placeholder="Ban reason"
+              required
+              className="bg-gray-900 border border-gray-700 rounded px-2 py-1 text-xs text-white w-64"
+            />
+            <button
+              type="submit"
+              className="bg-red-900 hover:bg-red-800 text-red-300 text-xs px-3 py-1.5 rounded"
+            >
+              Ban
+            </button>
+          </form>
         )}
       </Section>
 
