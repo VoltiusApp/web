@@ -1,19 +1,11 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { logoutAction } from "./admin/login/actions";
+import { logoutAction } from "../(admin-public)/admin/login/actions";
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("ADMIN_SESSION");
-  if (!session?.value) {
-    redirect("/admin/login");
-  }
-
   return (
     <div className="min-h-screen flex bg-gray-950 text-gray-100 font-mono">
       <aside className="w-48 bg-gray-900 border-r border-gray-800 flex flex-col">
