@@ -110,8 +110,13 @@ export default function Hero() {
           <span className="w-3 h-3 rounded-full bg-green-500/80" />
           <span className="ml-4 text-xs text-zinc-500 font-mono">voltius</span>
         </div>
-        <div className="bg-[#0d0d12] aspect-video flex items-center justify-center text-zinc-600 text-sm font-mono">
-          <span>[ demo.gif ]</span>
+        <div className="bg-[#0d0d12] aspect-video">
+          <img
+            src="/demo.gif"
+            alt="Voltius demo"
+            className="h-full w-full object-cover"
+            loading="lazy"
+          />
         </div>
       </div>
     </section>

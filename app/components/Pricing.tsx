@@ -70,7 +70,7 @@ const plans = [
     desc: "Self-hosted backend with SLA and dedicated support. Pricing based on your needs.",
     highlight: false,
     cta: "Contact us",
-    ctaHref: "mailto:kiki.kalagan@gmail.com",
+    ctaHref: "mailto:contact@voltius.app",
     features: [
       "Everything in Teams",
       "On-premise self-hosted backend",

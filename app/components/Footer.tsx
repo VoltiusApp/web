@@ -32,7 +32,7 @@ export default function Footer() {
             Pricing
           </a>
           <a
-            href="mailto:kiki.kalagan@gmail.com"
+            href="mailto:contact@voltius.app"
             className="hover:text-zinc-300 transition-colors"
           >
             Contact
