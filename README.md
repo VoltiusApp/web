@@ -5,29 +5,52 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
 pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Admin Dashboard
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The admin dashboard lives at `/admin`. It requires three environment variables.
 
-## Learn More
+### Local development (`web/.env.local`)
 
-To learn more about Next.js, take a look at the following resources:
+```env
+ADMIN_EMAILS=you@example.com
+ADMIN_PASSWORD=your-admin-password
+ADMIN_SECRET=a-long-random-shared-secret
+ADMIN_API_URL=http://localhost:8080
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `ADMIN_EMAILS` — comma-separated list of emails allowed to log in to the dashboard
+- `ADMIN_PASSWORD` — single shared password for all admin emails
+- `ADMIN_SECRET` — shared secret sent as `X-Admin-Key` to the Axum server; must match `ADMIN_SECRET` in the server's `.env`
+- `ADMIN_API_URL` — base URL of the Axum API (no trailing slash)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Vercel deployment
+
+In the Vercel dashboard → your project → **Settings → Environment Variables**, add:
+
+| Name | Value |
+|---|---|
+| `ADMIN_EMAILS` | `you@example.com` |
+| `ADMIN_PASSWORD` | your admin password |
+| `ADMIN_SECRET` | must match the value set on the server |
+| `ADMIN_API_URL` | `https://your-server-domain.com` |
+
+Or via CLI:
+
+```bash
+vercel env add ADMIN_EMAILS
+vercel env add ADMIN_PASSWORD
+vercel env add ADMIN_SECRET
+vercel env add ADMIN_API_URL
+```
+
+Then redeploy. The dashboard is accessible at `https://your-vercel-domain.com/admin/login`.
+
+> The Vercel deployment must be able to reach `ADMIN_API_URL` over the internet. `localhost` will not work in production.
 
 ## Deploy on Vercel
 
