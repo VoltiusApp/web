@@ -82,15 +82,26 @@ export default async function UsersPage({
   if (banned) qs.set("banned", banned);
 
   let data: UsersResponse = { users: [], total: 0, page: 1, limit: 50 };
+  let fetchError: string | null = null;
   try {
     const res = await adminFetch(`/v1/admin/users?${qs}`);
-    if (res.ok) data = await res.json();
-  } catch {
-    // silent – show empty table
+    if (res.ok) {
+      data = await res.json();
+    } else {
+      const body = await res.text().catch(() => "");
+      fetchError = `API returned ${res.status}: ${body || res.statusText}`;
+    }
+  } catch (e) {
+    fetchError = `Network error: ${e instanceof Error ? e.message : String(e)}`;
   }
 
   return (
     <div className="p-6">
+      {fetchError && (
+        <div className="mb-4 bg-red-900/30 border border-red-800 rounded px-4 py-3 text-sm text-red-300 font-mono">
+          {fetchError}
+        </div>
+      )}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-bold text-white">
           Users{" "}
