@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Required for wasm-bindgen output
+  turbopack: {},
   webpack(config) {
     config.experiments = { ...config.experiments, asyncWebAssembly: true };
     return config;
