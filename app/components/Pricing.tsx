@@ -73,7 +73,8 @@ const plans = [
     ctaHref: "mailto:contact@voltius.app",
     features: [
       "Everything in Teams",
-      "On-premise self-hosted backend",
+      "On-premise self-hosted deployment",
+      "Commercial license exception",
       "SLA & dedicated support",
       "Custom contracts",
     ],

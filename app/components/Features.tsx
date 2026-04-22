@@ -68,14 +68,14 @@ function OpenSourceCard({ index }: { index: number }) {
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <h3 className="font-semibold text-white">Open-core — AGPLv3</h3>
+          <h3 className="font-semibold text-white">Fully open source — AGPLv3</h3>
           <span className="text-xs font-mono px-2 py-0.5 rounded-full border border-green-500/30 bg-green-500/10 text-green-400">
             AGPLv3
           </span>
         </div>
         <p className="text-sm text-zinc-400 leading-relaxed">
-          The client is fully open source. Audit the code, fork it, contribute back, or self-host it.
-          Cloud sync features are powered by a proprietary backend — local-only workflows never touch it.
+          Every component — client, server, and crypto — is fully open source under AGPLv3.
+          Audit the code, fork it, contribute back, or self-host the entire stack.
         </p>
       </div>
       <a
