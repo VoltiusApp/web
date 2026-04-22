@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0d0d12;
+  --fg: #e8e8f0;
+  --muted: #6b7280;
+  --accent: #7c6af7;
+  --accent-hover: #6b59e6;
+  --border: #1e1e2e;
+  --surface: #13131d;
+  --error: #f87171;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; margin: 0; }

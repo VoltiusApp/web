@@ -71,8 +71,8 @@ const plans = [
     period: "/ user / month",
     desc: "Self-hosted backend with SLA and dedicated support.",
     highlight: false,
-    cta: "Get Business",
-    ctaHref: "https://app.voltius.app/signup?plan=business",
+    cta: "Contact us",
+    ctaHref: "mailto:contact@voltius.app",
     features: [
       "Everything in Teams",
       "On-premise self-hosted deployment",
