@@ -35,7 +35,7 @@ const plans = [
     highlight: true,
     trial: "14-day free trial",
     cta: "Start free trial",
-    ctaHref: "#",
+    ctaHref: "https://app.voltius.app/signup?plan=pro",
     features: [
       "Everything in Free",
       "Real-time cloud sync (CRDTs)",
@@ -54,7 +54,7 @@ const plans = [
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
     highlight: false,
     cta: "Get Teams",
-    ctaHref: "#",
+    ctaHref: "https://app.voltius.app/signup?plan=teams",
     features: [
       "Everything in Pro",
       "Team vaults & invites",
@@ -69,8 +69,8 @@ const plans = [
     period: "/ user / month",
     desc: "Self-hosted backend with SLA and dedicated support.",
     highlight: false,
-    cta: "Contact us",
-    ctaHref: "mailto:contact@voltius.app",
+    cta: "Get Business",
+    ctaHref: "https://app.voltius.app/signup?plan=business",
     features: [
       "Everything in Teams",
       "On-premise self-hosted deployment",
