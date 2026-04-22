@@ -53,7 +53,9 @@ const plans = [
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
     highlight: false,
-    cta: "Get Teams",
+    trial: "14-day free trial",
+    trialNote: "card required",
+    cta: "Start free trial",
     ctaHref: "https://app.voltius.app/signup?plan=teams",
     features: [
       "Everything in Pro",
@@ -127,7 +129,9 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
         {plan.cta}
       </a>
       {"trial" in plan && (
-        <p className="-mt-3 text-center text-xs text-zinc-500">{plan.trial} • no credit card required</p>
+        <p className="-mt-3 text-center text-xs text-zinc-500">
+          {plan.trial} • {"trialNote" in plan ? plan.trialNote : "no credit card required"}
+        </p>
       )}
 
       <ul className="flex flex-col gap-2">
