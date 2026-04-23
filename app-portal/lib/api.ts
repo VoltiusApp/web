@@ -58,10 +58,10 @@ export function login(authKey: string, accountId: string): Promise<AuthResponse>
   });
 }
 
-export function getCheckoutUrl(plan: string, token: string): Promise<CheckoutResponse> {
+export function getCheckoutUrl(plan: string, token: string, seats?: number): Promise<CheckoutResponse> {
   return request<CheckoutResponse>(
     "/v1/billing/checkout",
-    { method: "POST", body: JSON.stringify({ plan }) },
+    { method: "POST", body: JSON.stringify({ plan, ...(seats !== undefined && { seats }) }) },
     token,
   );
 }

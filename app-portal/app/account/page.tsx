@@ -22,6 +22,7 @@ export default function AccountPage() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [error, setError] = useState("");
   const [showTrialModal, setShowTrialModal] = useState(false);
+  const [teamsSeats, setTeamsSeats] = useState(3);
 
   useEffect(() => {
     const t = sessionStorage.getItem("access_token");
@@ -43,12 +44,12 @@ export default function AccountPage() {
     }
   }, [router]);
 
-  async function handleUpgrade(plan: string) {
+  async function handleUpgrade(plan: string, seats?: number) {
     if (!token) return;
     setCheckoutLoading(true);
     setError("");
     try {
-      const { checkout_url } = await getCheckoutUrl(plan, token);
+      const { checkout_url } = await getCheckoutUrl(plan, token, seats);
       window.location.href = checkout_url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to open checkout.");
@@ -96,9 +97,30 @@ export default function AccountPage() {
               <button onClick={() => handleUpgrade("pro")} disabled={checkoutLoading} style={accentBtn}>
                 {checkoutLoading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
               </button>
-              <button onClick={() => handleUpgrade("teams")} disabled={checkoutLoading} style={outlineBtn}>
-                Get Teams — $15/user/mo
-              </button>
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                <button
+                  onClick={() => handleUpgrade("teams", teamsSeats)}
+                  disabled={checkoutLoading}
+                  style={{ ...outlineBtn, flex: 1 }}
+                >
+                  Get Teams — ${15 * teamsSeats}/mo ({teamsSeats} seats)
+                </button>
+                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <button
+                    onClick={() => setTeamsSeats((s) => s + 1)}
+                    style={seatsBtn}
+                    aria-label="Add seat"
+                  >▲</button>
+                  <button
+                    onClick={() => setTeamsSeats((s) => Math.max(3, s - 1))}
+                    style={seatsBtn}
+                    aria-label="Remove seat"
+                  >▼</button>
+                </div>
+              </div>
+              <p style={{ fontSize: "0.7rem", color: "var(--muted)", margin: "-0.25rem 0 0", textAlign: "right" }}>
+                min. 3 seats · billed annually
+              </p>
             </div>
           )}
 
@@ -129,7 +151,7 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
           {loading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
         </button>
         <button onClick={() => onUpgrade("teams")} disabled={loading} style={{ ...outlineBtn, marginTop: "0.5rem" }}>
-          Get Teams — $15/user/mo
+          Get Teams — from $45/mo (3 seats)
         </button>
         <button onClick={onDismiss} style={dismissBtn}>Maybe later</button>
       </div>
@@ -195,6 +217,18 @@ const outlineBtn: React.CSSProperties = {
   padding: "0.75rem",
   textAlign: "center",
   width: "100%",
+};
+
+const seatsBtn: React.CSSProperties = {
+  background: "var(--surface)",
+  border: "1px solid var(--border)",
+  borderRadius: "0.25rem",
+  color: "var(--muted)",
+  cursor: "pointer",
+  fontSize: "0.6rem",
+  lineHeight: 1,
+  padding: "0.2rem 0.4rem",
+  width: 28,
 };
 
 const dismissBtn: React.CSSProperties = {
