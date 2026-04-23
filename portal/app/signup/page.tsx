@@ -1,11 +1,19 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { deriveAuthKey } from "../../lib/crypto";
 import { register, getCheckoutUrl } from "../../lib/api";
 
 export default function SignupPage() {
+  return (
+    <Suspense>
+      <SignupContent />
+    </Suspense>
+  );
+}
+
+function SignupContent() {
   const params = useSearchParams();
   const router = useRouter();
   const plan = params.get("plan") ?? "pro";
