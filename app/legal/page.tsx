@@ -27,8 +27,14 @@ export default function LegalPage() {
             <dl className="space-y-2 text-sm">
               <Def term="Name" val="Killian Pavy" />
               <Def term="Legal form" val="Individual (Particulier)" />
-              {/* TODO: add your address — required by French law for online publishing */}
-              <Def term="Address" val={<span className="text-zinc-400 italic">[Address]</span>} />
+              <Def
+                term="Address" 
+                val={
+                  <span className="text-zinc-400 italic">
+                    Coordonnées de l&apos;éditeur transmises à l&apos;hébergeur (Loi LCEN)
+                  </span>
+                } 
+              />
               <Def
                 term="Email"
                 val={
@@ -45,11 +51,10 @@ export default function LegalPage() {
           </Section>
 
           <Section title="Hosting">
-            {/* TODO: insert your hosting provider's legal details */}
             <dl className="space-y-2 text-sm">
-              <Def term="Provider" val="[Provider name]" />
-              <Def term="Address" val="[Provider address]" />
-              <Def term="Website" val="[Provider website]" />
+              <Def term="Provider" val="Oracle France" />
+              <Def term="Address" val="15 Boulevard Charles de Gaulle, 92700 Colombes, France" />
+              <Def term="Website" val="https://www.oracle.com/fr/" />
             </dl>
           </Section>
 

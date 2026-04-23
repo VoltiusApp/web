@@ -50,12 +50,29 @@ export default function TermsPage() {
 
           <Section title="4. Subscriptions and payment">
             <p>
-              Paid plans are billed on a monthly or annual basis via our payment processor (Stripe).
-              Prices are shown excluding applicable taxes. Subscriptions renew automatically unless
-              cancelled before the renewal date. No refunds are issued for partial periods, except as
-              required by applicable law.
+              Paid plans are billed on a monthly or annual basis via our payment processor (Lemon
+              Squeezy). Prices are in USD and exclude applicable taxes (VAT or sales tax may be added
+              at checkout). Subscriptions renew automatically unless cancelled before the renewal
+              date. No refunds are issued for partial periods, except as required by applicable law.
             </p>
-            {/* TODO: add specific plan names, prices, and trial terms */}
+            <ul className="list-disc pl-6 mt-3 space-y-1 text-sm">
+              <li>
+                <strong className="text-white">Free</strong> — $0, no account required.
+              </li>
+              <li>
+                <strong className="text-white">Pro</strong> — $7/month (billed annually) or
+                $9/month (billed monthly). Includes a 14-day free trial, no credit card required.
+              </li>
+              <li>
+                <strong className="text-white">Teams</strong> — $15/user/month (billed annually) or
+                $18/user/month (billed monthly), 3-user minimum. Includes a 14-day free trial,
+                credit card required.
+              </li>
+              <li>
+                <strong className="text-white">Business</strong> — $30/user/month. Contact us for
+                custom contracts and self-hosted deployment.
+              </li>
+            </ul>
           </Section>
 
           <Section title="5. Acceptable use">
@@ -115,8 +132,7 @@ export default function TermsPage() {
           <Section title="11. Governing law">
             <p>
               These Terms are governed by French law. Any dispute shall be submitted to the exclusive
-              jurisdiction of the courts of{" "}
-              {/* TODO: insert city */}
+              jurisdiction of the courts of{" "} Miramas
               <span className="text-zinc-400 italic">[city]</span>, France, unless mandatory consumer
               protection laws in your country of residence provide otherwise.
             </p>

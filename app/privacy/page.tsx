@@ -96,10 +96,9 @@ export default function PrivacyPage() {
                 <strong className="text-white">Lemon Squeezy</strong> — payment processing (USA;
                 adequacy decision / SCCs apply).
               </li>
-              {/* TODO: add your hosting provider, e.g., Hetzner, OVH, Fly.io */}
               <li>
                 <strong className="text-white">
-                  <span className="text-zinc-400 italic">[Hosting provider]</span>
+                  <span className="text-zinc-400 italic">Oracle France</span>
                 </strong>{" "}
                 — server infrastructure.
               </li>
@@ -148,7 +147,6 @@ export default function PrivacyPage() {
               uses session cookies strictly necessary for authentication. No consent banner is required
               for strictly-necessary cookies under the ePrivacy Directive.
             </p>
-            {/* TODO: update this section if you add analytics (Plausible, PostHog, etc.) */}
           </Section>
 
           <Section title="9. Changes">
