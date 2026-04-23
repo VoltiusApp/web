@@ -77,7 +77,7 @@ const plans = [
       "Everything in Teams",
       "On-premise self-hosted deployment",
       "Commercial license exception",
-      "SLA & dedicated support",
+      "Priority SLA support",
       "Custom contracts",
     ],
   },
