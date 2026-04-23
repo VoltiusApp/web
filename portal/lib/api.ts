@@ -24,7 +24,7 @@ export interface ChallengeResponse {
 }
 
 export interface AuthResponse {
-  access_token: string;
+  jwt_token: string;
   refresh_token: string;
   tier: string;
   trial_ends_at: number | null;
@@ -44,10 +44,11 @@ export function register(
   email: string,
   authKey: string,
   accountId: string,
+  publicKey: string,
 ): Promise<AuthResponse> {
   return request<AuthResponse>("/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, auth_key: authKey, account_id: accountId }),
+    body: JSON.stringify({ email, auth_key: authKey, account_id: accountId, public_key: publicKey }),
   });
 }
 

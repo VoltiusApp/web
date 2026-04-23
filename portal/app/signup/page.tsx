@@ -42,37 +42,27 @@ function SignupContent() {
 
     setLoading(true);
     try {
-      // account_id is generated fresh for new accounts; server assigns the real UUID
-      // on register. We use a temporary placeholder here; the server returns account_id
-      // in the response. The actual KDF must use the server-assigned account_id, so
-      // we re-derive after registration.
-      //
-      // Registration flow:
-      //   1. POST /v1/auth/register with email only → server returns account_id
-      //   2. derive auth_key with (password, account_id)
-      //   3. PATCH /v1/auth/register-key with auth_key
-      //
-      // Since the current server does register in one shot, we use the email as
-      // a temporary salt for the initial registration call, then the server must
-      // accept a pre-registration challenge flow. For now, follow the existing
-      // server API: POST /register with { email, auth_key, account_id } where
-      // account_id is a new UUID we generate client-side (matches server behavior).
-      const { v4: uuidv4 } = await import("crypto").then(async () => {
-        // Use crypto.randomUUID() available in modern browsers
-        return { v4: () => crypto.randomUUID() };
-      });
-      const accountId = uuidv4();
-      const authKey = await deriveAuthKey(password, accountId);
-      const auth = await register(email, authKey, accountId);
+      const accountId = crypto.randomUUID();
 
-      sessionStorage.setItem("access_token", auth.access_token);
+      const keypair = await crypto.subtle.generateKey(
+        { name: "X25519" } as AlgorithmIdentifier,
+        true,
+        ["deriveKey", "deriveBits"],
+      );
+      const pubKeyBytes = await crypto.subtle.exportKey("raw", (keypair as CryptoKeyPair).publicKey);
+      const publicKey = btoa(String.fromCharCode(...new Uint8Array(pubKeyBytes)));
+
+      const authKey = await deriveAuthKey(password, accountId);
+      const auth = await register(email, authKey, accountId, publicKey);
+
+      sessionStorage.setItem("access_token", auth.jwt_token);
       sessionStorage.setItem("refresh_token", auth.refresh_token);
       sessionStorage.setItem("tier", auth.tier);
       if (auth.trial_ends_at) sessionStorage.setItem("trial_ends_at", String(auth.trial_ends_at));
 
       // Redirect to checkout if plan is not free
       if (plan !== "free") {
-        const { checkout_url } = await getCheckoutUrl(plan, auth.access_token);
+        const { checkout_url } = await getCheckoutUrl(plan, auth.jwt_token);
         window.location.href = checkout_url;
       } else {
         router.push("/account");
