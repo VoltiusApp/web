@@ -44,16 +44,8 @@ function SignupContent() {
     try {
       const accountId = crypto.randomUUID();
 
-      const keypair = await crypto.subtle.generateKey(
-        { name: "X25519" } as AlgorithmIdentifier,
-        true,
-        ["deriveKey", "deriveBits"],
-      );
-      const pubKeyBytes = await crypto.subtle.exportKey("raw", (keypair as CryptoKeyPair).publicKey);
-      const publicKey = btoa(String.fromCharCode(...new Uint8Array(pubKeyBytes)));
-
       const authKey = await deriveAuthKey(password, accountId);
-      const auth = await register(email, authKey, accountId, publicKey);
+      const auth = await register(email, authKey, accountId);
 
       sessionStorage.setItem("access_token", auth.jwt_token);
       sessionStorage.setItem("refresh_token", auth.refresh_token);

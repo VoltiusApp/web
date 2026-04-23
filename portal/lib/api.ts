@@ -44,11 +44,10 @@ export function register(
   email: string,
   authKey: string,
   accountId: string,
-  publicKey: string,
 ): Promise<AuthResponse> {
   return request<AuthResponse>("/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, auth_key: authKey, account_id: accountId, public_key: publicKey }),
+    body: JSON.stringify({ email, auth_key: authKey, account_id: accountId }),
   });
 }
 
