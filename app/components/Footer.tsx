@@ -46,6 +46,14 @@ export default function Footer() {
           <a href="/legal" className="hover:text-zinc-300 transition-colors">
             Legal
           </a>
+          <a
+            href="https://voltius.instatus.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-zinc-300 transition-colors"
+          >
+            Status
+          </a>
         </div>
       </div>
     </footer>
