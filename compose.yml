@@ -1,0 +1,30 @@
+services:
+  landing:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm dev -p 3000"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./landing:/app
+      - landing_node_modules:/app/node_modules
+
+  portal:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm dev -p 3001"
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./portal:/app
+      - portal_node_modules:/app/node_modules
+
+volumes:
+  landing_node_modules:
+  portal_node_modules:

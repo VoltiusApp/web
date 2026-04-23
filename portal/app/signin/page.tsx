@@ -24,7 +24,7 @@ export default function SigninPage() {
       const authKey = await deriveAuthKey(password, account_id);
       const auth = await login(authKey, account_id);
 
-      sessionStorage.setItem("access_token", auth.access_token);
+      sessionStorage.setItem("access_token", auth.jwt_token);
       sessionStorage.setItem("refresh_token", auth.refresh_token);
       sessionStorage.setItem("tier", auth.tier);
       if (auth.trial_ends_at) sessionStorage.setItem("trial_ends_at", String(auth.trial_ends_at));

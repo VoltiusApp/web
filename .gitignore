@@ -1,2 +1,5 @@
 .DS_Store
 *.pem
+
+.pnpm-store
+node_modules
