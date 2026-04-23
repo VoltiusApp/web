@@ -132,8 +132,8 @@ export default function TermsPage() {
           <Section title="11. Governing law">
             <p>
               These Terms are governed by French law. Any dispute shall be submitted to the exclusive
-              jurisdiction of the courts of{" "} Miramas
-              <span className="text-zinc-400 italic">[city]</span>, France, unless mandatory consumer
+              jurisdiction of the courts of{" "}
+              <span className="text-zinc-400 italic">Miramas</span>, France, unless mandatory consumer
               protection laws in your country of residence provide otherwise.
             </p>
           </Section>
