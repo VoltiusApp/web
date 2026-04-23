@@ -1,12 +1,13 @@
-let wasmModule: typeof import("@voltius/crypto-wasm") | null = null;
+let initPromise: Promise<typeof import("@voltius/crypto-wasm")> | null = null;
 
-async function getCrypto() {
-  if (!wasmModule) {
-    const mod = await import("@voltius/crypto-wasm");
-    await mod.default();
-    wasmModule = mod;
+function getCrypto() {
+  if (!initPromise) {
+    initPromise = import("@voltius/crypto-wasm").then(async (mod) => {
+      await mod.default();
+      return mod;
+    });
   }
-  return wasmModule;
+  return initPromise;
 }
 
 export async function deriveAuthKey(password: string, accountId: string): Promise<string> {
