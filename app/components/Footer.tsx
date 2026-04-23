@@ -37,6 +37,15 @@ export default function Footer() {
           >
             Contact
           </a>
+          <a href="/terms" className="hover:text-zinc-300 transition-colors">
+            Terms
+          </a>
+          <a href="/privacy" className="hover:text-zinc-300 transition-colors">
+            Privacy
+          </a>
+          <a href="/legal" className="hover:text-zinc-300 transition-colors">
+            Legal
+          </a>
         </div>
       </div>
     </footer>

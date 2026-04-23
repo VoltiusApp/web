@@ -95,6 +95,18 @@ export default function SignupPage() {
           <button type="submit" disabled={loading} style={btnStyle(loading)}>
             {loading ? "Creating account…" : "Create account"}
           </button>
+
+          <p style={{ fontSize: "0.75rem", color: "var(--muted)", textAlign: "center", margin: 0 }}>
+            By creating an account you agree to our{" "}
+            <a href="https://voltius.app/terms" target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="https://voltius.app/privacy" target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+              Privacy Policy
+            </a>
+            .
+          </p>
         </form>
 
         <p style={{ marginTop: "1.5rem", color: "var(--muted)", fontSize: "0.875rem", textAlign: "center" }}>
