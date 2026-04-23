@@ -1,7 +1,11 @@
 let wasmModule: typeof import("@voltius/crypto-wasm") | null = null;
 
 async function getCrypto() {
-  if (!wasmModule) wasmModule = await import("@voltius/crypto-wasm");
+  if (!wasmModule) {
+    const mod = await import("@voltius/crypto-wasm");
+    await mod.default();
+    wasmModule = mod;
+  }
   return wasmModule;
 }
 
