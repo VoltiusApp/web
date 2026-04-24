@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { deriveAuthKey } from "../../lib/crypto";
-import { register, getCheckoutUrl } from "../../lib/api";
+import { register } from "../../lib/api";
 
 export default function SignupPage() {
   return (
@@ -14,10 +14,7 @@ export default function SignupPage() {
 }
 
 function SignupContent() {
-  const params = useSearchParams();
   const router = useRouter();
-  const plan = params.get("plan") ?? "pro";
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -52,13 +49,7 @@ function SignupContent() {
       sessionStorage.setItem("tier", auth.tier);
       if (auth.trial_ends_at) sessionStorage.setItem("trial_ends_at", String(auth.trial_ends_at));
 
-      // Redirect to checkout if plan is not free
-      if (plan !== "free") {
-        const { checkout_url } = await getCheckoutUrl(plan, auth.jwt_token);
-        window.location.href = checkout_url;
-      } else {
-        router.push("/account");
-      }
+      router.push("/account");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed.");
     } finally {
@@ -71,7 +62,7 @@ function SignupContent() {
       <div style={{ width: "100%", maxWidth: 420 }}>
         <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.25rem" }}>Create your account</h1>
         <p style={{ color: "var(--muted)", marginBottom: "2rem", fontSize: "0.9rem" }}>
-          {plan !== "free" ? `Starting ${plan} free trial` : "Free plan — no card required"}
+          Free plan to start — upgrade anytime from your account.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>

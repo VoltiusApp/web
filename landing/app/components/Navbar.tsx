@@ -79,10 +79,10 @@ export default function Navbar() {
           </a>
 
           <a
-            href="#download"
-            className="text-sm font-medium px-4 py-2 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black transition-colors"
+            href="https://app.voltius.app"
+            className="hidden md:inline-flex text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
           >
-            Download
+            Sign in
           </a>
         </div>
       </nav>

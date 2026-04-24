@@ -140,6 +140,7 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
   onDismiss: () => void;
   loading: boolean;
 }) {
+  const [seats, setSeats] = useState(3);
   return (
     <div style={overlay} onClick={onDismiss}>
       <div style={modal} onClick={(e) => e.stopPropagation()}>
@@ -150,9 +151,18 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
         <button onClick={() => onUpgrade("pro")} disabled={loading} style={accentBtn}>
           {loading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
         </button>
-        <button onClick={() => onUpgrade("teams", 3)} disabled={loading} style={{ ...outlineBtn, marginTop: "0.5rem" }}>
-          Get Teams — from $45/mo (3 seats)
-        </button>
+        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginTop: "0.5rem" }}>
+          <button onClick={() => onUpgrade("teams", seats)} disabled={loading} style={{ ...outlineBtn, flex: 1 }}>
+            Get Teams — ${15 * seats}/mo ({seats} seats)
+          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            <button onClick={() => setSeats((s) => s + 1)} style={seatsBtn} aria-label="Add seat">▲</button>
+            <button onClick={() => setSeats((s) => Math.max(3, s - 1))} style={seatsBtn} aria-label="Remove seat">▼</button>
+          </div>
+        </div>
+        <p style={{ fontSize: "0.7rem", color: "var(--muted)", margin: "0.25rem 0 0", textAlign: "right" }}>
+          min. 3 seats · billed annually
+        </p>
         <button onClick={onDismiss} style={dismissBtn}>Maybe later</button>
       </div>
     </div>
