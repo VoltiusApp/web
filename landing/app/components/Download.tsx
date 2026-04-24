@@ -53,8 +53,8 @@ const platforms = [
 ];
 
 const comingSoon = [
-  { name: "Android", icon: "devicon:android" },
-  { name: "iOS", icon: "cib:apple" },
+  { name: "Android", icon: "material-symbols:android" },
+  { name: "iOS", icon: "lineicons:ios" },
 ];
 
 export default async function Download() {
