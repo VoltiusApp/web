@@ -16,7 +16,24 @@ const PLAN_LABELS: Record<string, string> = {
   pro_trial: "Pro (Trial)",
 };
 
-const upgradePlans = [
+const PLAN_ORDER: Record<string, number> = { free: 0, pro: 1, teams: 2, business: 3 };
+
+const allPlans = [
+  {
+    id: "free",
+    name: "Free",
+    price: 0,
+    period: "",
+    billingNote: "no account required",
+    desc: "Local vault and Gist sync for everyone.",
+    trial: null as string | null,
+    noCreditCard: false,
+    features: [
+      "Local encrypted vault",
+      "GitHub Gist sync",
+      "All local SSH/SFTP features",
+    ],
+  },
   {
     id: "pro",
     name: "Pro",
@@ -24,8 +41,8 @@ const upgradePlans = [
     period: "/ month",
     billingNote: "billed annually",
     desc: "Real-time sync and unlimited vaults for power users.",
-    highlight: true,
-    trial: "14-day free trial",
+    trial: "14-day free trial" as string | null,
+    noCreditCard: true,
     features: [
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
@@ -40,8 +57,8 @@ const upgradePlans = [
     period: "/ user / month",
     billingNote: "billed annually",
     desc: "Shared vaults, live terminals, and access control. 3-seat minimum.",
-    highlight: false,
-    trial: "14-day free trial",
+    trial: "14-day free trial" as string | null,
+    noCreditCard: false,
     features: [
       "Everything in Pro",
       "Team vaults & invites",
@@ -193,9 +210,8 @@ export default function AccountPage() {
     && storedTrialEndsAt !== null
     && Date.now() / 1000 < Number(storedTrialEndsAt)
     && !hasLsSubscription;
-  const isFreeTier = tier === "free" || onTrial;
-  const isPaidTier = !isFreeTier && ["pro", "teams", "business"].includes(tier);
   const displayTier = onTrial ? "pro_trial" : tier;
+  const activePlanId = displayTier === "pro_trial" ? "pro" : (displayTier ?? "free");
 
   return (
     <>
@@ -252,107 +268,30 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Upgrade section */}
-          {isFreeTier && (
-            <div>
-              <p className="font-mono text-xs text-zinc-500 mb-5">— upgrade your plan</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {upgradePlans.map((plan) => (
-                  <PlanCard
-                    key={plan.id}
-                    plan={plan}
-                    teamsSeats={teamsSeats}
-                    onChangeTeamsSeats={setTeamsSeats}
-                    onUpgrade={handleUpgrade}
-                    loading={checkoutLoading}
-                  />
-                ))}
-              </div>
-              {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+          {/* Plans */}
+          <div>
+            <p className="font-mono text-xs text-zinc-500 mb-5">— plans</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {allPlans.map((plan) => (
+                <PlanCard
+                  key={plan.id}
+                  plan={plan}
+                  activePlanId={activePlanId}
+                  onTrial={onTrial}
+                  hasLsSubscription={hasLsSubscription}
+                  teamsSeats={teamsSeats}
+                  onChangeTeamsSeats={setTeamsSeats}
+                  onUpgrade={handleUpgrade}
+                  onManage={handleManage}
+                  onUpdateSeats={handleUpdateSeats}
+                  checkoutLoading={checkoutLoading}
+                  portalLoading={portalLoading}
+                  seatsLoading={seatsLoading}
+                />
+              ))}
             </div>
-          )}
-
-          {/* Manage section for paid users */}
-          {isPaidTier && (
-            <div>
-              <p className="font-mono text-xs text-zinc-500 mb-5">— manage subscription</p>
-              <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] p-6 flex flex-col gap-6">
-
-                {/* Seat management for Teams */}
-                {tier === "teams" && (
-                  <div>
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Seats</p>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={() => setTeamsSeats((s) => Math.max(3, s - 1))}
-                          className="w-8 h-8 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-sm transition-colors"
-                          aria-label="Remove seat"
-                        >−</button>
-                        <span className="w-10 text-center text-lg font-semibold text-white">{teamsSeats}</span>
-                        <button
-                          onClick={() => setTeamsSeats((s) => s + 1)}
-                          className="w-8 h-8 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-sm transition-colors"
-                          aria-label="Add seat"
-                        >+</button>
-                      </div>
-                      <span className="text-xs text-zinc-600">min. 3 · ${15 * teamsSeats}/mo billed annually</span>
-                      <button
-                        onClick={() => handleUpdateSeats(teamsSeats)}
-                        disabled={seatsLoading}
-                        className="ml-auto px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-default"
-                      >
-                        {seatsLoading ? "Updating…" : "Update seats"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Change plan */}
-                {tier !== "business" && (
-                  <div>
-                    <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Change plan</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {upgradePlans
-                        .filter((p) => p.id !== tier)
-                        .map((plan) => (
-                          <button
-                            key={plan.id}
-                            onClick={() =>
-                              hasLsSubscription
-                                ? handleManage()
-                                : handleUpgrade(plan.id, plan.id === "teams" ? teamsSeats : undefined)
-                            }
-                            disabled={checkoutLoading || portalLoading}
-                            className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-left transition-colors disabled:opacity-50 disabled:cursor-default group"
-                          >
-                            <div>
-                              <p className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">{plan.name}</p>
-                              <p className="text-xs text-zinc-600">${plan.id === "teams" ? plan.price * teamsSeats : plan.price}{plan.period}</p>
-                            </div>
-                            <span className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {hasLsSubscription ? "Manage →" : "Switch →"}
-                            </span>
-                          </button>
-                        ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Billing portal */}
-                <div className="pt-2 border-t border-[#1e1e2e]">
-                  <button
-                    onClick={handleManage}
-                    disabled={portalLoading}
-                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-default"
-                  >
-                    {portalLoading ? "Opening…" : "Manage billing, invoices & cancellation →"}
-                  </button>
-                </div>
-              </div>
-              {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
-            </div>
-          )}
+            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+          </div>
         </main>
       </div>
     </>
@@ -360,29 +299,60 @@ export default function AccountPage() {
 }
 
 function PlanCard({
-  plan, teamsSeats, onChangeTeamsSeats, onUpgrade, loading,
+  plan, activePlanId, onTrial, hasLsSubscription,
+  teamsSeats, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
+  checkoutLoading, portalLoading, seatsLoading,
 }: {
-  plan: (typeof upgradePlans)[0];
+  plan: (typeof allPlans)[0];
+  activePlanId: string;
+  onTrial: boolean;
+  hasLsSubscription: boolean;
   teamsSeats: number;
   onChangeTeamsSeats: (n: number) => void;
   onUpgrade: (plan: string, seats?: number) => void;
-  loading: boolean;
+  onManage: () => void;
+  onUpdateSeats: (seats: number) => void;
+  checkoutLoading: boolean;
+  portalLoading: boolean;
+  seatsLoading: boolean;
 }) {
   const isTeams = plan.id === "teams";
-  const displayPrice = isTeams ? plan.price * teamsSeats : plan.price;
   const seats = isTeams ? teamsSeats : undefined;
+  const displayPrice = isTeams ? plan.price * teamsSeats : plan.price;
+
+  const currentOrder = PLAN_ORDER[activePlanId] ?? 0;
+  const planOrder = PLAN_ORDER[plan.id] ?? 0;
+  const isActive = plan.id === activePlanId;
+  const isUpgrade = planOrder > currentOrder;
+
+  const loading = checkoutLoading || portalLoading;
+
+  function handleAction() {
+    if (plan.id === "free" || hasLsSubscription) {
+      onManage();
+    } else {
+      onUpgrade(plan.id, seats);
+    }
+  }
+
+  const actionLabel = (() => {
+    if (loading) return portalLoading ? "Opening…" : "Opening checkout…";
+    if (plan.id === "free") return "Cancel subscription";
+    if (isUpgrade) return plan.trial ? `Start free trial — ${plan.name}` : `Upgrade to ${plan.name}`;
+    return `Switch to ${plan.name}`;
+  })();
 
   return (
     <div
       className={`relative rounded-2xl border p-6 flex flex-col gap-5 transition-all duration-300 ${
-        plan.highlight
-          ? "border-cyan-500/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20"
+        isActive
+          ? "border-cyan-500/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/10"
           : "border-[#1e1e2e] bg-[#111118] hover:border-zinc-700"
       }`}
     >
-      {plan.highlight && (
+      {isActive && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-cyan-500 text-black">
-          Recommended
+          {onTrial ? "Trial active" : "Current plan"}
         </span>
       )}
 
@@ -390,8 +360,14 @@ function PlanCard({
       <div>
         <p className="text-sm font-medium text-zinc-400">{plan.name}</p>
         <div className="mt-1 flex items-baseline gap-1">
-          <span className="text-3xl font-bold text-white">${displayPrice}</span>
-          <span className="text-sm text-zinc-500">{plan.period}</span>
+          {plan.price === 0 ? (
+            <span className="text-3xl font-bold text-white">Free</span>
+          ) : (
+            <>
+              <span className="text-3xl font-bold text-white">${displayPrice}</span>
+              <span className="text-sm text-zinc-500">{plan.period}</span>
+            </>
+          )}
         </div>
         <p className="mt-0.5 text-xs text-zinc-500">{plan.billingNote}</p>
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
@@ -399,7 +375,7 @@ function PlanCard({
 
       {/* Seat selector for teams */}
       {isTeams && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-zinc-500">Seats</span>
           <div className="flex items-center gap-1.5">
             <button
@@ -415,25 +391,75 @@ function PlanCard({
             >+</button>
           </div>
           <span className="text-xs text-zinc-600">min. 3</span>
+          {isActive && (
+            <button
+              onClick={() => onUpdateSeats(teamsSeats)}
+              disabled={seatsLoading}
+              className="ml-auto text-xs px-2.5 py-1 rounded-lg border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+            >
+              {seatsLoading ? "Updating…" : "Update"}
+            </button>
+          )}
         </div>
       )}
 
       {/* CTA */}
-      <button
-        onClick={() => onUpgrade(plan.id, seats)}
-        disabled={loading}
-        className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-default ${
-          plan.highlight
-            ? "bg-cyan-500 hover:bg-cyan-400 text-black hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
-            : "border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white"
-        }`}
-      >
-        {loading ? "Opening checkout…" : `Start free trial — ${plan.name}`}
-      </button>
-      <p className="-mt-2 text-center text-xs text-zinc-600">{plan.trial} · no credit card required</p>
+      {isActive ? (
+        <div className="flex flex-col gap-2">
+          {onTrial && plan.id === "pro" ? (
+            <>
+              <button
+                onClick={() => onUpgrade("pro")}
+                disabled={checkoutLoading}
+                className="w-full py-2.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-black transition-all duration-200 hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] disabled:opacity-50"
+              >
+                {checkoutLoading ? "Opening checkout…" : "Upgrade to Pro →"}
+              </button>
+              <p className="-mt-1 text-center text-xs text-zinc-600">no credit card required</p>
+            </>
+          ) : (
+            <>
+              <button
+                disabled
+                className="w-full py-2.5 rounded-xl text-sm font-semibold border border-cyan-500/30 text-cyan-400 opacity-70 cursor-default"
+              >
+                Current plan
+              </button>
+              {activePlanId !== "free" && (
+                <button
+                  onClick={onManage}
+                  disabled={portalLoading}
+                  className="text-xs text-center text-zinc-600 hover:text-zinc-400 transition-colors disabled:opacity-50"
+                >
+                  {portalLoading ? "Opening…" : "Manage subscription →"}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={handleAction}
+            disabled={loading}
+            className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-default ${
+              isUpgrade && plan.id !== "free"
+                ? "bg-cyan-500 hover:bg-cyan-400 text-black hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
+                : "border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white"
+            }`}
+          >
+            {actionLabel}
+          </button>
+          {plan.trial && (
+            <p className="-mt-1 text-center text-xs text-zinc-600">
+              {plan.trial}{plan.noCreditCard ? " · no credit card required" : ""}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Features */}
-      <ul className="flex flex-col gap-2">
+      <ul className="flex flex-col gap-2 mt-auto">
         {plan.features.map((f) => (
           <li key={f} className="flex items-start gap-2 text-sm text-zinc-400">
             <span className="text-cyan-400 mt-0.5 shrink-0">✓</span>
