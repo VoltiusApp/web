@@ -34,6 +34,10 @@ export interface CheckoutResponse {
   checkout_url: string;
 }
 
+export interface PortalResponse {
+  portal_url: string;
+}
+
 export function getChallenge(email: string): Promise<ChallengeResponse> {
   return request<ChallengeResponse>(
     `/v1/auth/challenge?email=${encodeURIComponent(email)}`,
@@ -62,6 +66,18 @@ export function getCheckoutUrl(plan: string, token: string, seats?: number): Pro
   return request<CheckoutResponse>(
     "/v1/billing/checkout",
     { method: "POST", body: JSON.stringify({ plan, ...(seats !== undefined && { seats }) }) },
+    token,
+  );
+}
+
+export function getPortalUrl(token: string): Promise<PortalResponse> {
+  return request<PortalResponse>("/v1/billing/portal", { method: "POST" }, token);
+}
+
+export function updateSeats(seats: number, token: string): Promise<void> {
+  return request<void>(
+    "/v1/billing/seats",
+    { method: "POST", body: JSON.stringify({ seats }) },
     token,
   );
 }

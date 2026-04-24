@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats } from "../../lib/api";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -57,6 +57,8 @@ export default function AccountPage() {
   const [tier, setTier] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
+  const [seatsLoading, setSeatsLoading] = useState(false);
   const [error, setError] = useState("");
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [teamsSeats, setTeamsSeats] = useState(3);
@@ -94,6 +96,34 @@ export default function AccountPage() {
     }
   }
 
+  async function handleManage() {
+    if (!token) return;
+    setPortalLoading(true);
+    setError("");
+    try {
+      const { portal_url } = await getPortalUrl(token);
+      window.location.href = portal_url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to open billing portal.");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
+
+  async function handleUpdateSeats(seats: number) {
+    if (!token) return;
+    setSeatsLoading(true);
+    setError("");
+    try {
+      await updateSeats(seats, token);
+      setTeamsSeats(seats);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update seats.");
+    } finally {
+      setSeatsLoading(false);
+    }
+  }
+
   function handleSignOut() {
     sessionStorage.clear();
     router.replace("/signin");
@@ -102,6 +132,7 @@ export default function AccountPage() {
   if (!tier) return null;
 
   const isFreeTier = tier === "free" || tier === "pro_trial";
+  const isPaidTier = tier === "pro" || tier === "teams" || tier === "business";
 
   return (
     <>
@@ -173,6 +204,82 @@ export default function AccountPage() {
                     loading={checkoutLoading}
                   />
                 ))}
+              </div>
+              {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+            </div>
+          )}
+
+          {/* Manage section for paid users */}
+          {isPaidTier && (
+            <div>
+              <p className="font-mono text-xs text-zinc-500 mb-5">— manage subscription</p>
+              <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] p-6 flex flex-col gap-6">
+
+                {/* Seat management for Teams */}
+                {tier === "teams" && (
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Seats</p>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => setTeamsSeats((s) => Math.max(3, s - 1))}
+                          className="w-8 h-8 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-sm transition-colors"
+                          aria-label="Remove seat"
+                        >−</button>
+                        <span className="w-10 text-center text-lg font-semibold text-white">{teamsSeats}</span>
+                        <button
+                          onClick={() => setTeamsSeats((s) => s + 1)}
+                          className="w-8 h-8 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-sm transition-colors"
+                          aria-label="Add seat"
+                        >+</button>
+                      </div>
+                      <span className="text-xs text-zinc-600">min. 3 · ${15 * teamsSeats}/mo billed annually</span>
+                      <button
+                        onClick={() => handleUpdateSeats(teamsSeats)}
+                        disabled={seatsLoading}
+                        className="ml-auto px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-colors disabled:opacity-50 disabled:cursor-default"
+                      >
+                        {seatsLoading ? "Updating…" : "Update seats"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Change plan */}
+                {tier !== "business" && (
+                  <div>
+                    <p className="text-xs text-zinc-500 uppercase tracking-widest mb-3">Change plan</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {upgradePlans
+                        .filter((p) => p.id !== tier)
+                        .map((plan) => (
+                          <button
+                            key={plan.id}
+                            onClick={() => handleUpgrade(plan.id, plan.id === "teams" ? teamsSeats : undefined)}
+                            disabled={checkoutLoading}
+                            className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-left transition-colors disabled:opacity-50 disabled:cursor-default group"
+                          >
+                            <div>
+                              <p className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">{plan.name}</p>
+                              <p className="text-xs text-zinc-600">${plan.id === "teams" ? plan.price * teamsSeats : plan.price}{plan.period}</p>
+                            </div>
+                            <span className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity">Switch →</span>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Billing portal */}
+                <div className="pt-2 border-t border-[#1e1e2e]">
+                  <button
+                    onClick={handleManage}
+                    disabled={portalLoading}
+                    className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50 disabled:cursor-default"
+                  >
+                    {portalLoading ? "Opening…" : "Manage billing, invoices & cancellation →"}
+                  </button>
+                </div>
               </div>
               {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
             </div>
