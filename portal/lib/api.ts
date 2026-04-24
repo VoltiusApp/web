@@ -81,3 +81,25 @@ export function updateSeats(seats: number, token: string): Promise<void> {
     token,
   );
 }
+
+export interface RefreshResponse {
+  jwt_token: string;
+}
+
+export interface SubscriptionInfo {
+  tier: string;
+  seats: number | null;
+  trial_ends_at: number | null;
+  has_ls_subscription: boolean;
+}
+
+export function refreshJwt(refreshToken: string): Promise<RefreshResponse> {
+  return request<RefreshResponse>("/v1/auth/refresh", {
+    method: "POST",
+    body: JSON.stringify({ refresh_token: refreshToken }),
+  });
+}
+
+export function getSubscription(token: string): Promise<SubscriptionInfo> {
+  return request<SubscriptionInfo>("/v1/billing/subscription", {}, token);
+}

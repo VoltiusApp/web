@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription } from "../../lib/api";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -62,24 +62,79 @@ export default function AccountPage() {
   const [error, setError] = useState("");
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [teamsSeats, setTeamsSeats] = useState(3);
+  const [hasLsSubscription, setHasLsSubscription] = useState(false);
+  const [seats, setSeats] = useState<number | null>(null);
 
   useEffect(() => {
-    const t = sessionStorage.getItem("access_token");
-    const r = sessionStorage.getItem("tier");
-    const trialEndsAt = sessionStorage.getItem("trial_ends_at");
-    if (!t) { router.replace("/signin"); return; }
-    setToken(t);
-    setTier(r ?? "free");
-
-    const trialExpired =
-      trialEndsAt &&
-      Date.now() / 1000 > Number(trialEndsAt) &&
-      (r === "free" || r === "pro_trial");
-
-    if (trialExpired && !localStorage.getItem(TRIAL_EXPIRED_MODAL_KEY)) {
-      setShowTrialModal(true);
-      localStorage.setItem(TRIAL_EXPIRED_MODAL_KEY, "1");
+    // Ingest ?token= from desktop app handoff (Bug 7)
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get("token");
+    if (urlToken) {
+      sessionStorage.setItem("access_token", urlToken);
+      window.history.replaceState({}, "", "/account");
     }
+
+    const storedToken = sessionStorage.getItem("access_token");
+    const effectiveToken = urlToken ?? storedToken;
+    if (!effectiveToken) { router.replace("/signin"); return; }
+    setToken(effectiveToken);
+
+    const init = async () => {
+      const refreshToken = sessionStorage.getItem("refresh_token");
+      let activeToken = effectiveToken;
+
+      // Refresh JWT to get latest tier from DB (Bug 4)
+      if (refreshToken) {
+        try {
+          const { jwt_token } = await refreshJwt(refreshToken);
+          sessionStorage.setItem("access_token", jwt_token);
+          activeToken = jwt_token;
+          setToken(jwt_token);
+          const raw = atob(jwt_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"));
+          const payload = JSON.parse(raw) as { tier?: string; trial_ends_at?: number | null };
+          if (payload.tier) {
+            sessionStorage.setItem("tier", payload.tier);
+            setTier(payload.tier);
+          }
+          if (payload.trial_ends_at != null) {
+            sessionStorage.setItem("trial_ends_at", String(payload.trial_ends_at));
+          } else {
+            sessionStorage.removeItem("trial_ends_at");
+          }
+        } catch { /* fall through with stored values */ }
+      } else {
+        setTier(sessionStorage.getItem("tier") ?? "free");
+      }
+
+      // Fetch live subscription data (Bug 3)
+      try {
+        const sub = await getSubscription(activeToken);
+        setHasLsSubscription(sub.has_ls_subscription);
+        setSeats(sub.seats);
+        if (sub.seats !== null) setTeamsSeats(sub.seats);
+        setTier(sub.tier);
+        sessionStorage.setItem("tier", sub.tier);
+        if (sub.trial_ends_at != null) {
+          sessionStorage.setItem("trial_ends_at", String(sub.trial_ends_at));
+        } else {
+          sessionStorage.removeItem("trial_ends_at");
+        }
+      } catch { /* fall through */ }
+
+      // Trial expired modal
+      const finalTier = sessionStorage.getItem("tier") ?? "free";
+      const trialEndsAt = sessionStorage.getItem("trial_ends_at");
+      const trialExpired =
+        trialEndsAt &&
+        Date.now() / 1000 > Number(trialEndsAt) &&
+        finalTier === "free";
+      if (trialExpired && !localStorage.getItem(TRIAL_EXPIRED_MODAL_KEY)) {
+        setShowTrialModal(true);
+        localStorage.setItem(TRIAL_EXPIRED_MODAL_KEY, "1");
+      }
+    };
+
+    init();
   }, [router]);
 
   async function handleUpgrade(plan: string, seats?: number) {
@@ -131,8 +186,16 @@ export default function AccountPage() {
 
   if (!tier) return null;
 
-  const isFreeTier = tier === "free" || tier === "pro_trial";
-  const isPaidTier = tier === "pro" || tier === "teams" || tier === "business";
+  // Trial users have tier="pro" + trial_ends_at set but no LS subscription yet
+  const storedTrialEndsAt = typeof window !== "undefined"
+    ? sessionStorage.getItem("trial_ends_at") : null;
+  const onTrial = tier === "pro"
+    && storedTrialEndsAt !== null
+    && Date.now() / 1000 < Number(storedTrialEndsAt)
+    && !hasLsSubscription;
+  const isFreeTier = tier === "free" || onTrial;
+  const isPaidTier = !isFreeTier && ["pro", "teams", "business"].includes(tier);
+  const displayTier = onTrial ? "pro_trial" : tier;
 
   return (
     <>
@@ -175,8 +238,8 @@ export default function AccountPage() {
             <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] p-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Current plan</p>
-                <p className="text-2xl font-bold text-white">{PLAN_LABELS[tier] ?? tier}</p>
-                {tier === "pro_trial" && (
+                <p className="text-2xl font-bold text-white">{PLAN_LABELS[displayTier] ?? displayTier}</p>
+                {onTrial && (
                   <p className="text-xs text-zinc-500 mt-1">Trial active — upgrade before it ends to keep sync.</p>
                 )}
               </div>
@@ -255,15 +318,21 @@ export default function AccountPage() {
                         .map((plan) => (
                           <button
                             key={plan.id}
-                            onClick={() => handleUpgrade(plan.id, plan.id === "teams" ? teamsSeats : undefined)}
-                            disabled={checkoutLoading}
+                            onClick={() =>
+                              hasLsSubscription
+                                ? handleManage()
+                                : handleUpgrade(plan.id, plan.id === "teams" ? teamsSeats : undefined)
+                            }
+                            disabled={checkoutLoading || portalLoading}
                             className="flex items-center justify-between px-4 py-3 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-left transition-colors disabled:opacity-50 disabled:cursor-default group"
                           >
                             <div>
                               <p className="text-sm font-medium text-zinc-300 group-hover:text-white transition-colors">{plan.name}</p>
                               <p className="text-xs text-zinc-600">${plan.id === "teams" ? plan.price * teamsSeats : plan.price}{plan.period}</p>
                             </div>
-                            <span className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity">Switch →</span>
+                            <span className="text-xs text-cyan-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {hasLsSubscription ? "Manage →" : "Switch →"}
+                            </span>
                           </button>
                         ))}
                     </div>
