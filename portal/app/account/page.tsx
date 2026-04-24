@@ -136,7 +136,7 @@ export default function AccountPage() {
 }
 
 function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
-  onUpgrade: (plan: string) => void;
+  onUpgrade: (plan: string, seats?: number) => void;
   onDismiss: () => void;
   loading: boolean;
 }) {
@@ -150,7 +150,7 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
         <button onClick={() => onUpgrade("pro")} disabled={loading} style={accentBtn}>
           {loading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
         </button>
-        <button onClick={() => onUpgrade("teams")} disabled={loading} style={{ ...outlineBtn, marginTop: "0.5rem" }}>
+        <button onClick={() => onUpgrade("teams", 3)} disabled={loading} style={{ ...outlineBtn, marginTop: "0.5rem" }}>
           Get Teams — from $45/mo (3 seats)
         </button>
         <button onClick={onDismiss} style={dismissBtn}>Maybe later</button>
