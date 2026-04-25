@@ -89,8 +89,28 @@ export interface RefreshResponse {
 export interface SubscriptionInfo {
   tier: string;
   seats: number | null;
+  used_seats: number | null;
   trial_ends_at: number | null;
   has_ls_subscription: boolean;
+}
+
+export interface InvitationDetails {
+  team_name: string;
+  inviter_email: string;
+  role: string;
+  expires_at: number;
+}
+
+export function getInvitation(token: string): Promise<InvitationDetails> {
+  return request<InvitationDetails>(`/v1/invitations/${encodeURIComponent(token)}`);
+}
+
+export function acceptInvitation(token: string, authToken: string): Promise<void> {
+  return request<void>(
+    `/v1/invitations/${encodeURIComponent(token)}/accept`,
+    { method: "POST" },
+    authToken,
+  );
 }
 
 export function refreshJwt(refreshToken: string): Promise<RefreshResponse> {
