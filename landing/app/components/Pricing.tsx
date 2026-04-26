@@ -61,7 +61,7 @@ const plans = [
       "Everything in Pro",
       "Team vaults & invites",
       "Shared terminals (unlimited guests)",
-      "Granular permissions & roles",
+      "Built-in roles (Owner, Manager, Editor, Member)",
       "Audit logging",
     ],
   },
@@ -75,6 +75,7 @@ const plans = [
     ctaHref: "mailto:contact@voltius.app",
     features: [
       "Everything in Teams",
+      "Custom roles & granular permissions",
       "On-premise self-hosted deployment",
       "Commercial license exception",
       "Priority SLA support",
