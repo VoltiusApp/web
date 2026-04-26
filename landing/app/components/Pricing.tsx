@@ -41,7 +41,7 @@ const plans = [
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
       "Unlimited private vaults",
-      "Share terminal (1 guest)",
+      "Terminal sharing — 1 session · 1 viewer",
     ],
   },
   {
@@ -60,7 +60,7 @@ const plans = [
     features: [
       "Everything in Pro",
       "Team vaults & invites",
-      "Shared terminals (unlimited guests)",
+      "Terminal sharing — 5 sessions · 10 viewers each",
       "Built-in roles (Owner, Manager, Editor, Member)",
       "Audit logging",
     ],
@@ -75,6 +75,7 @@ const plans = [
     ctaHref: "mailto:contact@voltius.app",
     features: [
       "Everything in Teams",
+      "Terminal sharing — 20 sessions · 50 viewers each",
       "Custom roles & granular permissions",
       "On-premise self-hosted deployment",
       "Commercial license exception",
