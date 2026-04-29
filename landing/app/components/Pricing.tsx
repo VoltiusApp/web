@@ -144,7 +144,7 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
       )}
       {"trial" in plan && (
         <p className="-mt-3 text-center text-xs text-zinc-500">
-          {plan.trial} • {"trialNote" in plan ? plan.trialNote : "no credit card required"}
+          {plan.trial as string} • {"trialNote" in plan ? plan.trialNote as string : "no credit card required"}
         </p>
       )}
 
