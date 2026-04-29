@@ -58,11 +58,10 @@ export default function Hero() {
         ref={headlineRef as React.RefObject<HTMLHeadingElement>}
         className="fade-in text-5xl md:text-7xl font-bold tracking-tight text-white max-w-3xl leading-[1.1]"
       >
-        The {" "}
+        Fast by design.{" "}
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-cyan-600">
-          Must have
+          Private by default.
         </span>
-        {" "} SSH client for everyone.
       </h1>
 
       <p
