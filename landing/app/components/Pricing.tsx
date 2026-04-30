@@ -41,7 +41,7 @@ const plans = [
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
       "Unlimited private vaults",
-      "Terminal sharing — 1 session · 1 participant",
+      "Real-time collaboration — 1 session · 1 participant",
     ],
   },
   {
@@ -59,7 +59,7 @@ const plans = [
     features: [
       "Everything in Pro",
       "Team vaults & invites",
-      "Terminal sharing — 5 sessions · 10 participants each",
+      "Real-time collaboration — 5 sessions · 10 participants each",
       "Built-in roles (Owner, Manager, Editor, Member)",
       "Audit logging",
     ],
@@ -75,7 +75,7 @@ const plans = [
     ctaHref: "",
     features: [
       "Everything in Teams",
-      "Terminal sharing — 20 sessions · 50 participants each",
+      "Real-time collaboration — 20 sessions · 50 participants each",
       "Custom roles & granular permissions",
       "On-premise self-hosted deployment",
       "Commercial license exception",

@@ -68,7 +68,7 @@ export default function Hero() {
         ref={subRef as React.RefObject<HTMLParagraphElement>}
         className="fade-in mt-6 text-lg text-zinc-400 max-w-xl leading-relaxed"
       >
-        Blazingly fast, local-first SSH client built with Rust and Tauri
+        Blazingly fast, local-first, Zero-Knowledge SSH/SFTP client.
       </p>
       <p
         ref={subMetaRef as React.RefObject<HTMLParagraphElement>}
