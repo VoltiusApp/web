@@ -5,6 +5,7 @@ import { useFadeIn } from "../hooks/useFadeIn";
 import { GITHUB_REPO_URL } from "../lib/github";
 
 const badges = [
+  { label: "Beta", color: "text-amber-400 border-amber-400/30 bg-amber-400/10" },
   { label: "Built with Rust", color: "text-orange-400 border-orange-400/30 bg-orange-400/10" },
   { label: "E2EE", color: "text-green-400 border-green-400/30 bg-green-400/10" },
   { label: "Cross-platform", color: "text-violet-400 border-violet-400/30 bg-violet-400/10" },

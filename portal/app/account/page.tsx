@@ -28,6 +28,7 @@ const allPlans = [
     desc: "Local vault and Gist sync for everyone.",
     trial: null as string | null,
     noCreditCard: false,
+    comingSoon: false,
     features: [
       "Local encrypted vault",
       "GitHub Gist sync",
@@ -43,6 +44,7 @@ const allPlans = [
     desc: "Real-time sync and unlimited vaults for power users.",
     trial: "14-day free trial" as string | null,
     noCreditCard: true,
+    comingSoon: false,
     features: [
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
@@ -57,8 +59,9 @@ const allPlans = [
     period: "/ user / month",
     billingNote: "billed annually",
     desc: "Shared vaults, live terminals, and access control. 3-seat minimum.",
-    trial: "14-day free trial" as string | null,
+    trial: null as string | null,
     noCreditCard: false,
+    comingSoon: true,
     features: [
       "Everything in Pro",
       "Team vaults & invites",
@@ -217,7 +220,7 @@ export default function AccountPage() {
     <>
       {showTrialModal && (
         <TrialExpiredModal
-          onUpgrade={(plan, seats) => { setShowTrialModal(false); handleUpgrade(plan, seats); }}
+          onUpgrade={(plan) => { setShowTrialModal(false); handleUpgrade(plan); }}
           onDismiss={() => setShowTrialModal(false)}
           loading={checkoutLoading}
         />
@@ -404,7 +407,13 @@ function PlanCard({
       )}
 
       {/* CTA */}
-      {isActive ? (
+      {plan.comingSoon ? (
+        <div
+          className="w-full py-2.5 rounded-xl text-sm font-semibold text-center border border-[#1e1e2e] text-zinc-600 cursor-default select-none"
+        >
+          Coming soon
+        </div>
+      ) : isActive ? (
         <div className="flex flex-col gap-2">
           {onTrial && plan.id === "pro" ? (
             <>
@@ -472,12 +481,10 @@ function PlanCard({
 }
 
 function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
-  onUpgrade: (plan: string, seats?: number) => void;
+  onUpgrade: (plan: string) => void;
   onDismiss: () => void;
   loading: boolean;
 }) {
-  const [seats, setSeats] = useState(3);
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
@@ -499,21 +506,6 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
         >
           {loading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
         </button>
-
-        <div className="mt-3 flex items-center gap-3">
-          <button
-            onClick={() => onUpgrade("teams", seats)}
-            disabled={loading}
-            className="flex-1 py-3 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-colors disabled:opacity-50"
-          >
-            Get Teams — ${15 * seats}/mo ({seats} seats)
-          </button>
-          <div className="flex flex-col gap-1">
-            <button onClick={() => setSeats((s) => s + 1)} className="w-7 h-7 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white text-xs transition-colors" aria-label="Add seat">+</button>
-            <button onClick={() => setSeats((s) => Math.max(3, s - 1))} className="w-7 h-7 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white text-xs transition-colors" aria-label="Remove seat">−</button>
-          </div>
-        </div>
-        <p className="mt-1 text-xs text-zinc-600 text-right">min. 3 seats · billed annually</p>
 
         <button
           onClick={onDismiss}
