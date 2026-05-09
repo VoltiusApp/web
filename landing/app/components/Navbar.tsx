@@ -46,6 +46,9 @@ export default function Navbar() {
         <a href="#" className="flex items-center gap-2 font-semibold text-white text-sm">
           <Image src="/logo.png" alt="Voltius" width={28} height={28} />
           Voltius
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 leading-none">
+            Beta
+          </span>
         </a>
 
         <ul className="hidden md:flex items-center gap-8">
