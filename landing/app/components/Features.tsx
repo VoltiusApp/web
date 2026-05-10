@@ -35,6 +35,11 @@ const features = [
     title: "Local-first forever",
     desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
   },
+  {
+    icon: "lucide:scroll-text",
+    title: "Audit logs",
+    desc: "Review recent vault activity without leaving your workspace.",
+  },
 ];
 
 function FeatureCard({ feature, index }: { feature: (typeof features)[0]; index: number }) {

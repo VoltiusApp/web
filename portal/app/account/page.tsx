@@ -33,6 +33,7 @@ const allPlans = [
       "Local encrypted vault",
       "GitHub Gist sync",
       "All local SSH/SFTP features",
+      "Audit logs",
     ],
   },
   {
@@ -67,7 +68,7 @@ const allPlans = [
       "Team vaults & invites",
       "Shared terminals (unlimited guests)",
       "Granular permissions & roles",
-      "Audit logging",
+      "Team audit logs",
     ],
   },
 ];

@@ -20,6 +20,7 @@ const plans = [
       "Custom themes",
       "Local terminal",
       "Port forwarding",
+      "Audit logs",
       "Snippets & command palette",
       "Import / Export (no lock-in)",
     ],
@@ -61,7 +62,7 @@ const plans = [
       "Team vaults & invites",
       "Real-time collaboration — 5 sessions · 10 participants each",
       "Built-in roles (Owner, Manager, Editor, Member)",
-      "Audit logging",
+      "Team audit logs",
     ],
   },
   {
