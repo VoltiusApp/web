@@ -88,6 +88,10 @@ export interface RefreshResponse {
 
 export interface SubscriptionInfo {
   tier: string;
+  status: string | null;
+  cancelled: boolean;
+  renews_at: number | null;
+  ends_at: number | null;
   seats: number | null;
   used_seats: number | null;
   trial_ends_at: number | null;
@@ -122,4 +126,12 @@ export function refreshJwt(refreshToken: string): Promise<RefreshResponse> {
 
 export function getSubscription(token: string): Promise<SubscriptionInfo> {
   return request<SubscriptionInfo>("/v1/billing/subscription", {}, token);
+}
+
+export function cancelSubscription(token: string): Promise<SubscriptionInfo> {
+  return request<SubscriptionInfo>("/v1/billing/subscription/cancel", { method: "POST" }, token);
+}
+
+export function resumeSubscription(token: string): Promise<SubscriptionInfo> {
+  return request<SubscriptionInfo>("/v1/billing/subscription/resume", { method: "POST" }, token);
 }

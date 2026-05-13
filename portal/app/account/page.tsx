@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription } from "../../lib/api";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -85,6 +85,11 @@ export default function AccountPage() {
   const [teamsSeats, setTeamsSeats] = useState(3);
   const [hasLsSubscription, setHasLsSubscription] = useState(false);
   const [seats, setSeats] = useState<number | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
+  const [renewsAt, setRenewsAt] = useState<number | null>(null);
+  const [endsAt, setEndsAt] = useState<number | null>(null);
+  const [subscriptionActionLoading, setSubscriptionActionLoading] = useState<"cancel" | "resume" | null>(null);
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -130,16 +135,7 @@ export default function AccountPage() {
       // Fetch live subscription data (Bug 3)
       try {
         const sub = await getSubscription(activeToken);
-        setHasLsSubscription(sub.has_ls_subscription);
-        setSeats(sub.seats);
-        if (sub.seats !== null) setTeamsSeats(sub.seats);
-        setTier(sub.tier);
-        sessionStorage.setItem("tier", sub.tier);
-        if (sub.trial_ends_at != null) {
-          sessionStorage.setItem("trial_ends_at", String(sub.trial_ends_at));
-        } else {
-          sessionStorage.removeItem("trial_ends_at");
-        }
+        applySubscription(sub);
       } catch { /* fall through */ }
 
       // Trial expired modal
@@ -183,6 +179,51 @@ export default function AccountPage() {
       setError(err instanceof Error ? err.message : "Failed to open billing portal.");
     } finally {
       setPortalLoading(false);
+    }
+  }
+
+  function applySubscription(sub: Awaited<ReturnType<typeof getSubscription>>) {
+    setHasLsSubscription(sub.has_ls_subscription);
+    setSeats(sub.seats);
+    if (sub.seats !== null) setTeamsSeats(sub.seats);
+    setTier(sub.tier);
+    setSubscriptionStatus(sub.status);
+    setSubscriptionCancelled(sub.cancelled);
+    setRenewsAt(sub.renews_at);
+    setEndsAt(sub.ends_at);
+    sessionStorage.setItem("tier", sub.tier);
+    if (sub.trial_ends_at != null) {
+      sessionStorage.setItem("trial_ends_at", String(sub.trial_ends_at));
+    } else {
+      sessionStorage.removeItem("trial_ends_at");
+    }
+  }
+
+  async function handleCancelSubscription() {
+    if (!token) return;
+    const confirmed = window.confirm("Cancel Pro at the end of the current billing period? You will keep Pro access until the cancellation date.");
+    if (!confirmed) return;
+    setSubscriptionActionLoading("cancel");
+    setError("");
+    try {
+      applySubscription(await cancelSubscription(token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to cancel subscription.");
+    } finally {
+      setSubscriptionActionLoading(null);
+    }
+  }
+
+  async function handleResumeSubscription() {
+    if (!token) return;
+    setSubscriptionActionLoading("resume");
+    setError("");
+    try {
+      applySubscription(await resumeSubscription(token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resume subscription.");
+    } finally {
+      setSubscriptionActionLoading(null);
     }
   }
 
@@ -283,11 +324,18 @@ export default function AccountPage() {
                   activePlanId={activePlanId}
                   onTrial={onTrial}
                   hasLsSubscription={hasLsSubscription}
+                  subscriptionStatus={subscriptionStatus}
+                  subscriptionCancelled={subscriptionCancelled}
+                  renewsAt={renewsAt}
+                  endsAt={endsAt}
                   teamsSeats={teamsSeats}
                   onChangeTeamsSeats={setTeamsSeats}
                   onUpgrade={handleUpgrade}
                   onManage={handleManage}
                   onUpdateSeats={handleUpdateSeats}
+                  subscriptionActionLoading={subscriptionActionLoading}
+                  onCancelSubscription={handleCancelSubscription}
+                  onResumeSubscription={handleResumeSubscription}
                   checkoutLoading={checkoutLoading}
                   portalLoading={portalLoading}
                   seatsLoading={seatsLoading}
@@ -302,20 +350,34 @@ export default function AccountPage() {
   );
 }
 
+function formatBillingDate(timestamp: number | null): string | null {
+  if (timestamp == null) return null;
+  return new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(timestamp * 1000));
+}
+
 function PlanCard({
   plan, activePlanId, onTrial, hasLsSubscription,
+  subscriptionStatus, subscriptionCancelled, renewsAt, endsAt,
   teamsSeats, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
+  subscriptionActionLoading, onCancelSubscription, onResumeSubscription,
   checkoutLoading, portalLoading, seatsLoading,
 }: {
   plan: (typeof allPlans)[0];
   activePlanId: string;
   onTrial: boolean;
   hasLsSubscription: boolean;
+  subscriptionStatus: string | null;
+  subscriptionCancelled: boolean;
+  renewsAt: number | null;
+  endsAt: number | null;
   teamsSeats: number;
   onChangeTeamsSeats: (n: number) => void;
   onUpgrade: (plan: string, seats?: number) => void;
   onManage: () => void;
   onUpdateSeats: (seats: number) => void;
+  subscriptionActionLoading: "cancel" | "resume" | null;
+  onCancelSubscription: () => void;
+  onResumeSubscription: () => void;
   checkoutLoading: boolean;
   portalLoading: boolean;
   seatsLoading: boolean;
@@ -330,6 +392,9 @@ function PlanCard({
   const isUpgrade = planOrder > currentOrder;
 
   const loading = checkoutLoading || portalLoading;
+  const renewalDate = formatBillingDate(renewsAt);
+  const cancellationDate = formatBillingDate(endsAt ?? renewsAt);
+  const showProLifecycle = plan.id === "pro" && isActive && hasLsSubscription && !onTrial;
 
   function handleAction() {
     if (plan.id === "free" || hasLsSubscription) {
@@ -435,13 +500,39 @@ function PlanCard({
               >
                 Current plan
               </button>
+              {showProLifecycle && (
+                <div className="rounded-xl border border-[#1e1e2e] bg-[#0a0a0f] p-3 text-xs text-zinc-500 leading-relaxed">
+                  {subscriptionCancelled ? (
+                    <p>Cancels on {cancellationDate ?? "the period end"}. You keep Pro until then.</p>
+                  ) : (
+                    <p>{subscriptionStatus === "active" && renewalDate ? `Renews on ${renewalDate}.` : "Your Pro subscription is active."}</p>
+                  )}
+                </div>
+              )}
+              {showProLifecycle && subscriptionCancelled ? (
+                <button
+                  onClick={onResumeSubscription}
+                  disabled={subscriptionActionLoading !== null}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-black transition-all duration-200 disabled:opacity-50"
+                >
+                  {subscriptionActionLoading === "resume" ? "Resuming…" : "Resume subscription"}
+                </button>
+              ) : showProLifecycle ? (
+                <button
+                  onClick={onCancelSubscription}
+                  disabled={subscriptionActionLoading !== null}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold border border-[#1e1e2e] hover:border-red-500/50 text-zinc-400 hover:text-red-300 transition-colors disabled:opacity-50"
+                >
+                  {subscriptionActionLoading === "cancel" ? "Cancelling…" : "Cancel subscription"}
+                </button>
+              ) : null}
               {activePlanId !== "free" && (
                 <button
                   onClick={onManage}
                   disabled={portalLoading}
                   className="text-xs text-center text-zinc-600 hover:text-zinc-400 transition-colors disabled:opacity-50"
                 >
-                  {portalLoading ? "Opening…" : "Manage subscription →"}
+                  {portalLoading ? "Opening…" : "Manage billing →"}
                 </button>
               )}
             </>
