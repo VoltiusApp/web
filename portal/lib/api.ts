@@ -1,5 +1,15 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.voltius.app";
 
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function request<T>(
   path: string,
   options?: RequestInit,
@@ -14,9 +24,11 @@ async function request<T>(
   const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
-    throw new Error(text || `HTTP ${res.status}`);
+    throw new ApiError(res.status, text || `HTTP ${res.status}`);
   }
-  return res.json() as Promise<T>;
+  if (res.status === 204) return undefined as T;
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 export interface ChallengeResponse {
@@ -60,6 +72,17 @@ export function login(authKey: string, accountId: string): Promise<AuthResponse>
     method: "POST",
     body: JSON.stringify({ auth_key: authKey, account_id: accountId }),
   });
+}
+
+export function verifyEmail(token: string): Promise<{ email: string }> {
+  return request<{ email: string }>("/v1/auth/verify-email", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
+export function resendVerificationEmail(token: string): Promise<void> {
+  return request<void>("/v1/auth/resend-verification-email", { method: "POST" }, token);
 }
 
 export function getCheckoutUrl(plan: string, token: string, seats?: number): Promise<CheckoutResponse> {

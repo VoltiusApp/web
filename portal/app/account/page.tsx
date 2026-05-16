@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -90,6 +90,10 @@ export default function AccountPage() {
   const [renewsAt, setRenewsAt] = useState<number | null>(null);
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [subscriptionActionLoading, setSubscriptionActionLoading] = useState<"cancel" | "resume" | null>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [verificationResending, setVerificationResending] = useState(false);
+  const [verificationResent, setVerificationResent] = useState(false);
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -116,8 +120,7 @@ export default function AccountPage() {
           sessionStorage.setItem("access_token", jwt_token);
           activeToken = jwt_token;
           setToken(jwt_token);
-          const raw = atob(jwt_token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"));
-          const payload = JSON.parse(raw) as { tier?: string; trial_ends_at?: number | null };
+          const payload = decodeJwtPayload(jwt_token);
           if (payload.tier) {
             sessionStorage.setItem("tier", payload.tier);
             setTier(payload.tier);
@@ -127,10 +130,16 @@ export default function AccountPage() {
           } else {
             sessionStorage.removeItem("trial_ends_at");
           }
+          setEmailVerified(payload.email_verified ?? null);
+          setAccountEmail(payload.email ?? "");
         } catch { /* fall through with stored values */ }
       } else {
         setTier(sessionStorage.getItem("tier") ?? "free");
       }
+
+      const payload = decodeJwtPayload(activeToken);
+      setEmailVerified(payload.email_verified ?? null);
+      setAccountEmail(payload.email ?? "");
 
       // Fetch live subscription data (Bug 3)
       try {
@@ -227,6 +236,21 @@ export default function AccountPage() {
     }
   }
 
+  async function handleResendVerification() {
+    if (!token) return;
+    setVerificationResending(true);
+    setVerificationResent(false);
+    setError("");
+    try {
+      await resendVerificationEmail(token);
+      setVerificationResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend verification email.");
+    } finally {
+      setVerificationResending(false);
+    }
+  }
+
   async function handleUpdateSeats(seats: number) {
     if (!token) return;
     setSeatsLoading(true);
@@ -293,6 +317,24 @@ export default function AccountPage() {
         </header>
 
         <main className="max-w-5xl mx-auto px-6 py-12">
+          {emailVerified === false && (
+            <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <p className="text-sm text-amber-100">
+                Please verify your email — we sent a link to {accountEmail || "your email"}.
+              </p>
+              <div className="flex items-center gap-3">
+                {verificationResent && <span className="text-xs text-amber-200">Sent.</span>}
+                <button
+                  onClick={() => void handleResendVerification()}
+                  disabled={verificationResending}
+                  className="shrink-0 px-4 py-2 rounded-xl bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-black font-semibold text-sm transition-colors"
+                >
+                  {verificationResending ? "Sending..." : "Resend"}
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Current plan */}
           <div className="mb-10">
             <p className="font-mono text-xs text-cyan-400 mb-3">— your plan</p>
@@ -348,6 +390,15 @@ export default function AccountPage() {
       </div>
     </>
   );
+}
+
+function decodeJwtPayload(token: string): { tier?: string; trial_ends_at?: number | null; email_verified?: boolean; email?: string } {
+  try {
+    const raw = atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"));
+    return JSON.parse(raw) as { tier?: string; trial_ends_at?: number | null; email_verified?: boolean; email?: string };
+  } catch {
+    return {};
+  }
 }
 
 function formatBillingDate(timestamp: number | null): string | null {
