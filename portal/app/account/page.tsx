@@ -52,7 +52,7 @@ const allPlans = [
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
       "Unlimited private vaults",
-      "Share terminal (1 guest)",
+      "Share terminal — 1 session · 1 guest",
     ],
   },
   {
@@ -68,7 +68,7 @@ const allPlans = [
     features: [
       "Everything in Pro",
       "Team vaults & invites",
-      "Shared terminals (unlimited guests)",
+      "Shared terminals — 5 sessions · 10 guests each",
       "Granular permissions & roles",
       "Team audit logs",
     ],
