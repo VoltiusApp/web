@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
+import EditEmailModal from "./EditEmailModal";
+import ChangePasswordModal from "./ChangePasswordModal";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -92,8 +94,11 @@ export default function AccountPage() {
   const [subscriptionActionLoading, setSubscriptionActionLoading] = useState<"cancel" | "resume" | null>(null);
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
   const [accountEmail, setAccountEmail] = useState("");
+  const [accountId, setAccountId] = useState("");
   const [verificationResending, setVerificationResending] = useState(false);
   const [verificationResent, setVerificationResent] = useState(false);
+  const [showEditEmail, setShowEditEmail] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -146,6 +151,13 @@ export default function AccountPage() {
         const sub = await getSubscription(activeToken);
         applySubscription(sub);
       } catch { /* fall through */ }
+
+      // Fetch account_id (needed for password/email change key derivation)
+      try {
+        const { getMe } = await import("../../lib/api");
+        const me = await getMe(activeToken);
+        setAccountId(me.account_id);
+      } catch { /* non-critical */ }
 
       // Trial expired modal
       const finalTier = sessionStorage.getItem("tier") ?? "free";
@@ -316,7 +328,35 @@ export default function AccountPage() {
           </div>
         </header>
 
-        <main className="max-w-5xl mx-auto px-6 py-12">
+        {showEditEmail && token && accountId && (
+        <EditEmailModal
+          currentEmail={accountEmail}
+          accountId={accountId}
+          token={token}
+          onClose={() => setShowEditEmail(false)}
+          onSuccess={(newEmail) => {
+            setAccountEmail(newEmail);
+            setEmailVerified(false);
+            setShowEditEmail(false);
+          }}
+        />
+      )}
+
+      {showChangePassword && token && accountId && (
+        <ChangePasswordModal
+          accountId={accountId}
+          token={token}
+          onClose={() => setShowChangePassword(false)}
+          onSuccess={(newJwt, newRefresh) => {
+            sessionStorage.setItem("access_token", newJwt);
+            sessionStorage.setItem("refresh_token", newRefresh);
+            setToken(newJwt);
+            setShowChangePassword(false);
+          }}
+        />
+      )}
+
+      <main className="max-w-5xl mx-auto px-6 py-12">
           {emailVerified === false && (
             <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-amber-100">
@@ -334,6 +374,31 @@ export default function AccountPage() {
               </div>
             </div>
           )}
+
+          {/* Account settings */}
+          <div className="mb-10">
+            <p className="font-mono text-xs text-cyan-400 mb-3">— account</p>
+            <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Email</p>
+                <p className="text-sm text-white">{accountEmail || "—"}</p>
+              </div>
+              <div className="flex gap-2 shrink-0">
+                <button
+                  onClick={() => setShowEditEmail(true)}
+                  className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                >
+                  Change email
+                </button>
+                <button
+                  onClick={() => setShowChangePassword(true)}
+                  className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                >
+                  Change password
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* Current plan */}
           <div className="mb-10">

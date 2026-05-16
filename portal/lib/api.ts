@@ -40,6 +40,16 @@ export interface AuthResponse {
   refresh_token: string;
   tier: string;
   trial_ends_at: number | null;
+  wrapped_user_secrets?: string | null;
+}
+
+export interface MeResponse {
+  email: string;
+  account_id: string;
+  tier: string;
+  trial_ends_at: number | null;
+  email_verified: boolean;
+  wrapped_user_secrets: string | null;
 }
 
 export interface CheckoutResponse {
@@ -60,11 +70,51 @@ export function register(
   email: string,
   authKey: string,
   accountId: string,
+  wrappedUserSecrets?: string,
+  x25519Public?: string,
 ): Promise<AuthResponse> {
   return request<AuthResponse>("/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify({ email, auth_key: authKey, account_id: accountId }),
+    body: JSON.stringify({
+      email,
+      auth_key: authKey,
+      account_id: accountId,
+      ...(wrappedUserSecrets && { wrapped_user_secrets: wrappedUserSecrets }),
+      ...(x25519Public && { public_key: x25519Public }),
+    }),
   });
+}
+
+export function getMe(token: string): Promise<MeResponse> {
+  return request<MeResponse>("/v1/auth/me", {}, token);
+}
+
+export function updateEmail(newEmail: string, authKey: string, token: string): Promise<void> {
+  return request<void>(
+    "/v1/auth/email",
+    { method: "PUT", body: JSON.stringify({ new_email: newEmail, auth_key: authKey }) },
+    token,
+  );
+}
+
+export function updatePassword(
+  oldAuthKey: string,
+  newAuthKey: string,
+  newWrappedUserSecrets: string,
+  token: string,
+): Promise<AuthResponse> {
+  return request<AuthResponse>(
+    "/v1/auth/password",
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        old_auth_key: oldAuthKey,
+        new_auth_key: newAuthKey,
+        new_wrapped_user_secrets: newWrappedUserSecrets,
+      }),
+    },
+    token,
+  );
 }
 
 export function login(authKey: string, accountId: string): Promise<AuthResponse> {

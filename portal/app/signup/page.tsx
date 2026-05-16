@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { deriveAuthKey } from "../../lib/crypto";
+import { deriveAuthKey, deriveKek, generateUserSecrets, wrapUserSecrets, bytesToBase64 } from "../../lib/crypto";
 import { register } from "../../lib/api";
 
 export default function SignupPage() {
@@ -41,8 +41,14 @@ function SignupContent() {
     setLoading(true);
     try {
       const accountId = crypto.randomUUID();
-      const authKey = await deriveAuthKey(password, accountId);
-      const auth = await register(email, authKey, accountId);
+      const [authKey, kek] = await Promise.all([
+        deriveAuthKey(password, accountId),
+        deriveKek(password, accountId),
+      ]);
+      const { dek, x25519Private, x25519PublicB64 } = await generateUserSecrets();
+      const wrappedBytes = await wrapUserSecrets(kek, dek, x25519Private);
+      const wrappedUserSecrets = bytesToBase64(wrappedBytes);
+      const auth = await register(email, authKey, accountId, wrappedUserSecrets, x25519PublicB64);
 
       sessionStorage.setItem("access_token", auth.jwt_token);
       sessionStorage.setItem("refresh_token", auth.refresh_token);
