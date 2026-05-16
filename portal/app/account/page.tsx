@@ -157,6 +157,7 @@ export default function AccountPage() {
         const { getMe } = await import("../../lib/api");
         const me = await getMe(activeToken);
         setAccountId(me.account_id);
+        setAccountEmail(me.email);
       } catch { /* non-critical */ }
 
       // Trial expired modal
