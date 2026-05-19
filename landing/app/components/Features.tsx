@@ -16,24 +16,29 @@ const features = [
     desc: "Your data is encrypted locally before leaving your device. We can't read it — and neither can attackers.",
   },
   {
+    icon: "lucide:hard-drive",
+    title: "Local-first forever",
+    desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
+  },
+  {
+    icon: "lucide:cloud",
+    title: "Cross-platform sync",
+    desc: "Sync your connections, credentials, and settings across all your devices with end-to-end encryption.",
+  },
+  {
     icon: "lucide:folder-sync",
     title: "SFTP with drag & drop",
     desc: "Transfer files between local, remote, or host-to-host with a native drag & drop interface.",
   },
   {
+    icon: "lucide:puzzle",
+    title: "Plugin system",
+    desc: "Extend Voltius with first-party and community plugins. Gist Sync, process manager, and more.",
+  },
+  {
     icon: "devicon-plain:docker",
     title: "Docker management",
     desc: "Browse containers, volumes, and networks. Open terminals directly inside running containers.",
-  },
-  {
-    icon: "lucide:puzzle",
-    title: "Plugin system",
-    desc: "Extend Voltius with first-party and community plugins. Gist Sync, port forwarding, and more.",
-  },
-  {
-    icon: "lucide:hard-drive",
-    title: "Local-first forever",
-    desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
   },
   {
     icon: "lucide:scroll-text",
