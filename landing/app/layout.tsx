@@ -9,7 +9,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   title: "Voltius — Modern SSH Client",
   description:
-    "A blazingly fast, local-first SSH client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
+    "A blazing fast, local-first SSH & SFTP client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
   icons: { icon: "/logo.png" },
 };
 
