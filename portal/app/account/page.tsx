@@ -24,9 +24,9 @@ const allPlans = [
   {
     id: "free",
     name: "Free",
-    price: 0,
+    annualPrice: 0,
+    monthlyPrice: 0,
     period: "",
-    billingNote: "no account required",
     desc: "Local vault and Gist sync for everyone.",
     trial: null as string | null,
     noCreditCard: false,
@@ -41,9 +41,9 @@ const allPlans = [
   {
     id: "pro",
     name: "Pro",
-    price: 7,
+    annualPrice: 7,
+    monthlyPrice: 9,
     period: "/ month",
-    billingNote: "billed annually",
     desc: "Real-time sync and unlimited vaults for power users.",
     trial: "14-day free trial" as string | null,
     noCreditCard: true,
@@ -58,9 +58,9 @@ const allPlans = [
   {
     id: "teams",
     name: "Teams",
-    price: 15,
+    annualPrice: 15,
+    monthlyPrice: 18,
     period: "/ user / month",
-    billingNote: "billed annually",
     desc: "Shared vaults, live terminals, and access control. 3-seat minimum.",
     trial: null as string | null,
     noCreditCard: false,
@@ -79,6 +79,7 @@ export default function AccountPage() {
   const router = useRouter();
   const [tier, setTier] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<"annual" | "monthly">("annual");
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [seatsLoading, setSeatsLoading] = useState(false);
@@ -187,7 +188,7 @@ export default function AccountPage() {
     setCheckoutLoading(true);
     setError("");
     try {
-      const { checkout_url } = await getCheckoutUrl(plan, token, seats);
+      const { checkout_url } = await getCheckoutUrl(plan, token, seats, billingPeriod);
       window.location.href = checkout_url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to open checkout.");
@@ -488,12 +489,37 @@ export default function AccountPage() {
 
           {/* Plans */}
           <div>
-            <p className="font-mono text-xs text-zinc-500 mb-5">— plans</p>
+            <div className="flex items-center justify-between mb-5">
+              <p className="font-mono text-xs text-zinc-500">— plans</p>
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-[#111118] border border-[#1e1e2e]">
+                <button
+                  onClick={() => setBillingPeriod("annual")}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    billingPeriod === "annual"
+                      ? "bg-cyan-500 text-black"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Annual <span className={`text-[10px] ${billingPeriod === "annual" ? "text-black/70" : "text-cyan-500"}`}>save 22%</span>
+                </button>
+                <button
+                  onClick={() => setBillingPeriod("monthly")}
+                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                    billingPeriod === "monthly"
+                      ? "bg-[#1e1e2e] text-white"
+                      : "text-zinc-400 hover:text-white"
+                  }`}
+                >
+                  Monthly
+                </button>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {allPlans.map((plan) => (
                 <PlanCard
                   key={plan.id}
                   plan={plan}
+                  billingPeriod={billingPeriod}
                   activePlanId={activePlanId}
                   onTrial={onTrial}
                   hasLsSubscription={hasLsSubscription}
@@ -538,13 +564,14 @@ function formatBillingDate(timestamp: number | null): string | null {
 }
 
 function PlanCard({
-  plan, activePlanId, onTrial, hasLsSubscription,
+  plan, billingPeriod, activePlanId, onTrial, hasLsSubscription,
   subscriptionStatus, subscriptionCancelled, renewsAt, endsAt,
   teamsSeats, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
   subscriptionActionLoading, onCancelSubscription, onResumeSubscription,
   checkoutLoading, portalLoading, seatsLoading,
 }: {
   plan: (typeof allPlans)[0];
+  billingPeriod: "annual" | "monthly";
   activePlanId: string;
   onTrial: boolean;
   hasLsSubscription: boolean;
@@ -566,7 +593,11 @@ function PlanCard({
 }) {
   const isTeams = plan.id === "teams";
   const seats = isTeams ? teamsSeats : undefined;
-  const displayPrice = isTeams ? plan.price * teamsSeats : plan.price;
+  const unitPrice = billingPeriod === "annual" ? plan.annualPrice : plan.monthlyPrice;
+  const displayPrice = isTeams ? unitPrice * teamsSeats : unitPrice;
+  const billingNote = plan.annualPrice === 0 ? "no account required"
+    : billingPeriod === "annual" ? "billed annually"
+    : "billed monthly";
 
   const currentOrder = PLAN_ORDER[activePlanId] ?? 0;
   const planOrder = PLAN_ORDER[plan.id] ?? 0;
@@ -611,7 +642,7 @@ function PlanCard({
       <div>
         <p className="text-sm font-medium text-zinc-400">{plan.name}</p>
         <div className="mt-1 flex items-baseline gap-1">
-          {plan.price === 0 ? (
+          {plan.annualPrice === 0 ? (
             <span className="text-3xl font-bold text-white">Free</span>
           ) : (
             <>
@@ -620,7 +651,7 @@ function PlanCard({
             </>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-zinc-500">{plan.billingNote}</p>
+        <p className="mt-0.5 text-xs text-zinc-500">{billingNote}</p>
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
       </div>
 

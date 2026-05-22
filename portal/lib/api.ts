@@ -144,10 +144,10 @@ export function resendVerificationEmail(token: string): Promise<void> {
   return request<void>("/v1/auth/resend-verification-email", { method: "POST" }, token);
 }
 
-export function getCheckoutUrl(plan: string, token: string, seats?: number): Promise<CheckoutResponse> {
+export function getCheckoutUrl(plan: string, token: string, seats?: number, billingPeriod?: "annual" | "monthly"): Promise<CheckoutResponse> {
   return request<CheckoutResponse>(
     "/v1/billing/checkout",
-    { method: "POST", body: JSON.stringify({ plan, ...(seats !== undefined && { seats }) }) },
+    { method: "POST", body: JSON.stringify({ plan, ...(seats !== undefined && { seats }), ...(billingPeriod && { billing_period: billingPeriod }) }) },
     token,
   );
 }
