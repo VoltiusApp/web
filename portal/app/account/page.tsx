@@ -26,16 +26,23 @@ const allPlans = [
     name: "Free",
     annualPrice: 0,
     monthlyPrice: 0,
-    period: "",
-    desc: "Local vault and Gist sync for everyone.",
+    period: "forever",
+    desc: "Everything you need, no account required.",
     trial: null as string | null,
     noCreditCard: false,
     comingSoon: false,
     features: [
-      "Local encrypted vault",
-      "GitHub Gist sync",
-      "All local SSH/SFTP features",
+      "All core SSH features",
+      "SFTP with drag & drop",
+      "Docker & serial console",
+      "Gist E2EE sync (free)",
+      "Plugin system",
+      "Custom themes",
+      "Local terminal",
+      "Port forwarding",
       "Audit logs",
+      "Snippets & command palette",
+      "Import / Export (no lock-in)",
     ],
   },
   {
@@ -44,15 +51,17 @@ const allPlans = [
     annualPrice: 7,
     monthlyPrice: 9,
     period: "/ month",
+    savings: "Save 22% with annual billing",
     desc: "Real-time sync and unlimited vaults for power users.",
     trial: "14-day free trial" as string | null,
     noCreditCard: true,
     comingSoon: false,
     features: [
+      "Everything in Free",
       "Real-time cloud sync (CRDTs)",
       "Sub-second updates via SSE",
       "Unlimited private vaults",
-      "Share terminal — 1 session · 1 guest",
+      "Real-time collaboration — 1 session · 1 participant",
     ],
   },
   {
@@ -61,16 +70,37 @@ const allPlans = [
     annualPrice: 15,
     monthlyPrice: 18,
     period: "/ user / month",
-    desc: "Shared vaults, live terminals, and access control. 3-seat minimum.",
+    savings: "Save 17% with annual billing",
+    desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
     trial: null as string | null,
     noCreditCard: false,
     comingSoon: true,
     features: [
       "Everything in Pro",
       "Team vaults & invites",
-      "Shared terminals — 5 sessions · 10 guests each",
-      "Granular permissions & roles",
+      "Real-time collaboration — 5 sessions · 10 participants each",
+      "Built-in roles (Owner, Manager, Editor, Member)",
       "Team audit logs",
+    ],
+  },
+  {
+    id: "business",
+    name: "Business",
+    annualPrice: 30,
+    monthlyPrice: 30,
+    period: "/ user / month",
+    savings: null as string | null,
+    desc: "Self-hosted backend with SLA and dedicated support.",
+    trial: null as string | null,
+    noCreditCard: false,
+    comingSoon: true,
+    features: [
+      "Everything in Teams",
+      "Real-time collaboration — 20 sessions · 50 participants each",
+      "Custom roles & granular permissions",
+      "Commercial license exception",
+      "Priority SLA support",
+      "Custom contracts",
     ],
   },
 ];
@@ -500,7 +530,7 @@ export default function AccountPage() {
                       : "text-zinc-400 hover:text-white"
                   }`}
                 >
-                  Annual <span className={`text-[10px] ${billingPeriod === "annual" ? "text-black/70" : "text-cyan-500"}`}>save 22%</span>
+                  Annual
                 </button>
                 <button
                   onClick={() => setBillingPeriod("monthly")}
@@ -514,7 +544,7 @@ export default function AccountPage() {
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
               {allPlans.map((plan) => (
                 <PlanCard
                   key={plan.id}
@@ -595,6 +625,7 @@ function PlanCard({
   const seats = isTeams ? teamsSeats : undefined;
   const unitPrice = billingPeriod === "annual" ? plan.annualPrice : plan.monthlyPrice;
   const displayPrice = isTeams ? unitPrice * teamsSeats : unitPrice;
+  const displayPeriod = isTeams ? "/ month" : plan.period;
   const billingNote = plan.annualPrice === 0 ? "no account required"
     : billingPeriod === "annual" ? "billed annually"
     : "billed monthly";
@@ -643,15 +674,24 @@ function PlanCard({
         <p className="text-sm font-medium text-zinc-400">{plan.name}</p>
         <div className="mt-1 flex items-baseline gap-1">
           {plan.annualPrice === 0 ? (
-            <span className="text-3xl font-bold text-white">Free</span>
+            <>
+              <span className="text-3xl font-bold text-white">$0</span>
+              {plan.period && <span className="text-sm text-zinc-500">{plan.period}</span>}
+            </>
           ) : (
             <>
               <span className="text-3xl font-bold text-white">${displayPrice}</span>
-              <span className="text-sm text-zinc-500">{plan.period}</span>
+              <span className="text-sm text-zinc-500">{displayPeriod}</span>
             </>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-zinc-500">{billingNote}</p>
+        <p className="mt-0.5 text-xs text-zinc-500">
+          {billingPeriod === "annual" && plan.savings ? (
+            <span className="text-cyan-500">{plan.savings}</span>
+          ) : (
+            billingNote
+          )}
+        </p>
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
       </div>
 

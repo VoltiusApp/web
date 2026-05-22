@@ -78,7 +78,6 @@ const plans = [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
       "Custom roles & granular permissions",
-      "On-premise self-hosted deployment",
       "Commercial license exception",
       "Priority SLA support",
       "Custom contracts",
