@@ -3,6 +3,7 @@ import {
   GITHUB_LATEST_RELEASE_API_URL,
   GITHUB_REPO_URL,
 } from "../lib/github";
+import CopyCommand from "./CopyCommand";
 
 type Asset = { name: string; browser_download_url: string };
 type Release = { tag_name: string; assets: Asset[] };
@@ -105,9 +106,7 @@ export default async function Download() {
             <p className="text-xs text-zinc-400 mb-2">
               The app is unsigned. macOS will quarantine it — run this once after installing:
             </p>
-            <code className="block text-xs font-mono text-amber-300 bg-[#0a0a0f] px-3 py-2 rounded-lg">
-              xattr -d com.apple.quarantine /Applications/Voltius.app
-            </code>
+            <CopyCommand command="xattr -d com.apple.quarantine /Applications/Voltius.app" />
           </div>
         </details>
 
