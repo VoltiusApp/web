@@ -102,19 +102,15 @@ export default function Hero() {
         id="demo"
         className="fade-in mt-20 w-full max-w-5xl rounded-2xl overflow-hidden border border-border ring-1 ring-cyan-400/20 shadow-[0_0_60px_rgba(34,211,238,0.22),0_28px_70px_rgba(0,0,0,0.65)]"
       >
-        {/* Window chrome */}
-        <div className="flex items-center gap-2 px-4 py-3 bg-surface border-b border-border">
-          <span className="w-3 h-3 rounded-full bg-red-500/80" />
-          <span className="w-3 h-3 rounded-full bg-yellow-500/80" />
-          <span className="w-3 h-3 rounded-full bg-green-500/80" />
-          <span className="ml-4 text-xs text-zinc-500 font-mono">voltius</span>
-        </div>
         <div className="bg-[#0d0d12] aspect-video">
-          <img
-            src="/demo.gif"
-            alt="Voltius demo"
+          <video
+            src="/demo.mp4"
             className="h-full w-full object-cover"
-            loading="lazy"
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
           />
         </div>
       </div>
