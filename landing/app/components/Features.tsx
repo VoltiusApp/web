@@ -6,9 +6,14 @@ import { GITHUB_REPO_URL } from "../lib/github";
 
 const features = [
   {
-    icon: "devicon-plain:rust",
-    title: "Native Rust performance",
-    desc: "Built with Tauri + Rust. ~300MB RAM vs 500MB+ for Electron alternatives. No web engine overhead.",
+    icon: "lucide:hard-drive",
+    title: "Local-first forever",
+    desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
+  },
+  {
+    icon: "lucide:arrow-up-down",
+    title: "No vendor lock-in",
+    desc: "Import your existing data from Termius, MobaXterm, SecureCRT, and more. Your data is always exportable as open JSON.",
   },
   {
     icon: "lucide:lock-keyhole",
@@ -16,9 +21,9 @@ const features = [
     desc: "Your data is encrypted locally before leaving your device. We can't read it — and neither can attackers.",
   },
   {
-    icon: "lucide:hard-drive",
-    title: "Local-first forever",
-    desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
+    icon: "devicon-plain:rust",
+    title: "Native Rust performance",
+    desc: "Built with Tauri + Rust. No Chromium overhead, snappy UI, tiny install footprint.",
   },
   {
     icon: "lucide:cloud",
