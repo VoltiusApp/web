@@ -2,15 +2,67 @@
 
 import Image from "next/image";
 import { useFadeIn } from "../hooks/useFadeIn";
-import { GITHUB_REPO_URL } from "../lib/github";
+import {
+  getBestDownloadAsset,
+  type Platform,
+  type Release,
+} from "../lib/downloadAssets";
+import { GITHUB_LATEST_RELEASE_API_URL, GITHUB_REPO_URL } from "../lib/github";
+
+type NavigatorWithUserAgentData = Navigator & {
+  userAgentData?: {
+    platform?: string;
+    getHighEntropyValues?: (hints: string[]) => Promise<{
+      architecture?: string;
+      platform?: string;
+    }>;
+  };
+};
 
 const badges = [
-  { label: "Built with Rust", color: "text-orange-400 border-orange-400/30 bg-orange-400/10" },
+  {
+    label: "Built with Rust",
+    color: "text-orange-400 border-orange-400/30 bg-orange-400/10",
+  },
   { label: "E2EE", color: "text-green-400 border-green-400/30 bg-green-400/10" },
-  { label: "Cross-platform", color: "text-violet-400 border-violet-400/30 bg-violet-400/10" },
+  {
+    label: "Cross-platform",
+    color: "text-violet-400 border-violet-400/30 bg-violet-400/10",
+  },
   { label: "Local-first", color: "text-zinc-300 border-zinc-600 bg-zinc-800/50" },
-  { label: "Fully open source · AGPLv3", color: "text-green-400 border-green-500/30 bg-green-500/10", href: GITHUB_REPO_URL },
+  {
+    label: "Fully open source · AGPLv3",
+    color: "text-green-400 border-green-500/30 bg-green-500/10",
+    href: GITHUB_REPO_URL,
+  },
 ];
+
+async function getDevice() {
+  const nav = navigator as NavigatorWithUserAgentData;
+  const ua = navigator.userAgent.toLowerCase();
+  const highEntropy = await nav.userAgentData
+    ?.getHighEntropyValues?.(["architecture", "platform"])
+    .catch(() => null);
+  const platform = (
+    highEntropy?.platform ??
+    nav.userAgentData?.platform ??
+    navigator.platform
+  ).toLowerCase();
+  const architecture = (highEntropy?.architecture ?? "").toLowerCase();
+  const isArm = /arm|aarch64/.test(`${architecture} ${ua} ${platform}`);
+
+  if (platform.includes("win") || ua.includes("windows")) {
+    return { platform: "windows" as Platform, isArm };
+  }
+  if (platform.includes("mac") || ua.includes("mac os")) {
+    return { platform: "macos" as Platform, isArm: true };
+  }
+  if (platform.includes("linux") || ua.includes("linux")) {
+    return { platform: "linux" as Platform, isArm };
+  }
+
+  return null;
+}
 
 export default function Hero() {
   const badgesRef = useFadeIn(0);
@@ -19,6 +71,30 @@ export default function Hero() {
   const subMetaRef = useFadeIn(240);
   const ctaRef = useFadeIn(300);
   const demoRef = useFadeIn(420);
+
+  async function handleDownloadClick(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault();
+
+    try {
+      const device = await getDevice();
+      if (!device) throw new Error("Unsupported platform");
+
+      const res = await fetch(GITHUB_LATEST_RELEASE_API_URL);
+      if (!res.ok) throw new Error("Release unavailable");
+
+      const release = (await res.json()) as Release;
+      const asset = getBestDownloadAsset(
+        release.assets ?? [],
+        device.platform,
+        device.isArm
+      );
+      if (!asset) throw new Error("No matching asset");
+
+      window.location.href = asset.browser_download_url;
+    } catch {
+      window.location.hash = "download";
+    }
+  }
 
   return (
     <section className="relative isolate min-h-screen flex flex-col items-center justify-center px-6 pt-24 pb-16 text-center overflow-hidden">
@@ -36,18 +112,33 @@ export default function Hero() {
         ref={badgesRef as React.RefObject<HTMLDivElement>}
         className="fade-in flex flex-col items-center gap-6 mb-8"
       >
-        <Image src="/logo.png" alt="Voltius" width={72} height={72} loading="eager" className="shadow-lg shadow-black/40" />
+        <Image
+          src="/logo.png"
+          alt="Voltius"
+          width={72}
+          height={72}
+          loading="eager"
+          className="shadow-lg shadow-black/40"
+        />
 
         {/* Badges */}
         <div className="flex flex-wrap justify-center gap-2">
           {badges.map((b) => {
             const cls = `text-xs font-mono px-3 py-1 rounded-full border transition-opacity ${b.color}`;
             return "href" in b ? (
-              <a key={b.label} href={b.href} target="_blank" rel="noopener noreferrer" className={`${cls} hover:opacity-80`}>
+              <a
+                key={b.label}
+                href={b.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${cls} hover:opacity-80`}
+              >
                 {b.label}
               </a>
             ) : (
-              <span key={b.label} className={cls}>{b.label}</span>
+              <span key={b.label} className={cls}>
+                {b.label}
+              </span>
             );
           })}
         </div>
@@ -84,6 +175,7 @@ export default function Hero() {
       >
         <a
           href="#download"
+          onClick={handleDownloadClick}
           className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-all duration-200 shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_24px_rgba(6,182,212,0.4)]"
         >
           Download
