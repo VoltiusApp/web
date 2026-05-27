@@ -41,9 +41,9 @@ const features = [
     desc: "Extend Voltius with first-party and community plugins. Gist Sync, process manager, and more.",
   },
   {
-    icon: "devicon-plain:docker",
-    title: "Docker management",
-    desc: "Browse containers, volumes, and networks. Open terminals directly inside running containers.",
+    icon: "lucide:container",
+    title: "Container management",
+    desc: "Docker and Proxmox LXC. Browse containers, open terminals, manage resources — without leaving Voltius.",
   },
   {
     icon: "lucide:scroll-text",
