@@ -31,7 +31,7 @@ const features = [
     desc: "Sync your connections, credentials, and settings across all your devices with end-to-end encryption.",
   },
   {
-    icon: "lucide:folder-sync",
+    icon: "lucide:folder-open",
     title: "SFTP with drag & drop",
     desc: "Transfer files between local, remote, or host-to-host with a native drag & drop interface.",
   },
