@@ -13,7 +13,7 @@ const features = [
   {
     icon: "lucide:arrow-up-down",
     title: "No vendor lock-in",
-    desc: "Import your existing data from Termius, MobaXterm, SecureCRT, and more. Your data is always exportable as open JSON.",
+    desc: "Import your existing data from Termius, MobaXterm in 1 click. Your data is always exportable as open JSON.",
   },
   {
     icon: "lucide:lock-keyhole",
