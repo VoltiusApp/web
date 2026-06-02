@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@voltius/crypto-wasm':
-        specifier: ^0.3.0
-        version: 0.3.0
+        specifier: ^0.4.0
+        version: 0.4.0
       next:
         specifier: 16.2.4
         version: 16.2.4(@babel/core@7.29.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -716,7 +716,7 @@ packages:
     os: [win32]
 
   '@voltius/crypto-wasm@0.4.0':
-    resolution: {integrity: sha512-j0VtyYhwlfOHS9eh7Feuq5Xgyt7j9hOCpXDGhc0OAPz24LPIsf0U7Ywbe9lTAxP5YQBGc7j4oR/8APSKSVWg5w==}
+    resolution: {integrity: sha512-sLzPOlzSWqjMr4MlnhuvfDqmmzP1A+4Ke49OBLxrWGBTbt03Dalm4vWB2T7pVLKgFddmcK6LDr4KKPrDEETsZg==}
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
