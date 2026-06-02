@@ -110,7 +110,7 @@ export default function PrivacyPage() {
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li><strong className="text-white">Access</strong> the data we hold about you.</li>
               <li><strong className="text-white">Rectify</strong> inaccurate data.</li>
-              <li><strong className="text-white">Erase</strong> your data ("right to be forgotten").</li>
+              <li><strong className="text-white">Erase</strong> your data (&quot;right to be forgotten&quot;).</li>
               <li><strong className="text-white">Port</strong> your data in a machine-readable format.</li>
               <li><strong className="text-white">Object</strong> to processing based on legitimate interest.</li>
               <li><strong className="text-white">Restrict</strong> processing in certain circumstances.</li>

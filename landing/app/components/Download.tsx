@@ -5,6 +5,7 @@ import {
 } from "../lib/github";
 import { getAssetsForPlatform, type Release } from "../lib/downloadAssets";
 import CopyCommand from "./CopyCommand";
+import MobileWaitlistForm from "./MobileWaitlistForm";
 
 async function getLatestRelease(): Promise<Release | null> {
   try {
@@ -47,10 +48,10 @@ const platforms = [
   },
 ] as const;
 
-const comingSoon = [
-  { name: "Android", icon: "material-symbols:android" },
-  { name: "iOS", icon: "lineicons:ios" },
-];
+const mobilePlatforms = [
+  { name: "Android", icon: "material-symbols:android", platform: "android" },
+  { name: "iOS", icon: "lineicons:ios", platform: "ios" },
+] as const;
 
 export default async function Download() {
   const release = await getLatestRelease();
@@ -131,18 +132,14 @@ export default async function Download() {
           </div>
         </details>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 max-w-xs mx-auto">
-          {comingSoon.map((p) => (
-            <div
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+          {mobilePlatforms.map((p) => (
+            <MobileWaitlistForm
               key={p.name}
-              className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-border bg-surface opacity-50 cursor-default select-none"
-            >
-              <Icon icon={p.icon} className="text-4xl text-zinc-500" />
-              <div>
-                <p className="font-semibold text-zinc-500">{p.name}</p>
-                <p className="text-xs text-zinc-600 mt-0.5">Coming soon</p>
-              </div>
-            </div>
+              name={p.name}
+              icon={p.icon}
+              platform={p.platform}
+            />
           ))}
         </div>
 

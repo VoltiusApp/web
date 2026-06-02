@@ -24,7 +24,7 @@ export default function TermsPage() {
         <div className="space-y-10 text-zinc-300 leading-relaxed">
           <Section title="1. Acceptance">
             <p>
-              By creating an account or using Voltius (the "Service"), you agree to be bound by these
+              By creating an account or using Voltius (the &quot;Service&quot;), you agree to be bound by these
               Terms of Service. If you do not agree, do not use the Service.
             </p>
           </Section>
@@ -106,7 +106,7 @@ export default function TermsPage() {
 
           <Section title="8. Disclaimer and limitation of liability">
             <p>
-              The Service is provided "as is" without warranties of any kind. To the maximum extent
+              The Service is provided &quot;as is&quot; without warranties of any kind. To the maximum extent
               permitted by law, we shall not be liable for indirect, incidental, or consequential
               damages arising from your use of the Service. Our total liability shall not exceed the
               amount you paid in the twelve months preceding the claim.
