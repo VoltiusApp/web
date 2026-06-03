@@ -93,7 +93,7 @@ export default async function Download() {
                   </div>
                 </div>
 
-                <div className="max-h-0 overflow-hidden px-3 opacity-0 transition-all duration-300 group-hover:max-h-64 group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-64 group-focus-within:pb-3 group-focus-within:opacity-100">
+                <div className="max-h-0 overflow-hidden px-3 opacity-0 transition-all duration-300 group-hover:max-h-96 group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:pb-3 group-focus-within:opacity-100">
                   <div className="space-y-1 border-t border-white/5 pt-3">
                     {options.length > 0 ? (
                       options.map(({ asset, label }) => (
