@@ -30,7 +30,7 @@ function platformFor(asset: Asset): Platform | null {
     return "windows";
   }
   if (hasAny(name, ["darwin", "macos", ".dmg"])) return "macos";
-  if (hasAny(name, ["linux", ".appimage", ".deb"])) return "linux";
+  if (hasAny(name, ["linux", ".appimage", ".deb", ".rpm"])) return "linux";
 
   return null;
 }
@@ -43,6 +43,7 @@ export function labelForAsset(asset: Asset) {
   if (name.endsWith("-setup.exe")) return `${arch} setup (.exe)`;
   if (name.endsWith(".appimage")) return `${arch} AppImage`;
   if (name.endsWith(".deb")) return `${arch} deb`;
+  if (name.endsWith(".rpm")) return `${arch} rpm`;
   if (name.endsWith(".dmg")) return `${arch} dmg`;
   return `${arch} portable`;
 }
@@ -62,7 +63,7 @@ export function getBestDownloadAsset(
   isArm = false
 ) {
   const options = getAssetsForPlatform(assets, platform);
-  const arch = isArm ? ["arm64", "aarch64"] : ["x64", "amd64"];
+  const arch = isArm ? ["arm64", "aarch64"] : ["x64", "amd64", "x86_64"];
   const matchingArch = options.filter(({ asset }) =>
     hasAny(asset.name.toLowerCase(), arch)
   );
