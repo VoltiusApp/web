@@ -7,8 +7,8 @@ type DownloadOption = {
   label: string;
 };
 
-function isSignature(asset: Asset) {
-  return asset.name.endsWith(".sig");
+function isChecksumOrSignature(asset: Asset) {
+  return asset.name.endsWith(".sig") || asset.name.endsWith(".sha256");
 }
 
 function hasAny(name: string, parts: string[]) {
@@ -18,7 +18,7 @@ function hasAny(name: string, parts: string[]) {
 function platformFor(asset: Asset): Platform | null {
   const name = asset.name.toLowerCase();
 
-  if (isSignature(asset)) return null;
+  if (isChecksumOrSignature(asset)) return null;
   if (
     hasAny(name, [
       "windows",
