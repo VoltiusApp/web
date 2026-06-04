@@ -1,5 +1,6 @@
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 import { GITHUB_REPO_URL } from "../lib/github";
 
 export default function Footer() {
@@ -28,24 +29,24 @@ export default function Footer() {
           <a href="https://docs.voltius.app" className="hover:text-zinc-300 transition-colors">
             Docs
           </a>
-          <a href="#pricing" className="hover:text-zinc-300 transition-colors">
+          <Link href="/changelog" className="hover:text-zinc-300 transition-colors">
+            Changelog
+          </Link>
+          <Link href="/#pricing" className="hover:text-zinc-300 transition-colors">
             Pricing
-          </a>
-          <a
-            href="mailto:contact@voltius.app"
-            className="hover:text-zinc-300 transition-colors"
-          >
+          </Link>
+          <a href="mailto:contact@voltius.app" className="hover:text-zinc-300 transition-colors">
             Contact
           </a>
-          <a href="/terms" className="hover:text-zinc-300 transition-colors">
+          <Link href="/terms" className="hover:text-zinc-300 transition-colors">
             Terms
-          </a>
-          <a href="/privacy" className="hover:text-zinc-300 transition-colors">
+          </Link>
+          <Link href="/privacy" className="hover:text-zinc-300 transition-colors">
             Privacy
-          </a>
-          <a href="/legal" className="hover:text-zinc-300 transition-colors">
+          </Link>
+          <Link href="/legal" className="hover:text-zinc-300 transition-colors">
             Legal
-          </a>
+          </Link>
           <a
             href="https://voltius.instatus.com/"
             target="_blank"

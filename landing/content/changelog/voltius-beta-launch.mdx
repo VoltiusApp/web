@@ -1,0 +1,46 @@
+export const changelog = {
+  title: "Voltius Beta: An Open-Source Alternative to Termius",
+  description:
+    "Voltius beta is live with SSH, SFTP, serial sessions, local-first encryption, plugin support, and no account required.",
+  date: "2026-06-04",
+  category: "Release",
+  version: "v0.1.0-beta",
+  tags: ["SSH", "SFTP", "Tauri", "Rust", "Open source"],
+};
+
+Voltius beta is now available as a local-first SSH, SFTP, and serial client built with Rust, Tauri, and React.
+
+The goal is straightforward: give developers and infrastructure teams a fast, modern, open-source alternative to proprietary SSH clients without forcing an account before they can connect to their own machines.
+
+## What is included
+
+This first public beta focuses on the workflows people use every day:
+
+- SSH sessions with a modern terminal experience.
+- SFTP browsing and transfers, including host-to-host workflows.
+- Local terminal support for Bash, Zsh, Fish, PowerShell, WSL, Git Bash, and CMD.
+- Split panes with broadcast input.
+- Import from Termius and MobaXterm.
+- Local-first encrypted storage.
+- Optional end-to-end encrypted sync.
+- Plugin support through the official registry or a custom repository.
+
+Voltius also includes infrastructure-focused tools like Docker, Proxmox LXC, process management, and live system metrics so you can do more without switching between separate apps.
+
+## Local-first by default
+
+Voltius does not require an account for the core app. Your connections, identities, and secrets are stored locally and encrypted before touching disk or any network service.
+
+If you want sync, you can use encrypted Gist sync with your own GitHub token or the hosted Voltius sync service. In both cases, vault data leaves your device as ciphertext.
+
+## Why open source
+
+SSH clients sit close to sensitive infrastructure. Being able to inspect how keys, passwords, vaults, and sync are handled matters.
+
+Voltius is licensed under AGPLv3 for the core application, with MIT licensing for plugins. The intent is to keep the client open while making it possible for the plugin ecosystem to stay flexible.
+
+## What comes next
+
+The beta period will focus on stability, import quality, SFTP polish, sync reliability, plugin APIs, and platform-specific packaging improvements.
+
+If you try Voltius, feedback through GitHub issues and discussions is especially useful while the product is still moving quickly.
