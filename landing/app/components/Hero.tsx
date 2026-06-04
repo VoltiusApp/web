@@ -196,7 +196,7 @@ export default function Hero() {
       >
         <div className="bg-[#0d0d12] aspect-video">
           <video
-            src="/demo.mp4"
+            src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/demo.mp4"
             className="h-full w-full object-cover"
             autoPlay
             loop
