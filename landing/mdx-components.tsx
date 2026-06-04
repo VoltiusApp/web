@@ -32,6 +32,32 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </blockquote>
     ),
+    // MDX content images do not always have known dimensions at authoring time.
+    img: ({ alt, ...props }) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        {...props}
+        alt={alt ?? ""}
+        className="my-8 w-full rounded-2xl border border-white/10 bg-white/[0.03] shadow-2xl shadow-black/20"
+      />
+    ),
+    video: ({ children, ...props }) => (
+      <video
+        {...props}
+        controls
+        playsInline
+        preload="metadata"
+        className="my-8 aspect-video w-full rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
+      >
+        {children}
+      </video>
+    ),
+    iframe: (props) => (
+      <iframe
+        {...props}
+        className="my-8 aspect-video w-full rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
+      />
+    ),
     ...components,
   };
 }

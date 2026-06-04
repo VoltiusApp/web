@@ -1,0 +1,88 @@
+export const changelog = {
+  title: "Local-First SSH with End-to-End Encrypted Sync",
+  description:
+    "How Voltius handles local encrypted vaults, free encrypted Gist sync, and paid cloud sync without making an account mandatory.",
+  date: "2026-06-02",
+  category: "Engineering",
+  tags: ["E2EE", "Gist Sync", "Cloud Sync", "Security"],
+};
+
+Voltius is built around a simple security principle: your SSH workspace should be useful before it ever talks to a cloud service.
+
+That is why the desktop client is local-first. You can create hosts, store identities, open terminals, use SFTP, and organize your workspace without creating an account.
+
+Sync is optional. Encryption is not.
+
+<video poster="/changelog/gist-sync-poster.jpg">
+  <source src="/changelog/gist-sync-demo.mp4" type="video/mp4" />
+</video>
+
+## What local-first means in Voltius
+
+Local-first means the primary copy of your workspace is on your machine. The app does not need a remote server to unlock your vault or connect to your hosts.
+
+This is especially important for infrastructure software. If your SSH client requires a cloud service before you can reach your own machines, that service becomes part of your operational dependency chain.
+
+Voltius tries to avoid that by keeping the core workflow available offline.
+
+## Vault encryption
+
+Sensitive data is encrypted locally before being stored.
+
+That includes the kind of information you would expect an SSH client to protect: private keys, passwords, server metadata, identities, and connection details.
+
+Voltius supports different unlock modes depending on how you want to work:
+
+- OS keychain for convenient local-only usage.
+- Master password for passphrase-based vault encryption.
+- Cloud account unlock for users who want hosted sync.
+
+The important part is that vault encryption happens on the client side.
+
+## Sync without plaintext
+
+When sync is enabled, Voltius sends encrypted data.
+
+The sync server should not need to know what hosts you connect to, what usernames you use, what keys you store, or how your folders are organized. It should move encrypted state between devices, not become a readable database of your infrastructure.
+
+Voltius currently has two sync paths with different tradeoffs: encrypted Gist sync and paid Voltius cloud sync.
+
+## Free encrypted Gist sync
+
+The Gist plugin is the bring-your-own-cloud path.
+
+You provide a GitHub token, Voltius writes encrypted state to a private Gist, and your other devices can pull from the same encrypted source. GitHub stores the ciphertext, but it does not receive the plaintext vault data.
+
+This is useful if you want sync without paying for hosted infrastructure, or if you prefer to keep the remote storage account under your control.
+
+The tradeoff is that Gist sync is intentionally simple. It is a good fit for personal workflows and devices you control, but it is not meant to behave like a low-latency collaborative backend.
+
+![Gist sync settings showing encrypted bring-your-own sync configuration](/changelog/gist-sync-settings.jpg)
+
+## Paid cloud sync
+
+Voltius cloud sync is the hosted path.
+
+It is designed for smoother multi-device sync, lower-friction setup, and paid features around Pro, Teams, and Business workflows. Instead of managing your own GitHub token and Gist, you sign in with a Voltius account and let the app use the hosted sync service.
+
+The security goal stays the same: data leaving the device is encrypted before it reaches the sync backend.
+
+Paid cloud sync is the right fit when you want a more integrated experience, faster update propagation, team-oriented features, or support for business workflows that do not belong in a personal Gist.
+
+![Cloud sync overview showing encrypted device-to-cloud flow](/changelog/cloud-sync-overview.jpg)
+
+## Gist sync vs cloud sync
+
+Gist sync is free, user-owned, and plugin-driven. It is best when you want encrypted personal sync and do not mind bringing your own GitHub token.
+
+Cloud sync is hosted, integrated, and product-supported. It is best when you want convenience, real-time behavior, and a path toward Pro or team features.
+
+Both are built around the same expectation: sync should not require the server to read your vault.
+
+## Why this matters for SSH tools
+
+SSH clients are not ordinary productivity apps. They hold the map to your infrastructure.
+
+That makes privacy and portability more important than usual. A good SSH client should not force you into an account just to connect to a server, and it should not make sync convenient by weakening the security model.
+
+Voltius is still in beta, but the direction is clear: local-first by default, end-to-end encrypted when data leaves the device, and open enough that users can verify the model instead of taking it on faith.

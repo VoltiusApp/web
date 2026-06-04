@@ -1,0 +1,63 @@
+export const changelog = {
+  title: "Importing Termius Hosts into Voltius",
+  description:
+    "A closer look at Voltius import support for people moving SSH hosts, folders, identities, and snippets from Termius.",
+  date: "2026-06-03",
+  category: "Guide",
+  tags: ["Termius", "Import", "SSH", "Migration"],
+};
+
+One of the first things Voltius needed to do well was import existing SSH setups.
+
+Most people who try a new SSH client are not starting from an empty workspace. They already have hosts, folders, identities, ports, snippets, and habits built around another tool. If migration feels risky or tedious, they will not switch.
+
+That is why Voltius includes import support for Termius from the start.
+
+<video poster="/changelog/termius-import-poster.jpg">
+  <source src="/changelog/termius-import-demo.mp4" type="video/mp4" />
+</video>
+
+## Why import matters
+
+An SSH client becomes part of your daily infrastructure workflow. Even a small personal setup can include dozens of servers. A team setup can have hundreds.
+
+Recreating that manually is not just boring. It is error-prone.
+
+Voltius is designed around the opposite idea: your connection data should stay portable. You should be able to move it, export it, inspect it, and keep a copy in an open format.
+
+## What Voltius tries to preserve
+
+The importer focuses on preserving the structure people actually rely on:
+
+- Hosts and connection details.
+- Folders and organization.
+- SSH identities.
+- Snippets and reusable commands.
+- Port forwarding rules where possible.
+- Metadata that helps keep imported workspaces understandable.
+
+The goal is not to clone another product. The goal is to make the first Voltius session feel familiar enough that you can get back to work quickly.
+
+![Imported Termius hosts organized inside Voltius](/changelog/termius-import-result.jpg)
+
+## Local-first after import
+
+After import, your data lives in the local Voltius vault.
+
+That vault is encrypted before it touches disk. You do not need a Voltius account to use imported hosts, open terminals, browse SFTP, or manage your local workspace.
+
+If you later enable sync, Voltius syncs encrypted data. The service does not receive plaintext hostnames, usernames, keys, passwords, or notes.
+
+## Avoiding vendor lock-in
+
+Import is only half of the story. Export matters too.
+
+Voltius is built so your data can be exported as open JSON. That matters because SSH configuration should belong to the user, not to a proprietary account system.
+
+For an infrastructure tool, trust is partly about security. It is also about reversibility.
+
+## What comes next
+
+Import quality will keep improving during beta. The main focus areas are edge cases, clearer warnings when data cannot be mapped cleanly, and better coverage for advanced connection setups.
+
+If you try the Termius importer and something does not map correctly, please open an issue with the smallest safe example you can share. Import bugs are much easier to fix with real-world data shapes.
