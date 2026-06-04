@@ -95,7 +95,18 @@ export default async function BlogPage({ searchParams }: BlogPageProps) {
 
           {topics.length > 0 && (
             <div className="rounded-3xl border border-cyan-400/15 bg-cyan-400/[0.04] p-5 shadow-[0_0_60px_rgba(34,211,238,0.08)]">
-              <p className="text-sm font-medium text-cyan-200">Browse by topic</p>
+              <div className="flex items-center justify-between gap-4">
+                <p className="text-sm font-medium text-cyan-200">Browse by topic</p>
+                <Link
+                  href="/blog/rss.xml"
+                  className="inline-flex items-center gap-2 rounded-full border border-orange-400/25 bg-orange-400/10 px-3 py-1.5 text-xs font-medium text-orange-200 transition-colors hover:border-orange-300/45 hover:bg-orange-400/15 hover:text-orange-100"
+                >
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current">
+                    <path d="M6.18 17.82a2.18 2.18 0 1 1-4.36 0 2.18 2.18 0 0 1 4.36 0ZM2 8.36v3.12c5.8 0 10.52 4.72 10.52 10.52h3.12C15.64 14.48 9.52 8.36 2 8.36ZM2 2v3.12c9.31 0 16.88 7.57 16.88 16.88H22C22 10.97 13.03 2 2 2Z" />
+                  </svg>
+                  RSS
+                </Link>
+              </div>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
                   href="/blog"
