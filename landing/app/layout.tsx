@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Voltius - Modern SSH Client",
+    default: "Voltius - Local-First SSH & SFTP Client",
     template: `%s - ${SITE_NAME}`,
   },
   description:
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "Voltius - Modern SSH Client",
+    title: "Voltius - Local-First SSH & SFTP Client",
     description:
       "A blazing fast, local-first SSH & SFTP client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
     url: "/",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@VoltiusApp",
     creator: "@VoltiusApp",
-    title: "Voltius - Modern SSH Client",
+    title: "Voltius - Local-First SSH & SFTP Client",
     description:
       "A blazing fast, local-first SSH & SFTP client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
   },
