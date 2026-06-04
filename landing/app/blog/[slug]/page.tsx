@@ -43,6 +43,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       type: "article",
       publishedTime: post.date,
       tags: post.tags,
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
@@ -50,6 +51,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       creator: "@VoltiusApp",
       title: post.title,
       description: post.description,
+      images: ["/twitter-image"],
     },
   };
 }

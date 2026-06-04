@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     description:
       "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
     url: "/blog",
+    images: ["/opengraph-image"],
     type: "website",
   },
   twitter: {
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
     title: "Blog - Voltius",
     description:
       "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
+    images: ["/twitter-image"],
   },
 };
 

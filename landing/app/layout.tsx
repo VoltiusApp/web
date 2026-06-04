@@ -25,6 +25,7 @@ export const metadata: Metadata = {
       "A blazing fast, local-first SSH & SFTP client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
     url: "/",
     siteName: SITE_NAME,
+    images: ["/opengraph-image"],
     type: "website",
   },
   twitter: {
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
     title: "Voltius - Local-First SSH & SFTP Client",
     description:
       "A blazing fast, local-first SSH & SFTP client built with Rust and Tauri. E2EE sync, SFTP drag & drop, Docker, plugins, and more. Free forever.",
+    images: ["/twitter-image"],
   },
   icons: { icon: "/logo.png" },
 };
