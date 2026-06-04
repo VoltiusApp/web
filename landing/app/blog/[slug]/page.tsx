@@ -10,6 +10,7 @@ import {
   getBlogPost,
   getBlogPosts,
 } from "../../lib/blog";
+import { SITE_NAME, SITE_URL } from "../../lib/site";
 import { mdxComponents } from "../../../mdx-components";
 
 type BlogPostPageProps = {
@@ -63,9 +64,39 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) notFound();
 
   const { previousPost, nextPost } = getAdjacentBlogPosts(post.slug);
+  const postUrl = `${SITE_URL}/blog/${post.slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    datePublished: post.date,
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/logo.png`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": postUrl,
+    },
+    url: postUrl,
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="px-4 pt-3">
         <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-6 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl backdrop-saturate-150">
           <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-white">
