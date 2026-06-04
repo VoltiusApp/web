@@ -1,0 +1,80 @@
+---
+title: "Import and Export Your SSH Workspace in Voltius"
+description: "How Voltius helps keep SSH hosts, identities, snippets, and connection data portable with import support and optional encrypted JSON export."
+date: "2026-06-03"
+category: "Guide"
+tags:
+  - "Import"
+  - "Export"
+  - "SSH"
+  - "Portability"
+---
+
+Voltius is built around a simple idea: your SSH workspace should belong to you.
+
+That means you should be able to bring existing connection data into the app, keep using it locally without creating an account, and export it again in a format you can inspect or encrypt for safer backups.
+
+<video poster="/changelog/import-export-poster.jpg">
+  <source src="/changelog/import-export-demo.mp4" type="video/mp4" />
+</video>
+
+## Why portability matters
+
+An SSH client becomes part of your infrastructure workflow. Even a personal setup can include dozens of hosts, identities, folders, snippets, and port forwarding rules. A team setup can grow much larger.
+
+Recreating that data manually is slow and error-prone.
+
+Voltius tries to make that first step easier by treating import and export as core product features, not as afterthoughts.
+
+## Importing existing SSH setups
+
+Voltius can import existing workspace data from supported sources such as Termius and MobaXterm.
+
+The importer focuses on preserving the structure people rely on:
+
+- Hosts and connection details.
+- Folders and organization.
+- SSH identities.
+- Snippets and reusable commands.
+- Port forwarding rules where possible.
+- Metadata that helps keep imported workspaces understandable.
+
+The goal is to make migration practical enough that you can try Voltius without rebuilding your entire SSH setup by hand.
+
+![Imported SSH workspace organized inside Voltius](/changelog/import-export-result.jpg)
+
+## Exporting to JSON
+
+Import is only half of the story. Export matters just as much.
+
+Voltius is designed so your workspace can be exported as JSON. That gives you a portable backup and a path out if you ever decide to move your data somewhere else.
+
+Exports can be readable open JSON when you want interoperability and inspection, or encrypted JSON when you want a safer backup format for sensitive SSH data.
+
+That optional encryption matters because export files can contain infrastructure metadata and credentials depending on what you choose to include. A readable export is useful for migration. An encrypted export is better for storage, archival, and moving backups between devices.
+
+If you want to sync the encrypted workspace between devices instead of moving export files manually, read [Local-First SSH with End-to-End Encrypted Sync](/blog/local-first-e2ee-sync).
+
+For infrastructure software, trust is partly about encryption and security. It is also about reversibility. A tool that can import your data but cannot export it cleanly still creates lock-in.
+
+## Local-first after import
+
+After import, your data lives in the local Voltius vault.
+
+That vault is encrypted before it touches disk. You do not need a Voltius account to use imported hosts, open terminals, browse SFTP, or manage your local workspace.
+
+If you later enable sync, Voltius syncs encrypted data. The sync backend does not receive plaintext hostnames, usernames, keys, passwords, or notes.
+
+This same local-first direction is introduced in the [Voltius beta launch post](/blog/voltius-beta-launch).
+
+## Where this belongs
+
+Specific importer walkthroughs are probably better as docs than blog posts. This article should explain the product direction: Voltius treats SSH data as portable user-owned data.
+
+The detailed steps can live in documentation, while the product principle stays simple: import when you arrive, export whenever you want, and keep the core SSH workflow local-first.
+
+## What comes next
+
+Import and export quality will keep improving during beta. The main focus areas are edge cases, clearer warnings when data cannot be mapped cleanly, better coverage for advanced connection setups, and stronger documentation for each supported format.
+
+If an import does not map correctly, please open an issue with the smallest safe example you can share. Import bugs are much easier to fix with real-world data shapes.

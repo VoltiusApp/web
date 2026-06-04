@@ -1,0 +1,95 @@
+---
+title: "How Voltius Speeds Up SFTP with Tar Acceleration"
+description: "A technical look at how Voltius batches directory, multi-file, and host-to-host SFTP transfers through temporary tar.gz archives."
+date: "2026-06-01"
+category: "Engineering"
+tags:
+  - "SFTP"
+  - "Performance"
+  - "Tar"
+  - "File transfer"
+---
+
+SFTP is reliable, widely available, and easy to reason about. It is also not always the fastest way to move a directory with thousands of small files.
+
+The issue is not just bandwidth. It is overhead.
+
+Every file in a recursive transfer needs metadata reads, directory creation, file opens, writes, closes, and progress updates. For one large file, that overhead is tiny. For a project tree with many small files, it can dominate the transfer.
+
+Voltius adds tar acceleration for those cases.
+
+For the product-level SFTP workflow, start with [SFTP Workflows Beyond Local File Transfers](/blog/sftp-host-to-host-workflows).
+
+<video poster="/changelog/sftp-tar-acceleration-poster.jpg">
+  <source src="/changelog/sftp-tar-acceleration-demo.mp4" type="video/mp4" />
+</video>
+
+## The normal path
+
+For simple transfers, Voltius streams files directly through SFTP.
+
+That is still the right path for single files. It keeps behavior predictable, supports progress updates, and avoids doing extra work when there is nothing to batch.
+
+For directories and multiple selected items, however, the app can take a different path when SFTP Tar Acceleration is enabled.
+
+## The tar path
+
+When tar acceleration is enabled, Voltius can turn a directory or batch selection into a temporary `.tar.gz` archive, transfer that archive, and extract it on the destination side.
+
+For a local-to-remote directory upload, the flow is:
+
+- Create a temporary archive locally.
+- Upload that single archive over SFTP.
+- Extract it on the remote host with `tar`.
+- Remove the temporary archive.
+
+For a remote-to-local directory download, the flow is reversed:
+
+- Create a temporary archive on the remote host.
+- Download that archive over SFTP.
+- Extract it locally.
+- Remove the temporary archive from both sides.
+
+For host-to-host transfers, Voltius can archive on the source host, transfer the archive between the two SFTP sessions, then extract on the destination host.
+
+![Diagram of local, remote, and host-to-host tar accelerated SFTP flows](/changelog/sftp-tar-flow.jpg)
+
+## Why this is faster
+
+The main win is reducing the number of SFTP operations.
+
+Instead of opening, writing, and closing thousands of individual files over the protocol, Voltius can move one compressed archive. That can be much faster on high-latency connections, remote-to-remote transfers, and folders with many small files.
+
+Compression can also reduce the bytes transferred for text-heavy directories, logs, source trees, and configuration bundles.
+
+## When Voltius uses it
+
+The feature is controlled by the `SFTP Tar Acceleration` setting and is enabled by default.
+
+Voltius uses the tar path for directory transfers and multi-item batch transfers when it is available. Single-file transfers continue to use the direct SFTP path.
+
+The implementation supports:
+
+- Local to remote directory uploads.
+- Remote to local directory downloads.
+- Remote to remote directory transfers.
+- Multi-item batch uploads and downloads.
+- Multi-item host-to-host transfers.
+
+Container-backed file operations use the same idea: stream tar data into or out of the container so directory transfers do not degrade into one operation per file.
+
+## The tradeoffs
+
+Tar acceleration depends on `tar` being available where the archive is created or extracted.
+
+It also uses temporary archive files for regular SFTP host transfers. Voltius cleans those up after the transfer, but the remote host still needs enough temporary space for the archive while the transfer is running.
+
+That is why this remains a setting. If you are working with a minimal system, a restricted shell, or a host where temporary space is tight, you can turn it off and fall back to recursive SFTP.
+
+## Why it fits Voltius
+
+Voltius is trying to make infrastructure work feel less fragmented.
+
+Fast SFTP is part of that. If moving a directory between hosts takes long enough that you reach for another tool, the SSH client has failed the workflow.
+
+Tar acceleration is a small implementation detail, but it changes how SFTP feels in practice: fewer round trips, better batch behavior, and less waiting when the file tree gets large.

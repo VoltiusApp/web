@@ -1,0 +1,65 @@
+---
+title: "SFTP Workflows Beyond Local File Transfers"
+description: "Voltius SFTP is designed for local transfers, remote browsing, and host-to-host workflows without leaving the SSH client."
+date: "2026-06-01"
+category: "Product"
+tags:
+  - "SFTP"
+  - "File transfer"
+  - "SSH"
+  - "Workflow"
+---
+
+SFTP is often treated as a side feature in SSH clients. Voltius treats it as part of the main workflow.
+
+Developers and system administrators rarely use terminals in isolation. They inspect logs, move configuration files, upload builds, compare directories, and copy data between machines. If file transfer feels bolted on, the workflow quickly falls back to separate tools.
+
+Voltius aims to keep more of that work in one place.
+
+<video poster="/changelog/sftp-host-to-host-poster.jpg">
+  <source src="/changelog/sftp-host-to-host-demo.mp4" type="video/mp4" />
+</video>
+
+## Local to host
+
+The most familiar SFTP workflow is moving files between your local machine and a remote host.
+
+Voltius supports this directly so you can browse a remote filesystem, upload files, download files, and keep context next to your terminal session.
+
+That matters for small daily tasks: editing a config locally, dropping a build artifact onto a server, or pulling a log directory for inspection.
+
+## Host to host
+
+Voltius also focuses on host-to-host workflows.
+
+Instead of downloading a file from one server and uploading it again to another, the app can help keep both remote sides visible in the same workflow. This is useful when you are moving files between environments, copying artifacts, or comparing remote machines.
+
+The goal is not to replace every specialized file transfer tool. The goal is to make common infrastructure transfers feel natural from inside the SSH client you already have open.
+
+![Two-pane SFTP view transferring files between remote hosts](/changelog/sftp-two-pane-transfer.jpg)
+
+## Tar acceleration for directories and batches
+
+Directory transfers can become slow when every file is copied as a separate SFTP operation.
+
+Voltius includes SFTP tar acceleration for those cases. When enabled, directory and multi-item transfers can be packed into a temporary `.tar.gz`, moved as a single archive, then extracted on the destination side.
+
+That reduces per-file overhead and is especially useful for projects with many small files, nested folders, or remote-to-remote transfers.
+
+This deserves its own deeper write-up, but the short version is simple: Voltius tries to use normal streaming for single files and a tar path when batching can make the workflow faster.
+
+For the technical details, read [How Voltius Speeds Up SFTP with Tar Acceleration](/blog/sftp-tar-acceleration).
+
+## Why this belongs in the SSH client
+
+Terminals and file transfers are usually part of the same task.
+
+You open a terminal to inspect a service, then need a log file. You upload a config, then restart a process. You browse a directory, then open another shell to check permissions.
+
+Keeping SFTP close to the terminal reduces context switching and makes the app feel more like an infrastructure workspace than a collection of disconnected panels.
+
+## What is next
+
+The beta will keep improving SFTP around reliability, drag and drop behavior, transfer visibility, remote-to-remote edge cases, and large directory workflows.
+
+This is one of the areas where real usage helps most. Different teams structure servers differently, and SFTP polish depends on seeing those workflows in practice.

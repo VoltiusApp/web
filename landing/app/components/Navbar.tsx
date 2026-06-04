@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { GITHUB_API_REPO_URL, GITHUB_REPO_URL } from "../lib/github";
 
@@ -9,6 +10,7 @@ const links = [
   { label: "Features", href: "#features" },
   { label: "Demo", href: "#demo" },
   { label: "Pricing", href: "#pricing" },
+  { label: "Blog", href: "/blog" },
   { label: "Download", href: "#download" },
 ];
 
@@ -43,23 +45,32 @@ export default function Navbar() {
             : "bg-transparent border-transparent shadow-none"
         }`}
       >
-        <a href="#" className="flex items-center gap-2 font-semibold text-white text-sm">
+        <Link href="/" className="flex items-center gap-2 font-semibold text-white text-sm">
           <Image src="/logo.png" alt="Voltius" width={28} height={28} />
           Voltius
           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-400 leading-none">
             Beta
           </span>
-        </a>
+        </Link>
 
         <ul className="hidden md:flex items-center gap-8">
           {links.map((l) => (
             <li key={l.href}>
-              <a
-                href={l.href}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                {l.label}
-              </a>
+              {l.href.startsWith("/") ? (
+                <Link
+                  href={l.href}
+                  className="text-sm text-zinc-400 hover:text-white transition-colors"
+                >
+                  {l.label}
+                </Link>
+              ) : (
+                <a
+                  href={l.href}
+                  className="text-sm text-zinc-400 hover:text-white transition-colors"
+                >
+                  {l.label}
+                </a>
+              )}
             </li>
           ))}
         </ul>
