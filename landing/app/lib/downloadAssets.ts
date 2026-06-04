@@ -7,8 +7,13 @@ type DownloadOption = {
   label: string;
 };
 
-function isChecksumOrSignature(asset: Asset) {
-  return asset.name.endsWith(".sig") || asset.name.endsWith(".sha256");
+function isNonInstallableAsset(asset: Asset) {
+  return (
+    asset.name.endsWith(".sig") ||
+    asset.name.endsWith(".sha256") ||
+    // .app.tar.gz is the macOS auto-updater bundle, not a user download.
+    asset.name.endsWith(".tar.gz")
+  );
 }
 
 function hasAny(name: string, parts: string[]) {
@@ -18,7 +23,7 @@ function hasAny(name: string, parts: string[]) {
 function platformFor(asset: Asset): Platform | null {
   const name = asset.name.toLowerCase();
 
-  if (isChecksumOrSignature(asset)) return null;
+  if (isNonInstallableAsset(asset)) return null;
   if (
     hasAny(name, [
       "windows",
@@ -87,9 +92,10 @@ export function getBestDownloadAsset(
     );
   }
 
+  // macOS: prefer the .dmg. The raw voltius_darwin_* binary opens as text when
+  // double-clicked in Finder, so it must never be the auto-detected download.
   return (
-    candidates.find(({ asset }) => asset.name.startsWith("voltius_darwin_"))
-      ?.asset ??
+    candidates.find(({ asset }) => asset.name.endsWith(".dmg"))?.asset ??
     candidates[0]?.asset
   );
 }
