@@ -10,11 +10,23 @@ export type BlogPost = {
   category: string;
   version?: string;
   tags: string[];
+  readingTime: string;
   draft?: boolean;
   content: string;
 };
 
 const blogContentDir = path.join(process.cwd(), "content", "blog");
+
+function getReadingTime(content: string) {
+  const plainText = content
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/[#*_`>\-[\]()]/g, " ");
+  const words = plainText.trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.ceil(words / 220));
+
+  return `${minutes} min read`;
+}
 
 function readPost(fileName: string): BlogPost {
   const slug = fileName.replace(/\.mdx$/, "");
@@ -30,6 +42,7 @@ function readPost(fileName: string): BlogPost {
     category: String(data.category ?? "Update"),
     version: data.version ? String(data.version) : undefined,
     tags: Array.isArray(data.tags) ? data.tags.map(String) : [],
+    readingTime: getReadingTime(content),
     draft: Boolean(data.draft),
     content,
   };
@@ -50,6 +63,18 @@ export function getBlogPosts() {
 
 export function getBlogPost(slug: string) {
   return getBlogPosts().find((post) => post.slug === slug);
+}
+
+export function getAdjacentBlogPosts(slug: string) {
+  const posts = getBlogPosts();
+  const index = posts.findIndex((post) => post.slug === slug);
+
+  if (index === -1) return { previousPost: undefined, nextPost: undefined };
+
+  return {
+    previousPost: posts[index + 1],
+    nextPost: posts[index - 1],
+  };
 }
 
 export function formatBlogDate(date: string) {
