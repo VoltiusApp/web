@@ -9,9 +9,27 @@ type BlogPageProps = {
 };
 
 export const metadata: Metadata = {
-  title: "Blog - Voltius",
+  title: "Blog",
   description:
     "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
+  alternates: {
+    canonical: "/blog",
+  },
+  openGraph: {
+    title: "Blog - Voltius",
+    description:
+      "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
+    url: "/blog",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@VoltiusApp",
+    creator: "@VoltiusApp",
+    title: "Blog - Voltius",
+    description:
+      "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
+  },
 };
 
 export default async function BlogPage({ searchParams }: BlogPageProps) {

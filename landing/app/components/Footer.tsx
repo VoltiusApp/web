@@ -26,6 +26,14 @@ export default function Footer() {
             <Icon icon="lucide:github" className="text-base" />
             GitHub
           </a>
+          <a
+            href="https://x.com/VoltiusApp"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-zinc-300 transition-colors"
+          >
+            X
+          </a>
           <a href="https://docs.voltius.app" className="hover:text-zinc-300 transition-colors">
             Docs
           </a>

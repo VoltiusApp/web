@@ -26,19 +26,30 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
 
   if (!post) {
     return {
-      title: "Blog - Voltius",
+      title: "Blog",
     };
   }
 
   return {
-    title: `${post.title} - Voltius`,
+    title: post.title,
     description: post.description,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
+      url: `/blog/${post.slug}`,
       type: "article",
       publishedTime: post.date,
       tags: post.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      site: "@VoltiusApp",
+      creator: "@VoltiusApp",
+      title: post.title,
+      description: post.description,
     },
   };
 }
