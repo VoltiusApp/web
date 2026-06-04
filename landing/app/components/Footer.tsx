@@ -21,10 +21,10 @@ export default function Footer() {
         <div className="flex items-center gap-6">
           <a
             href={GITHUB_REPO_URL}
+            aria-label="Voltius on GitHub"
             className="flex items-center gap-1.5 hover:text-zinc-300 transition-colors"
           >
             <Icon icon="lucide:github" className="text-base" />
-            GitHub
           </a>
           <a
             href="https://x.com/VoltiusApp"
