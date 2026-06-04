@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MDXRemote } from "next-mdx-remote/rsc";
 import {
   formatChangelogDate,
   getChangelogPost,
   getChangelogPosts,
 } from "../../lib/changelog";
+import { mdxComponents } from "../../../mdx-components";
 
 type ChangelogPostPageProps = {
   params: Promise<{ slug: string }>;
@@ -43,8 +45,6 @@ export default async function ChangelogPostPage({ params }: ChangelogPostPagePro
   const post = getChangelogPost(slug);
 
   if (!post) notFound();
-
-  const { Component } = post;
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5]">
@@ -84,7 +84,7 @@ export default async function ChangelogPostPage({ params }: ChangelogPostPagePro
         )}
 
         <article className="mt-14 border-t border-white/10 pt-10">
-          <Component />
+          <MDXRemote source={post.content} components={mdxComponents} />
         </article>
       </main>
     </div>
