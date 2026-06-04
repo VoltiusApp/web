@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   applicationName: SITE_NAME,
   alternates: {
     canonical: "/",
+    types: {
+      "application/rss+xml": "/blog/rss.xml",
+    },
   },
   openGraph: {
     title: "Voltius - Local-First SSH & SFTP Client",

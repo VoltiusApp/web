@@ -14,6 +14,9 @@ export const metadata: Metadata = {
     "Product updates, engineering notes, and guides from Voltius, the open-source SSH, SFTP, and serial client.",
   alternates: {
     canonical: "/blog",
+    types: {
+      "application/rss+xml": "/blog/rss.xml",
+    },
   },
   openGraph: {
     title: "Blog - Voltius",
