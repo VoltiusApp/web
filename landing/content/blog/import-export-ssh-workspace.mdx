@@ -53,7 +53,7 @@ Exports can be readable open JSON when you want interoperability and inspection,
 
 That optional encryption matters because export files can contain infrastructure metadata and credentials depending on what you choose to include. A readable export is useful for migration. An encrypted export is better for storage, archival, and moving backups between devices.
 
-If you want to sync the encrypted workspace between devices instead of moving export files manually, read [Local-First SSH with End-to-End Encrypted Sync](/changelog/local-first-e2ee-sync).
+If you want to sync the encrypted workspace between devices instead of moving export files manually, read [Local-First SSH with End-to-End Encrypted Sync](/blog/local-first-e2ee-sync).
 
 For infrastructure software, trust is partly about encryption and security. It is also about reversibility. A tool that can import your data but cannot export it cleanly still creates lock-in.
 
@@ -65,11 +65,11 @@ That vault is encrypted before it touches disk. You do not need a Voltius accoun
 
 If you later enable sync, Voltius syncs encrypted data. The sync backend does not receive plaintext hostnames, usernames, keys, passwords, or notes.
 
-This same local-first direction is introduced in the [Voltius beta launch post](/changelog/voltius-beta-launch).
+This same local-first direction is introduced in the [Voltius beta launch post](/blog/voltius-beta-launch).
 
 ## Where this belongs
 
-Specific importer walkthroughs are probably better as docs than changelog posts. A changelog article should explain the product direction: Voltius treats SSH data as portable user-owned data.
+Specific importer walkthroughs are probably better as docs than blog posts. This article should explain the product direction: Voltius treats SSH data as portable user-owned data.
 
 The detailed steps can live in documentation, while the product principle stays simple: import when you arrive, export whenever you want, and keep the core SSH workflow local-first.
 

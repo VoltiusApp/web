@@ -3,27 +3,27 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import {
-  formatChangelogDate,
-  getChangelogPost,
-  getChangelogPosts,
-} from "../../lib/changelog";
+  formatBlogDate,
+  getBlogPost,
+  getBlogPosts,
+} from "../../lib/blog";
 import { mdxComponents } from "../../../mdx-components";
 
-type ChangelogPostPageProps = {
+type BlogPostPageProps = {
   params: Promise<{ slug: string }>;
 };
 
 export function generateStaticParams() {
-  return getChangelogPosts().map((post) => ({ slug: post.slug }));
+  return getBlogPosts().map((post) => ({ slug: post.slug }));
 }
 
-export async function generateMetadata({ params }: ChangelogPostPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const post = getChangelogPost(slug);
+  const post = getBlogPost(slug);
 
   if (!post) {
     return {
-      title: "Changelog — Voltius",
+      title: "Blog — Voltius",
     };
   }
 
@@ -40,9 +40,9 @@ export async function generateMetadata({ params }: ChangelogPostPageProps): Prom
   };
 }
 
-export default async function ChangelogPostPage({ params }: ChangelogPostPageProps) {
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params;
-  const post = getChangelogPost(slug);
+  const post = getBlogPost(slug);
 
   if (!post) notFound();
 
@@ -50,8 +50,8 @@ export default async function ChangelogPostPage({ params }: ChangelogPostPagePro
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5]">
       <header className="border-b border-[#1e1e2e] px-6 py-4">
         <div className="mx-auto flex max-w-3xl items-center justify-between">
-          <Link href="/changelog" className="text-sm text-zinc-400 transition-colors hover:text-zinc-200">
-            ← Changelog
+          <Link href="/blog" className="text-sm text-zinc-400 transition-colors hover:text-zinc-200">
+            ← Blog
           </Link>
           <Link href="/" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">
             Voltius
@@ -65,7 +65,7 @@ export default async function ChangelogPostPage({ params }: ChangelogPostPagePro
             {post.category}
           </span>
           {post.version && <span className="font-mono text-zinc-400">{post.version}</span>}
-          <time dateTime={post.date}>{formatChangelogDate(post.date)}</time>
+          <time dateTime={post.date}>{formatBlogDate(post.date)}</time>
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">

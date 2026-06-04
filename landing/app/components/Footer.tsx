@@ -29,8 +29,8 @@ export default function Footer() {
           <a href="https://docs.voltius.app" className="hover:text-zinc-300 transition-colors">
             Docs
           </a>
-          <Link href="/changelog" className="hover:text-zinc-300 transition-colors">
-            Changelog
+          <Link href="/blog" className="hover:text-zinc-300 transition-colors">
+            Blog
           </Link>
           <Link href="/#pricing" className="hover:text-zinc-300 transition-colors">
             Pricing

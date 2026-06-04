@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 
-export type ChangelogPost = {
+export type BlogPost = {
   slug: string;
   title: string;
   description: string;
@@ -14,11 +14,11 @@ export type ChangelogPost = {
   content: string;
 };
 
-const changelogDir = path.join(process.cwd(), "content", "changelog");
+const blogContentDir = path.join(process.cwd(), "content", "blog");
 
-function readPost(fileName: string): ChangelogPost {
+function readPost(fileName: string): BlogPost {
   const slug = fileName.replace(/\.mdx$/, "");
-  const fullPath = path.join(changelogDir, fileName);
+  const fullPath = path.join(blogContentDir, fileName);
   const file = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(file);
 
@@ -37,22 +37,22 @@ function readPost(fileName: string): ChangelogPost {
 
 function readPosts() {
   return fs
-    .readdirSync(changelogDir)
+    .readdirSync(blogContentDir)
     .filter((fileName) => fileName.endsWith(".mdx"))
     .map(readPost);
 }
 
-export function getChangelogPosts() {
+export function getBlogPosts() {
   return readPosts()
     .filter((post) => !post.draft)
     .sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
 }
 
-export function getChangelogPost(slug: string) {
-  return getChangelogPosts().find((post) => post.slug === slug);
+export function getBlogPost(slug: string) {
+  return getBlogPosts().find((post) => post.slug === slug);
 }
 
-export function formatChangelogDate(date: string) {
+export function formatBlogDate(date: string) {
   return new Intl.DateTimeFormat("en", {
     month: "long",
     day: "numeric",
