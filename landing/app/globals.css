@@ -44,3 +44,10 @@ body {
   opacity: 1;
   transform: none;
 }
+
+article video {
+  max-width: 345px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}

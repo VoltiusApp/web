@@ -47,11 +47,10 @@ export const mdxComponents: MDXComponents = {
   ),
   video: ({ children, ...props }) => (
     <video
-      {...props}
-      controls
       playsInline
       preload="metadata"
-      className="my-10 aspect-video w-full rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
+      {...props}
+      className="my-10 max-w-full rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
     >
       {children}
     </video>
