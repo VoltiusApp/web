@@ -52,7 +52,6 @@ For a remote-to-local directory download, the flow is reversed:
 
 For host-to-host transfers, Voltius can archive on the source host, transfer the archive between the two SFTP sessions, then extract on the destination host.
 
-![Diagram of local, remote, and host-to-host tar accelerated SFTP flows](/changelog/sftp-tar-flow.jpg)
 
 ## Why this is faster
 
@@ -68,6 +67,8 @@ The feature is controlled by the `SFTP Tar Acceleration` setting and is enabled 
 
 Voltius uses the tar path for directory transfers and multi-item batch transfers when it is available. Single-file transfers continue to use the direct SFTP path.
 
+Before taking the tar path, Voltius checks that `tar` is actually present on every host the transfer touches: the local machine when it does the archiving, and the remote endpoints for remote and host-to-host transfers. If any of them is missing `tar`, that transfer automatically falls back to plain recursive SFTP. The files still arrive; only the speed differs. The check is cached per host, so it does not add a round trip to every transfer.
+
 The implementation supports:
 
 - Local to remote directory uploads.
@@ -80,11 +81,11 @@ Container-backed file operations use the same idea: stream tar data into or out 
 
 ## The tradeoffs
 
-Tar acceleration depends on `tar` being available where the archive is created or extracted.
+Tar acceleration depends on `tar` being available where the archive is created or extracted. Voltius detects this for you: if a host involved in the transfer does not have `tar`, that transfer quietly falls back to recursive SFTP instead of failing. You do not have to know in advance which hosts have `tar`.
 
 It also uses temporary archive files for regular SFTP host transfers. Voltius cleans those up after the transfer, but the remote host still needs enough temporary space for the archive while the transfer is running.
 
-That is why this remains a setting. If you are working with a minimal system, a restricted shell, or a host where temporary space is tight, you can turn it off and fall back to recursive SFTP.
+That is why this remains a setting. On a host where temporary space is tight, or when you simply want predictable per-file behavior, you can turn it off and always use recursive SFTP.
 
 ## Why it fits Voltius
 
