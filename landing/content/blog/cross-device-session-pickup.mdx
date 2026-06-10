@@ -1,0 +1,51 @@
+---
+title: "One Live Terminal on All Your Devices"
+description: "How Voltius keeps SSH sessions alive through network drops, app restarts, and device switches — using tmux on the host, an encrypted per-device manifest, and no ownership protocol at all."
+date: "2026-06-11"
+category: "Engineering"
+tags:
+  - "SSH"
+  - "Persistent sessions"
+  - "tmux"
+  - "Sync"
+---
+
+Close your laptop mid-deploy. Sit down at your desktop. Your terminal is there — same process, same scrollback, still running. Open the laptop again and both screens mirror each other live: type on one, watch it on the other.
+
+That's the feature we just shipped. This post explains how it works, and why the best version of it turned out to be the one with the least machinery.
+
+## The insight: the process never lived on your device
+
+When persistence is enabled, Voltius wraps your remote shell in a tmux (or screen) session on the SSH host, named `voltius_<session-id>` on a dedicated socket. Your device only holds a *view* of it. Drop the network and the process keeps running; Voltius reconnects and re-attaches.
+
+Earlier this cycle we extended that to full app restarts: a continuously-persisted workspace snapshot lets a fresh launch recreate every tab, re-attach each persistent session by its original ID, and replay recent scrollback with `tmux capture-pane`.
+
+But if the process lives on the host and your credentials already sync across devices end-to-end encrypted, nothing fundamentally ties a session to the device that started it. Any of your devices can attach — it just needs to know the session exists.
+
+## A manifest in the blob you already sync
+
+Each device now writes a small manifest of its live persistent sessions — IDs, host names, working directories — into its sync state. It travels inside the same end-to-end encrypted per-device blob as everything else, so the server can't read it and there were zero server changes.
+
+When another device syncs (sub-second via SSE if it's online, or at next launch), it sees the manifests of all your devices. The hosts page grows a **Live on other devices** section: sessions your other machines have open, each with the device name and how recently it started.
+
+This works even when the origin device is *off*. Its blob — manifest included — is still on the server, and the tmux session is still running on the host. A crashed laptop is precisely the case the feature is for.
+
+## Sharing beats stealing
+
+Our first design treated a session like a token to pass around: the second device *adopted* it with detach-others semantics, the first device released it into a "picked up elsewhere" placeholder with a take-back button, and a small protocol of claims and timestamps decided who owned what. It worked — and every hard bug in it came from the same place: two devices racing to decide who the owner was.
+
+Then we noticed tmux had already solved this. Multiple clients attached to one session natively mirror each other: every client sees the same output, every keyboard feeds the same shell. So we deleted the ownership layer entirely. Joining a session is now a plain attach (`screen -x` on screen hosts). Both devices stay live. There is no owner, so there is nothing to race over, no placeholder to manage, and one button instead of two.
+
+The one real cost is geometry: a terminal app renders for a single width. On tmux ≥ 3.1 the window tracks whichever client typed last, so the device you're actively using always renders at its native size and the idle one mirrors best-effort — it reflows exactly when you switch devices, which is when you'd want it to.
+
+## Closing without breaking the other device
+
+Shared sessions move the interesting question to the close button. Closing a tab ends the session on the host **only when you're the last device using it**, checked two independent ways: no other device lists the session in its manifest (which protects a laptop that's asleep but expects its tab back), and the host itself reports no other attached client (`tmux list-clients`, which covers the window where a brand-new join hasn't synced yet). Otherwise closing just detaches you.
+
+A kill is only believed when the host confirms it — the kill command echoes a sentinel back — and only then does a tombstone propagate, closing that session's tab and listing on every other device. And because reconnects are now *attach-only* behind a server-side existence probe, a dead session can never be silently resurrected as an empty shell. That fixed a long-standing wart along the way: if your host reboots, the restored tab now honestly ends instead of quietly handing you a fresh prompt that looks like your old session.
+
+## What it requires
+
+Cross-device sessions ride cloud sync, so they're part of Pro. Persistence itself and same-device workspace restore are free for everyone, like every core SSH feature. The host needs tmux (preferred) or screen; scrollback replay and last-active sizing are tmux-only.
+
+It's on by default once two devices share an account, and if you'd rather keep sessions per-device, a single toggle in Settings (**Cross-Device Sessions**) opts a device out without affecting persistence or workspace restore. Like everything else in Voltius, [the implementation is open source](https://github.com/VoltiusApp/voltius).

@@ -36,6 +36,11 @@ const features = [
     desc: "Transfer files between local, remote, or host-to-host with a native drag & drop interface.",
   },
   {
+    icon: "lucide:monitor-smartphone",
+    title: "Sessions that survive everything",
+    desc: "tmux/screen-backed sessions outlive network drops and app restarts — and with cloud sync, the same live terminal can be open on all your devices at once, mirrored in real time.",
+  },
+  {
     icon: "lucide:puzzle",
     title: "Plugin system",
     desc: "Extend Voltius with first-party and community plugins. Gist Sync, process manager, and more.",
