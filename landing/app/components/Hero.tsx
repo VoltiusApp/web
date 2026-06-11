@@ -37,6 +37,27 @@ const badges = [
   },
 ];
 
+// navigator.platform is "MacIntel" on both Intel and Apple Silicon, so it can't
+// tell them apart. UA Client Hints `architecture` is authoritative when present
+// (Chromium), but Safari/Firefox don't expose it — there we read the WebGL
+// renderer: Apple Silicon GPUs report an "Apple" renderer, Intel/AMD GPUs don't.
+// Default to Apple Silicon when the renderer is unavailable (masked / no WebGL).
+function macIsAppleSilicon(architecture: string): boolean {
+  if (architecture) return /arm|aarch64/.test(architecture);
+  try {
+    const canvas = document.createElement("canvas");
+    const gl = (canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+    if (!gl) return true;
+    const debugInfo = gl.getExtension("WEBGL_debug_renderer_info");
+    if (!debugInfo) return true;
+    const renderer = String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+    return /apple/i.test(renderer);
+  } catch {
+    return true;
+  }
+}
+
 async function getDevice() {
   const nav = navigator as NavigatorWithUserAgentData;
   const ua = navigator.userAgent.toLowerCase();
@@ -55,7 +76,7 @@ async function getDevice() {
     return { platform: "windows" as Platform, isArm };
   }
   if (platform.includes("mac") || ua.includes("mac os")) {
-    return { platform: "macos" as Platform, isArm: true };
+    return { platform: "macos" as Platform, isArm: macIsAppleSilicon(architecture) };
   }
   if (platform.includes("linux") || ua.includes("linux")) {
     return { platform: "linux" as Platform, isArm };

@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
 import BlogIndex, { type BlogIndexPost } from "./BlogIndex";
 import Footer from "../components/Footer";
+import Navbar from "../components/Navbar";
 import { getBlogPosts } from "../lib/blog";
 
 export const metadata: Metadata = {
@@ -51,30 +50,9 @@ export default function BlogPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5]">
-      <header className="px-4 pt-3">
-        <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-6 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl backdrop-saturate-150">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Image src="/logo.png" alt="Voltius" width={28} height={28} />
-            Voltius
-            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-1.5 py-0.5 font-mono text-[10px] leading-none text-amber-400">
-              Beta
-            </span>
-          </Link>
-          <div className="flex items-center gap-5 text-sm">
-            <Link href="/" className="hidden text-zinc-400 transition-colors hover:text-white sm:inline">
-              Home
-            </Link>
-            <Link
-              href="/#download"
-              className="rounded-xl bg-cyan-500 px-4 py-2 font-semibold text-black transition-colors hover:bg-cyan-400"
-            >
-              Download
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <Navbar />
 
-      <main className="relative isolate mx-auto max-w-6xl overflow-hidden px-6 pb-20 pt-16 sm:pt-24">
+      <main className="page-enter relative isolate mx-auto max-w-6xl overflow-hidden px-6 pb-20 pt-24">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[520px] [background-image:repeating-linear-gradient(to_right,rgb(9,38,44)_0_1px,transparent_1px_72px),repeating-linear-gradient(to_bottom,rgb(9,38,44)_0_1px,transparent_1px_72px)] [mask-image:radial-gradient(ellipse_at_top,black_18%,transparent_66%)]" />
         <div className="pointer-events-none absolute left-1/2 top-20 -z-10 h-80 w-[40rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[120px]" />
 

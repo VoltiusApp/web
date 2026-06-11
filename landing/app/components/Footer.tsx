@@ -2,6 +2,7 @@ import { Icon } from "@iconify/react";
 import Image from "next/image";
 import Link from "next/link";
 import { GITHUB_REPO_URL } from "../lib/github";
+import { X_URL } from "../lib/site";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -27,7 +28,7 @@ export default function Footer() {
             <Icon icon="lucide:github" className="text-base" />
           </a>
           <a
-            href="https://x.com/VoltiusApp"
+            href={X_URL}
             target="_blank"
             rel="noreferrer"
             aria-label="Voltius on X"

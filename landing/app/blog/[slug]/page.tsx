@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
 import {
   formatBlogDate,
   getAdjacentBlogPosts,
@@ -97,24 +97,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <header className="px-4 pt-3">
-        <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-6 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl backdrop-saturate-150">
-          <Link href="/" className="flex items-center gap-2 text-sm font-semibold text-white">
-            <Image src="/logo.png" alt="Voltius" width={28} height={28} />
-            Voltius
-          </Link>
-          <div className="flex items-center gap-5 text-sm">
-            <Link href="/blog" className="text-zinc-400 transition-colors hover:text-white">
-              Blog
-            </Link>
-            <Link href="/#download" className="hidden text-cyan-300 transition-colors hover:text-cyan-200 sm:inline">
-              Download
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <Navbar />
 
-      <main className="relative isolate mx-auto max-w-5xl overflow-hidden px-6 pb-20 pt-12 sm:pt-18">
+      <main className="page-enter relative isolate mx-auto max-w-5xl overflow-hidden px-6 pb-20 pt-24">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] [background-image:repeating-linear-gradient(to_right,rgb(9,38,44)_0_1px,transparent_1px_72px),repeating-linear-gradient(to_bottom,rgb(9,38,44)_0_1px,transparent_1px_72px)] [mask-image:radial-gradient(ellipse_at_top,black_14%,transparent_68%)]" />
         <div className="pointer-events-none absolute left-1/2 top-16 -z-10 h-72 w-[34rem] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-[120px]" />
 

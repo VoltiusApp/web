@@ -5,13 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { GITHUB_API_REPO_URL, GITHUB_REPO_URL } from "../lib/github";
+import { X_URL } from "../lib/site";
 
 const links = [
-  { label: "Features", href: "#features" },
-  { label: "Demo", href: "#demo" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "Features", href: "/#features" },
+  { label: "Demo", href: "/#demo" },
+  { label: "Pricing", href: "/#pricing" },
   { label: "Blog", href: "/blog" },
-  { label: "Download", href: "#download" },
+  { label: "Download", href: "/#download" },
 ];
 
 function formatStars(n: number): string {
@@ -77,17 +78,34 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
+            href={X_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden md:flex items-center text-zinc-400 hover:text-white transition-colors"
+            aria-label="X (Twitter)"
+          >
+            <Icon icon="ri:twitter-x-fill" className="text-base" />
+          </a>
+
+          <a
             href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white border border-border hover:border-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
+            className="group hidden md:flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white border border-border hover:border-zinc-600 px-3 py-1.5 rounded-lg transition-colors"
           >
             <Icon icon="lucide:github" className="text-base" />
-            <span>Star</span>
             {stars !== null && (
               <>
                 <span className="w-px h-3.5 bg-zinc-700" />
-                <span className="text-zinc-300 font-medium">{formatStars(stars)}</span>
+                <Icon
+                  icon="lucide:star"
+                  className="text-sm group-hover:hidden"
+                />
+                <Icon
+                  icon="mdi:star"
+                  className="text-sm hidden group-hover:block text-amber-400 [filter:drop-shadow(0_0_4px_theme(colors.amber.400))]"
+                />
+                <span className="font-medium">{formatStars(stars)}</span>
               </>
             )}
           </a>
