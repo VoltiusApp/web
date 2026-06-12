@@ -46,6 +46,6 @@ A kill is only believed when the host confirms it — the kill command echoes a 
 
 ## What it requires
 
-Cross-device sessions ride cloud sync, so they're part of Pro. Persistence itself and same-device workspace restore are free for everyone, like every core SSH feature. The host needs tmux (preferred) or screen; scrollback replay and last-active sizing are tmux-only.
+Cross-device sessions ride cloud sync, so they're part of Pro. We haven't yet wired them into the free built-in gist sync plugin: gist sync polls rather than streaming over SSE, so manifests would land with a longer delay and sessions would take a beat to surface on your other devices — a soft edge rather than a hard blocker. It's coming soon. Persistence itself and same-device workspace restore are free for everyone today, like every core SSH feature. The host needs tmux (preferred) or screen; scrollback replay and last-active sizing are tmux-only.
 
 It's on by default once two devices share an account, and if you'd rather keep sessions per-device, a single toggle in Settings (**Cross-Device Sessions**) opts a device out without affecting persistence or workspace restore. Like everything else in Voltius, [the implementation is open source](https://github.com/VoltiusApp/voltius).
