@@ -105,9 +105,9 @@ export default async function Download() {
                   {p.platform === "macos" && (
                     <div className="border-t border-white/5 pt-3 pb-1">
                       <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
-                        <span className="text-amber-500">⚠</span> Unsigned — run once after installing:
+                        Recommended — Homebrew (unsigned, skips Gatekeeper):
                       </p>
-                      <CopyCommand command="xattr -d com.apple.quarantine /Applications/Voltius.app" />
+                      <CopyCommand command="brew install --cask --no-quarantine voltiusapp/voltius/voltius" />
                     </div>
                   )}
                   <div className="space-y-1 border-t border-white/5 pt-3">

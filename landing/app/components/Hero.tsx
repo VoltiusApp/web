@@ -12,6 +12,7 @@ import { GITHUB_LATEST_RELEASE_API_URL, GITHUB_REPO_URL } from "../lib/github";
 import CopyCommand from "./CopyCommand";
 
 const LINUX_INSTALL_CMD = "curl -fsSL https://repo.voltius.app/setup.sh | sudo bash";
+const MACOS_INSTALL_CMD = "brew install --cask voltiusapp/voltius/voltius";
 
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
@@ -208,12 +209,16 @@ export default function Hero() {
         ref={ctaRef as React.RefObject<HTMLDivElement>}
         className="fade-in mt-10 flex flex-col items-center gap-3 w-full"
       >
-        {platform === "linux" ? (
+        {platform === "linux" || platform === "macos" ? (
           <>
             <p className="text-sm text-zinc-400">
-              Install on Linux — signed apt &amp; dnf repo, auto-updating:
+              {platform === "macos"
+                ? "Install on macOS — via Homebrew:"
+                : "Install on Linux — signed apt & dnf repo, auto-updating:"}
             </p>
-            <CopyCommand command={LINUX_INSTALL_CMD} />
+            <CopyCommand
+              command={platform === "macos" ? MACOS_INSTALL_CMD : LINUX_INSTALL_CMD}
+            />
             <div className="flex flex-col sm:flex-row gap-4 items-center mt-1">
               <a
                 href="#download"
