@@ -42,7 +42,7 @@ const platforms = [
   {
     name: "Linux",
     icon: "devicon:linux",
-    ext: ".AppImage / .deb / binary",
+    ext: "apt / dnf · .deb / .rpm",
     platform: "linux",
     experimental: false,
   },
@@ -94,6 +94,22 @@ export default async function Download() {
                 </div>
 
                 <div className="max-h-0 overflow-hidden px-3 opacity-0 transition-all duration-300 group-hover:max-h-96 group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:pb-3 group-focus-within:opacity-100">
+                  {p.platform === "linux" && (
+                    <div className="border-t border-white/5 pt-3 pb-1">
+                      <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
+                        Recommended — apt / dnf (auto-updating)
+                      </p>
+                      <CopyCommand command="curl -fsSL https://repo.voltius.app/setup.sh | sudo bash" />
+                    </div>
+                  )}
+                  {p.platform === "macos" && (
+                    <div className="border-t border-white/5 pt-3 pb-1">
+                      <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
+                        <span className="text-amber-500">⚠</span> Unsigned — run once after installing:
+                      </p>
+                      <CopyCommand command="xattr -d com.apple.quarantine /Applications/Voltius.app" />
+                    </div>
+                  )}
                   <div className="space-y-1 border-t border-white/5 pt-3">
                     {options.length > 0 ? (
                       options.map(({ asset, label }) => (
@@ -119,18 +135,6 @@ export default async function Download() {
             );
           })}
         </div>
-
-        <details className="mt-4 text-left max-w-sm mx-auto group">
-          <summary className="text-xs text-zinc-600 hover:text-zinc-400 cursor-pointer transition-colors list-none flex items-center gap-1 justify-center">
-            <span className="text-amber-500">⚠</span> macOS setup note
-          </summary>
-          <div className="mt-2 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 text-left">
-            <p className="text-xs text-zinc-400 mb-2">
-              The app is unsigned. macOS will quarantine it — run this once after installing:
-            </p>
-            <CopyCommand command="xattr -d com.apple.quarantine /Applications/Voltius.app" />
-          </div>
-        </details>
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
           {mobilePlatforms.map((p) => (

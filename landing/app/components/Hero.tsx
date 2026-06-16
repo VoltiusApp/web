@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useFadeIn } from "../hooks/useFadeIn";
 import {
   getBestDownloadAsset,
@@ -8,6 +9,9 @@ import {
   type Release,
 } from "../lib/downloadAssets";
 import { GITHUB_LATEST_RELEASE_API_URL, GITHUB_REPO_URL } from "../lib/github";
+import CopyCommand from "./CopyCommand";
+
+const LINUX_INSTALL_CMD = "curl -fsSL https://repo.voltius.app/setup.sh | sudo bash";
 
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
@@ -92,6 +96,16 @@ export default function Hero() {
   const subMetaRef = useFadeIn(240);
   const ctaRef = useFadeIn(300);
   const demoRef = useFadeIn(420);
+
+  // Detect OS after mount so Linux visitors get the package-manager command
+  // up front instead of a raw asset download. SSR/first paint shows the default
+  // Download button (no hydration mismatch); Linux swaps in once detected.
+  const [platform, setPlatform] = useState<Platform | null>(null);
+  useEffect(() => {
+    getDevice()
+      .then((d) => setPlatform(d?.platform ?? null))
+      .catch(() => {});
+  }, []);
 
   async function handleDownloadClick(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
@@ -192,21 +206,46 @@ export default function Hero() {
       {/* CTAs */}
       <div
         ref={ctaRef as React.RefObject<HTMLDivElement>}
-        className="fade-in mt-10 flex flex-col sm:flex-row gap-4 items-center"
+        className="fade-in mt-10 flex flex-col items-center gap-3 w-full"
       >
-        <a
-          href="#download"
-          onClick={handleDownloadClick}
-          className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-all duration-200 shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_24px_rgba(6,182,212,0.4)]"
-        >
-          Download
-        </a>
-        <a
-          href="#demo"
-          className="px-6 py-3 rounded-xl border border-[#1e1e2e] bg-surface hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-all duration-200"
-        >
-          See it in action ↓
-        </a>
+        {platform === "linux" ? (
+          <>
+            <p className="text-sm text-zinc-400">
+              Install on Linux — signed apt &amp; dnf repo, auto-updating:
+            </p>
+            <CopyCommand command={LINUX_INSTALL_CMD} />
+            <div className="flex flex-col sm:flex-row gap-4 items-center mt-1">
+              <a
+                href="#download"
+                className="px-5 py-2.5 rounded-xl border border-[#1e1e2e] bg-surface hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+              >
+                Other downloads ↓
+              </a>
+              <a
+                href="#demo"
+                className="px-5 py-2.5 rounded-xl border border-[#1e1e2e] bg-surface hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+              >
+                See it in action ↓
+              </a>
+            </div>
+          </>
+        ) : (
+          <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <a
+              href="#download"
+              onClick={handleDownloadClick}
+              className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-all duration-200 shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_24px_rgba(6,182,212,0.4)]"
+            >
+              Download
+            </a>
+            <a
+              href="#demo"
+              className="px-6 py-3 rounded-xl border border-[#1e1e2e] bg-surface hover:border-zinc-600 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+            >
+              See it in action ↓
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Demo GIF */}
