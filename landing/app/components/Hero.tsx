@@ -13,6 +13,16 @@ import CopyCommand from "./CopyCommand";
 
 const LINUX_INSTALL_CMD = "curl -fsSL https://repo.voltius.app/setup.sh | sudo bash";
 const MACOS_INSTALL_CMD = "brew install --cask voltiusapp/voltius/voltius";
+const WINDOWS_INSTALL_CMD = "winget install --id Voltius.Voltius -e";
+
+const INSTALL_CMD: Partial<Record<Platform, { label: string; command: string }>> = {
+  windows: { label: "Install on Windows — via winget:", command: WINDOWS_INSTALL_CMD },
+  macos: { label: "Install on macOS — via Homebrew:", command: MACOS_INSTALL_CMD },
+  linux: {
+    label: "Install on Linux — signed apt & dnf repo, auto-updating:",
+    command: LINUX_INSTALL_CMD,
+  },
+};
 
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
@@ -98,9 +108,9 @@ export default function Hero() {
   const ctaRef = useFadeIn(300);
   const demoRef = useFadeIn(420);
 
-  // Detect OS after mount so Linux visitors get the package-manager command
-  // up front instead of a raw asset download. SSR/first paint shows the default
-  // Download button (no hydration mismatch); Linux swaps in once detected.
+  // Detect OS after mount so visitors get their package-manager command up
+  // front instead of a raw asset download. SSR/first paint shows the default
+  // Download button (no hydration mismatch); the command swaps in once detected.
   const [platform, setPlatform] = useState<Platform | null>(null);
   useEffect(() => {
     getDevice()
@@ -209,16 +219,10 @@ export default function Hero() {
         ref={ctaRef as React.RefObject<HTMLDivElement>}
         className="fade-in mt-10 flex flex-col items-center gap-3 w-full"
       >
-        {platform === "linux" || platform === "macos" ? (
+        {platform && INSTALL_CMD[platform] ? (
           <>
-            <p className="text-sm text-zinc-400">
-              {platform === "macos"
-                ? "Install on macOS — via Homebrew:"
-                : "Install on Linux — signed apt & dnf repo, auto-updating:"}
-            </p>
-            <CopyCommand
-              command={platform === "macos" ? MACOS_INSTALL_CMD : LINUX_INSTALL_CMD}
-            />
+            <p className="text-sm text-zinc-400">{INSTALL_CMD[platform]!.label}</p>
+            <CopyCommand command={INSTALL_CMD[platform]!.command} />
             <div className="flex flex-col sm:flex-row gap-4 items-center mt-1">
               <a
                 href="#download"

@@ -28,7 +28,7 @@ const platforms = [
   {
     name: "Windows",
     icon: "devicon:windows11",
-    ext: ".msi / setup.exe",
+    ext: "winget · .msi / setup.exe",
     platform: "windows",
     experimental: false,
   },
@@ -100,6 +100,14 @@ export default async function Download() {
                 </div>
 
                 <div className="max-h-0 overflow-hidden px-3 opacity-0 transition-all duration-300 group-hover:max-h-96 group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:pb-3 group-focus-within:opacity-100">
+                  {p.platform === "windows" && (
+                    <div className="border-t border-white/5 pt-3 pb-1">
+                      <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
+                        Recommended — winget (auto-updating)
+                      </p>
+                      <CopyCommand command="winget install --id Voltius.Voltius -e" />
+                    </div>
+                  )}
                   {p.platform === "linux" && (
                     <div className="border-t border-white/5 pt-3 pb-1">
                       <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
