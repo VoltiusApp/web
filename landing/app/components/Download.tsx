@@ -46,10 +46,16 @@ const platforms = [
     platform: "linux",
     experimental: false,
   },
+  {
+    name: "Android",
+    icon: "material-symbols:android",
+    ext: "arm64 · sideload .apk",
+    platform: "android",
+    experimental: true,
+  },
 ] as const;
 
 const mobilePlatforms = [
-  { name: "Android", icon: "material-symbols:android", platform: "android" },
   { name: "iOS", icon: "lineicons:ios", platform: "ios" },
 ] as const;
 
@@ -67,7 +73,7 @@ export default async function Download() {
           Free forever. No account needed. Single binary, auto-updates included.
         </p>
 
-        <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {platforms.map((p) => {
             const options = getAssetsForPlatform(assets, p.platform);
             return (
@@ -110,6 +116,14 @@ export default async function Download() {
                       <CopyCommand command="brew install --cask --no-quarantine voltiusapp/voltius/voltius" />
                     </div>
                   )}
+                  {p.platform === "android" && (
+                    <div className="border-t border-white/5 pt-3 pb-1">
+                      <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
+                        Sideload — enable “Install unknown apps” for your browser,
+                        then open the .apk. No auto-updates yet.
+                      </p>
+                    </div>
+                  )}
                   <div className="space-y-1 border-t border-white/5 pt-3">
                     {options.length > 0 ? (
                       options.map(({ asset, label }) => (
@@ -136,7 +150,7 @@ export default async function Download() {
           })}
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+        <div className="mt-6 grid grid-cols-1 gap-4 max-w-sm mx-auto">
           {mobilePlatforms.map((p) => (
             <MobileWaitlistForm
               key={p.name}

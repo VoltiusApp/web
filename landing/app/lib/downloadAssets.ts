@@ -1,6 +1,6 @@
 export type Asset = { name: string; browser_download_url: string };
 export type Release = { tag_name: string; assets: Asset[] };
-export type Platform = "windows" | "macos" | "linux";
+export type Platform = "windows" | "macos" | "linux" | "android";
 
 type DownloadOption = {
   asset: Asset;
@@ -36,6 +36,7 @@ function platformFor(asset: Asset): Platform | null {
   }
   if (hasAny(name, ["darwin", "macos", ".dmg"])) return "macos";
   if (hasAny(name, ["linux", ".appimage", ".deb", ".rpm"])) return "linux";
+  if (name.endsWith(".apk") || name.includes("android")) return "android";
 
   return null;
 }
@@ -50,6 +51,8 @@ export function labelForAsset(asset: Asset) {
   if (name.endsWith(".deb")) return `${arch} deb`;
   if (name.endsWith(".rpm")) return `${arch} rpm`;
   if (name.endsWith(".dmg")) return `${arch} dmg`;
+  // Android ships arm64-v8a only; the asset name may lack an arch token.
+  if (name.endsWith(".apk")) return "arm64 APK";
   return `${arch} portable`;
 }
 
