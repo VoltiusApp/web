@@ -87,6 +87,10 @@ async function getDevice() {
   const architecture = (highEntropy?.architecture ?? "").toLowerCase();
   const isArm = /arm|aarch64/.test(`${architecture} ${ua} ${platform}`);
 
+  // Android UA is "Linux; Android …", so it must be checked before Linux.
+  if (platform.includes("android") || ua.includes("android")) {
+    return { platform: "android" as Platform, isArm: true };
+  }
   if (platform.includes("win") || ua.includes("windows")) {
     return { platform: "windows" as Platform, isArm };
   }

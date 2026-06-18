@@ -71,6 +71,11 @@ export function getBestDownloadAsset(
   isArm = false
 ) {
   const options = getAssetsForPlatform(assets, platform);
+
+  // Android ships a single arm64 .apk; its name may carry no arch token, so skip
+  // the arch filter below (which would drop it for arm visitors) and serve it.
+  if (platform === "android") return options[0]?.asset;
+
   const arch = isArm ? ["arm64", "aarch64"] : ["x64", "amd64", "x86_64"];
   const matchingArch = options.filter(({ asset }) =>
     hasAny(asset.name.toLowerCase(), arch)
