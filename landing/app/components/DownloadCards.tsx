@@ -5,6 +5,7 @@ import { Icon } from "@iconify/react";
 import { getAssetsForPlatform, type Asset, type Platform } from "../lib/downloadAssets";
 import { GITHUB_REPO_URL } from "../lib/github";
 import CopyCommand from "./CopyCommand";
+import MobileWaitlistForm from "./MobileWaitlistForm";
 
 type PlatformCard = {
   name: string;
@@ -50,15 +51,22 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
   // header toggles the same panel. Both paths drive the panel's open classes.
   const [open, setOpen] = useState<Platform | null>(null);
 
+  // One 6-col grid so every card is the same width: row 1 = the three desktop
+  // platforms (each col-span-2); row 2 = Android + iOS, centered by starting
+  // Android at column 2.
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
       {platforms.map((p) => {
         const options = getAssetsForPlatform(assets, p.platform);
         const isOpen = open === p.platform;
+        const span =
+          p.platform === "android"
+            ? "sm:col-span-2 sm:col-start-2"
+            : "sm:col-span-2";
         return (
           <div
             key={p.name}
-            className="group relative rounded-2xl border border-border bg-surface transition-all hover:border-zinc-600 hover:bg-[#16161f] focus-within:border-zinc-600 focus-within:bg-[#16161f]"
+            className={`group relative rounded-2xl border border-border bg-surface transition-all hover:border-zinc-600 hover:bg-[#16161f] focus-within:border-zinc-600 focus-within:bg-[#16161f] ${span}`}
           >
             <button
               type="button"
@@ -71,10 +79,7 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
                   Experimental
                 </span>
               )}
-              <Icon
-                icon={p.icon}
-                className="text-4xl text-zinc-300 group-hover:text-cyan-400 transition-colors"
-              />
+              <Icon icon={p.icon} className="text-4xl text-zinc-300" />
               <div>
                 <p className="font-semibold text-white group-hover:text-cyan-400 transition-colors">
                   {p.name}
@@ -84,8 +89,8 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
             </button>
 
             <div
-              className={`overflow-hidden px-3 transition-all duration-300 group-hover:max-h-96 group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-96 group-focus-within:pb-3 group-focus-within:opacity-100 ${
-                isOpen ? "max-h-96 pb-3 opacity-100" : "max-h-0 opacity-0"
+              className={`overflow-hidden px-3 transition-all duration-500 ease-out group-hover:max-h-[34rem] group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-[34rem] group-focus-within:pb-3 group-focus-within:opacity-100 ${
+                isOpen ? "max-h-[34rem] pb-3 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               {p.platform === "windows" && (
@@ -144,6 +149,13 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
           </div>
         );
       })}
+
+      <MobileWaitlistForm
+        name="iOS"
+        icon="lineicons:ios"
+        platform="ios"
+        className="sm:col-span-2"
+      />
     </div>
   );
 }

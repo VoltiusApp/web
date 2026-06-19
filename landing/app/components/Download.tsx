@@ -4,7 +4,6 @@ import {
 } from "../lib/github";
 import { type Release } from "../lib/downloadAssets";
 import DownloadCards from "./DownloadCards";
-import MobileWaitlistForm from "./MobileWaitlistForm";
 
 async function getLatestRelease(): Promise<Release | null> {
   try {
@@ -23,10 +22,6 @@ async function getLatestRelease(): Promise<Release | null> {
   }
 }
 
-const mobilePlatforms = [
-  { name: "iOS", icon: "lineicons:ios", platform: "ios" },
-] as const;
-
 export default async function Download() {
   const release = await getLatestRelease();
   const version = release?.tag_name ?? "latest";
@@ -43,17 +38,6 @@ export default async function Download() {
 
         <div className="mt-12">
           <DownloadCards assets={assets} />
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-4 max-w-sm mx-auto">
-          {mobilePlatforms.map((p) => (
-            <MobileWaitlistForm
-              key={p.name}
-              name={p.name}
-              icon={p.icon}
-              platform={p.platform}
-            />
-          ))}
         </div>
 
         <p className="mt-8 text-xs text-zinc-600 font-mono">
