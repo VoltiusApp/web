@@ -5,9 +5,9 @@ import { useFadeIn } from "../hooks/useFadeIn";
 
 const shots = [
   {
-    src: "/screenshots/dashboard-home.png",
+    src: "/screenshots/command-palette.png",
     title: "Everything, one keystroke away",
-    desc: "Hosts, sessions, snippets, and vaults — all reachable from a single command palette.",
+    desc: "Jump to any host, session, snippet, or action from a single command palette.",
   },
   {
     src: "/screenshots/folders-tags.png",
