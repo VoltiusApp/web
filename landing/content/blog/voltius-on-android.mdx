@@ -1,0 +1,46 @@
+---
+title: "The Whole SSH Client, Now in Your Pocket"
+description: "Voltius for Android isn't a companion app — it's the same Tauri app, the same terminal, SFTP, Docker panels and native keychain, running on a phone. Here's what it took to get a desktop SSH client onto Android, and the touch gestures that make a terminal usable without a keyboard."
+date: "2026-06-28"
+category: "Engineering"
+version: "0.7.0"
+tags:
+  - "Android"
+  - "Mobile"
+  - "Tauri"
+  - "Terminal"
+draft: true
+---
+
+Most "mobile SSH" is a second, smaller app that shares a logo with the real one. Voltius for Android is the opposite bet: it's the *same* app. Same terminal, same hosts and folders, same SFTP browser, the same Docker, metrics, and processes panels, the same Proxmox integration — compiled to a signed arm64 APK and running on your phone.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/android-tour.mp4" type="video/mp4" />
+</video>
+
+## One codebase, two very different machines
+
+Voltius is a Tauri app: a web frontend over a Rust core. Tauri's mobile support means the frontend mostly comes along for free — but "mostly" is where all the work is. A desktop SSH client makes assumptions a phone doesn't honor, and each one had to be found and gated to the right platform.
+
+The native **keychain** was the first blocker and the most important one: credentials have to live in real secure storage, which means the Android keystore on Android and the Secret Service / Keychain on the desktops — the same `keychain` abstraction, three different backends underneath. **Downloads** were the second: a phone doesn't have a free-roaming filesystem, so SFTP downloads route through Android's Storage Access Framework and land in a folder you grant access to, while the desktop keeps its ordinary path-based downloads. A pile of these helpers are now gated `android`-only or desktop-only so each platform compiles clean and behaves like it belongs there.
+
+## A terminal you can drive with your thumbs
+
+A terminal assumes a keyboard and a mouse. A phone has neither, and the naive port — a tiny xterm you pinch-zoom and fat-finger — is miserable. So 0.7.0 added a gesture layer built specifically for the compact terminal.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/android-gestures.mp4" type="video/mp4" />
+</video>
+
+- **Swipe to scroll** the scrollback, instead of hunting for a scrollbar that doesn't belong on a touchscreen.
+- **Long-press to select** text, with a floating **copy/paste toolbar** that appears at the selection — and tapping the toolbar no longer clears the very selection you're acting on, which is the bug that makes most mobile terminals' copy useless.
+- **Paste into blank area** so you don't have to aim at the cursor.
+- **Double-tap for Tab**, because shell completion is the one key you reach for constantly and the on-screen keyboard buries it.
+
+Underneath, the gesture geometry and selection math are pure functions with their own tests, separate from the touch plumbing — so "did the swipe register as a scroll or a tap" is something we can assert in CI rather than discover on a device. We suppress the synthetic `touchend` after a swipe-scroll so it doesn't fire a stray tap, and the toolbar closes itself on teardown instead of leaking onto the next session.
+
+## Same security model, smaller screen
+
+The point of sharing the codebase isn't tidiness — it's that the security and feature guarantees come along unchanged. Credentials sit in the OS keystore. The end-to-end encrypted sync that carries your hosts between desktops carries them to your phone too. There's no reduced "mobile" backend cutting corners; it's the Rust core you already trust, on a fourth target.
+
+Voltius for Android ships as a signed arm64 APK. Like the rest of Voltius, [it's open source](https://github.com/VoltiusApp/voltius) — including the platform gates, if you want to see how a desktop app earns its place on a phone.

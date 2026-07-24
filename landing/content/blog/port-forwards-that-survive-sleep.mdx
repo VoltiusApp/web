@@ -1,0 +1,43 @@
+---
+title: "Port Forwards That Survive a Closed Lid"
+description: "A reworked port-forwarding panel, auto-forwards shared across every terminal on a host, and the one-line bug that quietly killed your tunnels every time your laptop went to sleep."
+date: "2026-06-28"
+category: "Engineering"
+version: "0.7.0"
+tags:
+  - "Port forwarding"
+  - "SSH"
+  - "Tunnels"
+  - "Rust"
+draft: true
+---
+
+Port forwarding is the feature you set up once and then never want to think about again. You forward the remote Postgres to `localhost:5432`, open your client, and forget the tunnel exists. The moment you *do* think about it again is the moment it's broken — and historically, the thing most likely to break it was closing your laptop.
+
+Voltius 0.7.0 reworks the port-forwarding panel, makes auto-forwards a property of the host instead of a single terminal, and fixes the sleep/wake bug that quietly killed tunnels out from under you.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/ports-panel-overhaul.mp4" type="video/mp4" />
+</video>
+
+## The panel, reworked
+
+The Ports rail now opens onto a real panel instead of a list. There's an inline **quick-forward** row to spin up an ad-hoc tunnel in one line, and once a tunnel is live you can save it as a named rule with inline rename — no modal, no round trip through settings. Active tunnel rows let you copy `localhost:<port>` straight to your clipboard, the rail icon carries a badge with the count of active tunnels, and the header tells you how many are up at a glance with labelled sections for rules vs. ad-hoc.
+
+A few sharp edges went away in the process: the save-as-rule path is now guarded against double-submit, against trying to pin a dynamic tunnel as a static rule, and against a stray rename-blur committing an edit you didn't mean to make.
+
+## Auto-forwards belong to the host, not the tab
+
+The bigger change is conceptual. Auto port-forwarding used to be wired to a single terminal: open a second tab to the same host and you'd either get a duplicate tunnel fighting for the same local port, or no tunnel at all, depending on which tab you closed.
+
+That never matched how people think about it. A forward like "Postgres on `localhost:5432`" is a fact about *the host*, not about one of the five terminals you have open to it. So auto-forwarding is now **shared across every terminal of the same host**. The first session to a host brings the tunnels up; the rest attach to the existing ones; and the tunnels only come down when the last session to that host closes. The Ports badge counts the current host's tunnels, not a global total across unrelated sessions.
+
+## The closed-lid bug
+
+Here's the one that stung. Forward a port, close your laptop, come back later — and the tunnel is dead. Not reconnecting, not erroring, just silently gone. Reopening the session fixed it, which made it feel like a network hiccup rather than a bug.
+
+It wasn't the network. The tunnel's accept loop was driven by a `CancellationToken`, and the listener task held the only meaningful reference to the live tunnel state. When the system suspended and the connection's keepalive finally gave out, the tunnel object was getting dropped — but **the cancellation token was never cancelled on drop**. The local TCP listener stayed bound to its port with nothing servicing it: a socket accepting connections that went nowhere. From the outside it looked exactly like a tunnel that was up. It was a ghost.
+
+The fix is the boring correct one: cancel the token on teardown so the accept loop actually exits and the OS reclaims the local listener. A dropped tunnel now frees its port instead of leaving a zombie behind, and the next connection re-establishes cleanly. We also made the Ports badge stop counting these — it now reflects tunnels that are genuinely live on the current host.
+
+If you've ever had a forwarded database "randomly" disconnect after lunch, this is why — and it's fixed. As always, [the tunnel code is open source](https://github.com/VoltiusApp/voltius) if you want to see the accept loop for yourself.

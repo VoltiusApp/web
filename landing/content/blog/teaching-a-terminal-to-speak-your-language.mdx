@@ -1,0 +1,53 @@
+---
+title: "How We Taught a Terminal to Speak French and Russian"
+description: "Voltius now runs in English, French, and Russian. The tricky part of localizing a terminal isn't the translating — it's knowing what NOT to translate, keeping ~2,600 keys in sync, and the moment Russian grammar forced a change to the React code. Here's the i18n architecture and the bugs it surfaced."
+date: "2026-07-19"
+category: "Engineering"
+version: "0.10.0"
+tags:
+  - "i18n"
+  - "Localization"
+  - "React"
+  - "Terminal"
+draft: true
+---
+
+Localizing most apps is a slog but not a puzzle: find every hard-coded string, wrap it in a translation call, ship the locale files. Localizing a *terminal* has a puzzle at its center — the terminal's contents come from a remote machine, in whatever language that machine speaks, and translating them would be actively wrong. The interesting question isn't what to translate. It's where the line is.
+
+Voltius 0.9.0 added French; 0.10.0 added Russian. This post is about the architecture that draws that line, and the couple of bugs that only exist once your UI can speak more than one language.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/language-switch-live.mp4" type="video/mp4" />
+</video>
+
+## The line runs right through the terminal
+
+The terminal writes raw bytes from the remote shell straight to the screen — the output never passes through the translation layer, and it shouldn't. `ls` output, your prompt, a stack trace from the server: all verbatim.
+
+What *is* translated is the chrome *around* the terminal — the "Copied" toast, the command-history panel, the session-sharing controls, the labels on the SFTP file panel bolted to the side. So the rule is clean and easy to state: **app-generated text is localized; anything originating from the host stays exactly as the host sent it.** Almost every boundary question in the app answers itself once you hold that line — including a subtle one we'll get to, where the *classification* of a server error has to survive translation even though its message doesn't.
+
+## Bundled, not fetched — so switching is instant
+
+Under the hood it's i18next, with one deliberate constraint written in a comment at the top of the config: **no async backend.** All three languages are bundled into the app at build time, not fetched on demand. That's a real trade-off — it puts roughly 650KB of locale JSON in the main bundle — but it buys something worth having: switching language is *synchronous*. Pick Russian and the whole UI flips instantly, no reload, no flash of English while a file loads.
+
+It also buys correctness in an unglamorous place. Some code needs a translated string *outside* of React — building the settings navigation, for instance, including the search keywords that feed the command palette. That code calls the translator directly and relies on the switch having already happened. An async backend would make that call return stale text; the bundled-resources rule is what keeps it honest.
+
+The translations themselves are split across 23 files by area — settings, hosts, snippets, terminal, and so on — which keeps them reviewable, then merged into one namespace at startup. English alone is about 2,600 individual strings. The selected language persists locally, and because it's part of your settings, it rides the same end-to-end encrypted sync as everything else: change it on your laptop, and your phone comes up in the same language.
+
+## When Russian rewrote the React
+
+English is grammatically lazy about counting: "1 vault," "5 vaults," one rule with an `s`. French is nearly as forgiving. Russian is not — it has four plural forms (one / few / many / other), and which one you use depends on the number in ways that don't collapse into a suffix.
+
+Adding Russian meant the plural machinery that English never exercised suddenly had to work — and in one case that reached *back into the components*. A stats label on the dashboard had been rendering a count and a fixed word; to get Russian agreement right, the component had to start passing the actual count *into* the translation call so i18next could pick the correct form. A feature that looks like "add a locale file" turned into a code change, because grammar is not a data problem.
+
+Keeping three languages' worth of keys aligned is enforced by a test, not vigilance: it flattens every locale and asserts that no French or Russian key is missing or orphaned relative to English. That test had to learn about Russian too — it strips the plural suffixes before comparing, because Russian legitimately carries keys that English, with its two measly plural forms, simply doesn't have.
+
+## The bug that hid inside a translated string
+
+Here's the one that's only possible once strings are translatable. Some code was deciding what to do about a failed API call by matching against the error *message* — checking whether the text contained the word "permission." That's fragile in English and completely broken the moment the UI is in French, where the message doesn't contain the English word at all.
+
+The fix was to stop reading the tea leaves of a human-facing string and branch on structured, machine-readable fields instead — a status code, an offline flag — keeping the substring match only as a legacy fallback. It's a good reminder that a translated string is for humans; the day you translate it is the day any code treating it as data quietly breaks.
+
+A couple of honest notes on where this stands. Both non-English locales started machine-drafted and are being refined by native speakers — the files literally carry a status flag saying so, and the Russian shipped with a follow-up pass fixing real grammar (the accusative of "member," the term for a per-file operation). And dates and numbers deliberately *don't* go through i18next at all — they use the platform's own locale formatting, so they follow your OS conventions rather than your chosen UI language. There's no right-to-left support yet, because neither French nor Russian needs it; the day we add a language that does, that's the next chapter.
+
+Like everything else, [the localization is open source](https://github.com/VoltiusApp/voltius) — including the parity test and the `_meta` flags marking what still needs a native eye.

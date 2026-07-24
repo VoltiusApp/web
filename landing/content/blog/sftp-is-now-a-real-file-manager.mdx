@@ -1,0 +1,66 @@
+---
+title: "Cut, Paste, and Drag Files — Across Hosts"
+description: "The SFTP browser now behaves like the file manager you already know: copy on one server, paste on another; drag files onto a folder or a breadcrumb; type a few letters to jump to a file; Alt-arrow through your history. Here's how it works — including why the drag had to be rebuilt from scratch on Windows."
+date: "2026-07-05"
+category: "Engineering"
+version: "0.9.0"
+tags:
+  - "SFTP"
+  - "File manager"
+  - "Drag and drop"
+  - "Tauri"
+draft: true
+---
+
+The muscle memory for moving files is decades old. Ctrl-X, click into a folder, Ctrl-V. Drag a file onto a folder icon. Start typing a name and the selection jumps to it. None of that worked in a remote file browser, so you fell back to typing `mv` and hoping you got the paths right.
+
+Across 0.8.0 and 0.9.0, Voltius closed that gap. The SFTP browser now does clipboard cut/copy/paste, intra-pane drag-to-move, and Explorer-style keyboard navigation — and because every "file" in Voltius is just a handle to a host, **the clipboard reaches across machines**: copy on `staging`, paste on `prod`.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/sftp-cut-paste-cross-host.mp4" type="video/mp4" />
+</video>
+
+## One clipboard, any two hosts
+
+The clipboard model is small on purpose: a list of files, the endpoint they came from (local or which remote), and a mode — `copy` or `cut`. A cut item shows ghosted until you paste it, exactly like Explorer.
+
+The interesting logic is deciding what a paste *means*, and it's a pure function that classifies every paste into one of five outcomes:
+
+- **copy** — duplicate the files, with Windows-style `name - Copy`, `name - Copy (2)` naming when there's a collision in the same folder
+- **move-same** — a cut pasted onto the same host: a rename, not a transfer
+- **move-cross** — a cut pasted onto a *different* host
+- **noop** — a cut pasted straight back into its own folder (do nothing)
+- **reject** — pasting a folder into itself or one of its own subfolders (the classic footgun), refused outright
+
+The cross-host move is the one that used to require a shell. Under the hood it's copy-then-delete-source, and the delete only fires if the copy succeeded — a failed transfer leaves the original exactly where it was. The copy itself runs through the same endpoint-pair dispatch table the whole app uses: local→remote uploads, remote→local downloads, and remote→remote streams the bytes **through the Voltius process** — read a chunk off host A's handle, write it to host B's, repeat. There's no magic host-to-host channel; your laptop is the relay. (One sharp edge we hit: the source read handle has to be explicitly shut down after each file, or russh-sftp's handle counter leaks across a big batch.)
+
+## Drag-to-move, rebuilt on pointer events
+
+Dragging a file onto a folder sounds like a one-liner with HTML5 drag-and-drop. It isn't — because on Windows, Tauri's OS-level drag-drop handler intercepts HTML5 drags before the web layer ever sees them. So the whole gesture is reimplemented on raw pointer events: a 5-pixel activation threshold so a sloppy click isn't a drag, a ghost overlay that follows the cursor, live hit-testing, and Escape to cancel.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/sftp-drag-to-folder.mp4" type="video/mp4" />
+</video>
+
+The drop targets are more generous than just folder rows. You can drop onto the **parent/up button** to move a file up a level, or onto any **breadcrumb segment** to move it several levels up in one gesture. Each target carries a `data-drop-folder` attribute; the gesture hit-tests with `elementFromPoint` and walks up to the nearest one.
+
+Two details made it feel right instead of janky. The cursor position and the "what am I hovering" state live in two *separate* stores — the position updates on every pixel of movement, but the semantic state only changes when you cross into a genuinely different target, so hovering doesn't trigger a render storm. And the drag ghost renders `null` for OS-originated drags, because the operating system already draws its own cursor — that fixed a redundant double-ghost that showed up when dragging files in from outside the app.
+
+## Drive it from the keyboard
+
+Once files behave like files, you want to navigate them without the mouse:
+
+- **Backspace** or **Alt-↑** goes up a directory
+- **Alt-←** / **Alt-→** walk back and forward through your history (and so do the back/forward buttons on your mouse)
+- **F5** refreshes, **Home**/**End** jump to the first/last entry, **Esc** clears the selection — or, if nothing's selected, cancels a pending cut
+- **Type-ahead**: start typing and the selection jumps to the first matching name; hammer the same key and it cycles through every file starting with that letter, wrapping around, just like Explorer
+
+The history is a stack with an index that truncates its forward entries when you navigate somewhere new — standard browser semantics — and it resets cleanly on a fresh connection. (One honest scope note: the Alt-arrow history is a full-screen-pane feature; the compact SFTP panel docked in the terminal keeps everything else but not back/forward.)
+
+## It all rides the same rails
+
+None of this is a parallel universe. Every transfer — paste, drag, or move — flows through the one transfer queue that already existed, with its progress, speed, ETA, and cancel-all. The pure decision-making bits (paste classification, move validation, type-ahead cycling, duplicate naming) are each small, separately tested functions, so "did the cut-across-hosts keep the source when the copy failed?" is a unit test, not something you find out in production.
+
+The one deliberate difference worth flagging: clipboard paste transfers item-by-item and skips the batch **tar acceleration** that drag-drop uses for multi-file selections. It's the same plumbing underneath — paste just opts out of the tar fast path for now.
+
+As always, [the file-manager code is open source](https://github.com/VoltiusApp/voltius) — the pointer-drag engine and the cross-host relay included.
