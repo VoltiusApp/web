@@ -1,0 +1,66 @@
+---
+title: "Run One Script Across Every Server at Once"
+description: "Snippets grew up. A snippet is now a sequence of steps — run a script, move a file, call another snippet — that fans out across every host you select, prompts for variables once, and reports back with a single toast. Here's the runner underneath, and the recursion guard that stops a snippet calling itself into oblivion."
+date: "2026-07-05"
+category: "Engineering"
+version: "0.9.0"
+tags:
+  - "Snippets"
+  - "Automation"
+  - "SFTP"
+  - "SSH"
+draft: true
+---
+
+You have a five-line fix to roll out. You open a terminal to `web-1`, paste the block, watch it run. Then `web-2`. Then `web-3`. Somewhere around `web-4` you paste it into the wrong tab. This is the part of the job that a computer should be doing.
+
+Voltius 0.9.0 turns a snippet from "a blob of text you inject into one terminal" into a **sequence**: an ordered list of steps that runs across every host you pick, prompts for its variables once, and tells you at the end which hosts succeeded and which didn't.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/snippet-sequence-run.mp4" type="video/mp4" />
+</video>
+
+## Three kinds of step
+
+A sequence is a list of steps, and there are exactly three kinds:
+
+- a **script** step — shell content injected into the session, same as a classic snippet
+- a **transfer** step — move or copy a file between local and remote, with a per-step "if it already exists" policy
+- a **snippet** step — a call to *another* snippet by id, so you can compose small pieces into big ones
+
+That third kind is where it gets interesting. Before anything runs, the sequence is **flattened**: nested snippet calls are expanded in place until you're left with a flat list of script and transfer leaves in their original order. Your "deploy" snippet can call "backup-configs" and "reload-nginx" and the runner sees one straight line of work.
+
+Old single-body snippets still just work — a plain snippet with no steps is transparently wrapped as a single script step, so nothing you'd already saved had to change.
+
+## Fanning out across hosts
+
+Select three hosts, hit run, and the runner does two things at once — deliberately in that combination:
+
+- **across hosts, concurrently.** Every target runs in parallel (`Promise.all`), so three hosts take as long as the slowest one, not the sum of all three.
+- **within a host, sequentially.** A single host runs its steps in order in a plain `for` loop, because step 3 usually depends on step 2 having finished.
+
+Each host's run is wrapped in its own try/catch, so one box refusing a `sudo` doesn't abort the other four — it just comes back as a failed target. Even a host that can't open a terminal at all (or an FTP host, which has no shell) doesn't hang the run; it's reported as failed with a reason. Saved hosts that aren't connected yet get connected on the fly, waited for, and rewritten into live sessions before their steps start.
+
+There's a small optimization hiding in the transfer steps. A remote→remote *copy* needs two distinct SFTP handles, so a second channel is opened — but a remote→remote *move* is just a rename on one channel, so it isn't. That distinction turned into a bug worth guarding: the "does the destination already exist?" probe has to run on the *primary* channel, because the second channel doesn't exist for a move, and probing the missing one would silently skip the conflict policy entirely.
+
+## Variables that change per host
+
+Snippets have always had variables — `{{name}}`, `{{name:type}}`, `{{name:type:default}}`, with types like text, number, password, boolean, and choice. Sequences make them smarter in two ways.
+
+First, some variables are **dynamic** and never prompt you: `{{connection.host}}`, `{{connection.username}}`, `{{connection.name}}`, plus `{{date}}`, `{{timestamp}}`, and `{{clipboard}}`. The genuinely useful part is that the connection variables are resolved **per target, inside the fan-out** — so a single run of `echo deploying to {{connection.host}}` prints the right hostname on every box. The variables you *do* type are collected once up front (they're the same for every host) and shown with a live preview before anything executes.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/snippet-variable-prompt.mp4" type="video/mp4" />
+</video>
+
+Passwords are a deliberate exception: they're never given a stored default and never auto-filled, so a `{{secret:password}}` always prompts and is masked in the preview. And `{{clipboard}}` is only read if the flattened sequence actually references it — otherwise every run would pop a clipboard-permission prompt (notably on Android) for a value nobody asked for. When it *is* used, it's read exactly once and shared across all targets.
+
+## The part that tries to break itself
+
+Nested snippets calling nested snippets is a loaded gun: what happens when "A" calls "B" which calls "A"? The flattener is built assuming someone will eventually do exactly that, by accident.
+
+It tracks the chain of snippet ids as it descends and refuses a cycle the moment an id reappears — `A → A`, or the sneakier `A → B → A`. On top of that there are two hard backstops: a max depth of 50, and a max of 1,000 total steps. The test suite leans on these on purpose, including a diamond-shaped call graph where each level fans out into two children — `2^depth` leaves — which trips the step cap and returns a clean "too many steps" error instead of trying to build a list with a million entries in it. Every one of these errors is localized, too, so a French user gets *"cycle détecté"*, not a stack trace.
+
+When it's all done, you get one toast. All-green: *"Snippet ran on 3 target(s)."* Mixed: a warning that names each host that failed and why. It's the summary you'd have assembled yourself by squinting at five terminals — except you didn't have to open five terminals.
+
+Like the rest of Voltius, [the sequence runner is open source](https://github.com/VoltiusApp/voltius) — flatten guards, per-target variable resolution, and all.

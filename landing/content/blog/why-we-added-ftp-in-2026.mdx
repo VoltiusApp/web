@@ -1,0 +1,47 @@
+---
+title: "Yes, We Added FTP. Here's Why."
+description: "Voltius speaks FTP and FTPS now — a protocol older than the internet as most people know it. Adding a 1971 protocol to a modern SSH client sounds absurd until you meet the NAS boxes and appliances that still only speak it. Here's how one trait made FTP nearly free, and how FTPS is done safely."
+date: "2026-06-25"
+category: "Engineering"
+version: "0.6.0"
+tags:
+  - "FTP"
+  - "FTPS"
+  - "Rust"
+  - "SFTP"
+draft: true
+---
+
+FTP turns 55 next year. It predates SSH by a quarter century, sends commands and data over separate connections, and in its plain form ships your password in the clear. Adding it to a modern SSH client in 2026 sounds like a joke at our own expense.
+
+Then you go to actually manage a five-year-old NAS, a network printer's config share, a router, or some embedded appliance in a rack — and discover the only file protocol it offers is FTP. The gear that most needs a decent client is exactly the gear that never got SSH. Voltius 0.6.0 added FTP and FTPS support, and the interesting part is how little code it took.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/ftp-connect-edit.mp4" type="video/mp4" />
+</video>
+
+## One trait, and FTP comes along for free
+
+Voltius has always had a `FileBackend` trait — the abstraction the SFTP browser, the built-in editor, the transfer queue, and the cross-host clipboard all talk to. None of them know or care what's on the other end; they just call list, read, write, rename, delete.
+
+So adding FTP wasn't a feature bolted onto the file manager. It was one new implementation of that trait — an `FtpBackend` — and the *entire* file-management surface lit up over FTP at once. You can browse an FTP server in the dual-pane view, open a remote file straight into the editor and save it back, and even copy a file from an FTP box and paste it onto an SSH host, because to the clipboard they're both just backends. The work was writing one Rust struct; the payoff was every file feature you already had.
+
+## FTPS, done properly
+
+Plain FTP is insecure and we're not going to pretend otherwise — so the more important half of this is FTPS: FTP wrapped in TLS via the `AUTH TLS` command. When you tick "use FTPS," the connection is upgraded to an encrypted stream before your credentials are ever sent.
+
+The TLS is real TLS, not a checkbox. Certificates are validated against your operating system's own root certificate store, using the same crypto provider as the rest of the app, negotiating modern protocol versions. Self-signed and invalid certificates are rejected — if a server can't prove who it is, the handshake fails rather than quietly trusting it. If the machine somehow has no root certificates at all, FTPS refuses to proceed instead of falling back to something weaker. The connection then drops into passive, binary mode — the two settings that make file transfers behave predictably across firewalls and line-ending gremlins.
+
+## The "530 Login incorrect" that wasn't your fault
+
+One small war-story, because it's the kind of thing that eats an afternoon. Anonymous FTP is a real workflow — public mirrors, drop boxes — and the convention is to log in as `anonymous` with your email address as the password. But leave the password field blank, as you reasonably would for "anonymous," and many servers reject you with a curt `530 Login incorrect`.
+
+So the backend fills it in: when the username is `anonymous` (or `ftp`) and no password was given, it supplies the RFC-convention `anonymous@example.com` rather than an empty string. A blank password field just works, and nobody has to know that somewhere a decades-old server demanded a fake email to let them read a public folder.
+
+## What FTP doesn't get
+
+Honesty about the limits, because FTP has real ones and pretending otherwise would bite you. An FTP connection has no shell and no SSH handle behind it — so it never takes the fast paths the SSH backends do. There's no tar-accelerated directory transfer and no server-to-server shortcut; a folder copies file by file. Listings come from a parser that handles the several formats FTP servers emit (POSIX, DOS, and the newer MLSx), and permissions and symlink details are best-effort, because FTP itself is vague about them.
+
+That's the deal FTP offers, and it's the honest one: a first-class file browser and editor for the boxes that would otherwise force you back to a command line from 1985. For everything with SSH, use SSH. For the router in the closet that doesn't, now you don't have to keep a second app around.
+
+Like the rest of Voltius, [the FTP backend is open source](https://github.com/VoltiusApp/voltius) — the `FileBackend` implementation, the FTPS handshake, and the anonymous-login fixup included.

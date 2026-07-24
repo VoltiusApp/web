@@ -1,0 +1,53 @@
+---
+title: "Edit Remote Files Without the scp Dance"
+description: "Voltius now has a full code editor built in — open a file over SFTP, edit it with real syntax highlighting, and diff local↔remote or host↔host before you save. Here's how it works and why it's a CodeMirror 6 MergeView underneath."
+date: "2026-06-25"
+category: "Engineering"
+version: "0.6.0"
+tags:
+  - "SFTP"
+  - "Editor"
+  - "CodeMirror"
+  - "Diff"
+draft: true
+---
+
+You SSH in to tweak one line of an nginx config. The remote box has `vi` and an opinion about it. Or you `scp` the file down, open it locally, edit, `scp` it back, and hope nothing changed underneath you in between.
+
+Voltius 0.6.0 removes that whole loop. Open a remote file from the SFTP browser and it opens in a real editor — syntax highlighting, undo/redo, multiple tabs — right inside the app. Save writes it straight back over SFTP. No download, no local copy to clean up, no round trip.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/editor-open-edit-save.mp4" type="video/mp4" />
+</video>
+
+## A real editor, not a textarea
+
+The editor is [CodeMirror 6](https://codemirror.net/), themed from the same palette as the rest of the app, with language modes for the files you actually edit on a server — configs, shell scripts, YAML, JSON, Dockerfiles, and the usual programming languages. You get a VS Code-style tab bar across the top: drag tabs to reorder them, and the active tab takes `Ctrl+S` to save.
+
+Auto-save is there if you want it — a global toggle plus a per-editor switch — with either an immediate or debounced write, and a configurable max file size so you don't accidentally pull a 2 GB log into a text buffer. There's a guard against opening files that are too large, binary detection so you don't get a screenful of mojibake, and a dirty-close prompt so a stray `Ctrl+W` can't silently drop your edits.
+
+## The interesting part is the diff
+
+The feature this was really built for is comparing files. Drag one editor tab onto another — or onto the editor area — and Voltius opens a **diff** between them. And because every file in Voltius is just a handle to a host (local included), the two sides can be anything:
+
+- **local ↔ remote** — what you have locally vs. what's deployed
+- **host ↔ host** — staging's config vs. production's, side by side
+- **remote ↔ remote** — the same file on two boxes that have drifted
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/editor-diff-apply-ribbons.mp4" type="video/mp4" />
+</video>
+
+The diff isn't read-only. Chunks are color-coded — green for additions, red for deletions, yellow for in-place modifications — with VS Code-style hatched filler so the two sides line up visually even where one is empty. Each chunk gets an **apply ribbon**: a trapezoid that connects the change across the gutter with a button to push that hunk from one side to the other. Prev/next buttons in the toolbar walk you through the changes, and you can collapse the unchanged regions to focus on what actually differs. The diff itself stays editable, undo/redo and all.
+
+## Why it's a MergeView underneath
+
+The honest reason the diff is this capable is that we didn't build a diff engine. CodeMirror 6 ships a `MergeView` that already does the alignment, the chunk classification, and the revert-across-the-gutter semantics. We mirrored its apply-direction model rather than inventing our own, and spent our effort on the parts that were genuinely ours: the ribbon **geometry** (the trapezoid paths and where each button anchors), driving next/prev off the viewport midpoint so navigation advances correctly even for chunks scrolled off-screen, and guarding `apply` against a stale chunk when two applies race.
+
+That last one is the kind of bug you only hit once you make diffs editable: apply hunk A, the document shifts, and hunk B's offsets are now wrong. The fix is to re-resolve the chunk against the current document at apply time instead of trusting the offsets you captured when you rendered the ribbon.
+
+## It works everywhere a file does
+
+Because the editor sits on top of the same SFTP layer as everything else, the surprising surfaces come for free. You can edit **local** files, not just remote ones. The quick-connect panel gets its own lightweight SFTP so you can open and edit a file on a box you haven't even saved as a host. Even Docker container files work — writes stream into the container instead of going through a normal SFTP handle.
+
+The whole thing is open source, like the rest of Voltius — [the editor lives in the same repo](https://github.com/VoltiusApp/voltius). If you've ever `scp`'d a file down just to change one line, this is the feature for you.
