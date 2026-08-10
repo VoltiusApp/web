@@ -1,0 +1,63 @@
+---
+title: "Drive Your Infrastructure from Claude Code"
+description: "Voltius 0.19.0 ships an MCP server: 41 tools that let an AI agent on your machine use the hosts, keys and plugins already in your vault — without a credential ever leaving it."
+date: "2026-08-10"
+category: "Engineering"
+version: "0.19.0"
+tags:
+  - "MCP"
+  - "AI"
+  - "SSH"
+  - "Plugins"
+---
+
+Ask Claude Code to check why a container keeps restarting on your staging box. It opens a session on the host you saved months ago, tails the logs, reads the compose file over SFTP, and tells you what it found. You never pasted a key, a password, or an IP address into a chat window.
+
+That's what shipped in 0.19.0: Voltius is an [MCP](https://modelcontextprotocol.io) server. It's off by default, it's one toggle in **Settings → Integrations**, and it never leaves your machine.
+
+## The credential problem this solves
+
+Every "give an AI access to my servers" tool has the same shape: you hand it credentials. A config file with a key path, an environment variable with a password, a token pasted into a prompt. The agent gets a second copy of your access, living somewhere you now have to think about.
+
+Voltius already holds those credentials, encrypted, in a vault it unlocks for you. So it doesn't hand them over. The agent asks Voltius to *do* something — open a session on `prod-db-1`, read `/etc/nginx/nginx.conf` — and Voltius does it, using the credential it already had. Nothing is copied, nothing is exported, nothing lands in a config file the agent can read.
+
+That also means the agent inherits everything the connection already knows: the jump host chain, the identity, the passphrase-protected key that only you can unlock, the team vault the host belongs to.
+
+## 41 tools, and your plugins are 15 of them
+
+The surface covers saved objects (connections, keys, identities — full CRUD, plus bulk import), sessions (open, run a command, read the terminal, close), and files (list, stat, read, write, mkdir, rename, delete, and transfers between any two ends the app can reach, including host to host). Sessions can target a saved SSH host or this computer's own shell.
+
+The interesting part is the last fifteen. Voltius plugins can contribute their *own* MCP tools, so the agent's vocabulary grows with the app rather than with our release cycle. The four bundled plugins already do it:
+
+- **Docker** — list containers, images, volumes, networks and stacks; start, stop and restart; pull logs
+- **Proxmox** — list LXCs, act on them, list, create and roll back snapshots
+- **Process manager** — list and kill processes
+- **System monitoring** — a metrics snapshot
+
+None of that is hard-coded into the server. A plugin declares its tools with a JSON Schema, and the host validates every one at registration: the name charset, uniqueness against the tools already registered, a non-empty description, and whether the schema actually converts. If one tool in a set is malformed, none of that set registers — a plugin can't half-arrive.
+
+Third-party plugins can do the same, behind an explicitly granted `mcp:contribute` permission. And **Settings → Integrations** lists every plugin contributing tools with its own toggle, so you can keep one out of the agent's reach without uninstalling it. Flip it off and connected agents are notified the tool list changed; calls to the removed tools are refused, not just hidden.
+
+## Approval belongs in the agent
+
+The design decision people ask about most: Voltius does not prompt you per call.
+
+That's deliberate. Claude Code already has an approval UI — it shows the tool call, you allow or deny, you can pre-approve patterns. Adding a second dialog in Voltius would mean approving everything twice, and the second prompt would carry less context than the first, because the agent's client knows *why* it wants to run something and Voltius only sees the request. So the honest division is: Voltius is the tool provider, your agent is the gate.
+
+The consequence has to be stated plainly, and the in-app copy states it: enabling the server grants any process running as you that can open the socket full command and file access to every host in your vault **and to this computer**. That's the whole point of the feature, and it's also the reason it's off by default.
+
+Access is scoped by the operating system rather than by a token we invent. On Linux and macOS it's a Unix socket at mode `0600` inside a `0700` directory. On Windows it's a named pipe with a DACL granting only your own user's SID, created with `FILE_FLAG_FIRST_PIPE_INSTANCE` so a squatted pipe name fails loudly instead of quietly handing your agent to another process. Nothing crosses the network; our server isn't involved at any point.
+
+## What gets recorded, and what deliberately doesn't
+
+Every call that changes something writes an audit row — and the *host* writes it, not the plugin. That ordering matters: a plugin that forgets to log, or a third-party plugin that would rather not, can't expose a destructive verb that leaves no trace.
+
+Rows carry which tool ran, which plugin contributed it, and which connection it touched. They do **not** carry argument values: no command text, no file paths, no snapshot names. Voltius promises elsewhere that command text never reaches the wire, and an audit trail that quietly re-exported it would be a hole in that promise, so the sink strips it. Team-vault activity lands in that vault's audit log; everything else stays local. An agent can read its own trail back with `audit_query`, which is how it can answer "what did I just change?" without you opening the app.
+
+## Getting it running
+
+Turn on **Settings → Integrations → MCP**. Hit **Quick setup** and Voltius registers itself with every AI agent it detects on the machine, leaving your other MCP servers alone. No Node.js, or a client it doesn't know? The same panel has a copyable snippet for Claude Code, Claude Desktop, Cursor, Cline, Windsurf, VS Code and OpenCode, already filled in with your executable path.
+
+One thing to know: Voltius has to be open. The `voltius mcp` command your client runs is a thin stdio shim that forwards to the running app — that's what lets the agent reuse your unlocked vault instead of holding a second copy of it.
+
+Full setup, the complete tool list and the security model are in [the docs](https://docs.voltius.app/integrations/mcp/). Like everything else in Voltius, [the implementation is open source](https://github.com/VoltiusApp/voltius).
