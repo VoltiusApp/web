@@ -6,6 +6,7 @@ import Image from "next/image";
 import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
+import ChangeHandleModal from "./ChangeHandleModal";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -130,6 +131,9 @@ export default function AccountPage() {
   const [verificationResent, setVerificationResent] = useState(false);
   const [showEditEmail, setShowEditEmail] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [accountHandle, setAccountHandle] = useState("");
+  const [showChangeHandle, setShowChangeHandle] = useState(false);
+  const [handleCopied, setHandleCopied] = useState(false);
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -189,6 +193,7 @@ export default function AccountPage() {
         const me = await getMe(activeToken);
         setAccountId(me.account_id);
         setAccountEmail(me.email);
+        setAccountHandle(me.handle);
       } catch { /* non-critical */ }
 
       // Trial expired modal
@@ -309,6 +314,15 @@ export default function AccountPage() {
     }
   }
 
+  async function handleCopyHandle() {
+    if (!accountHandle) return;
+    try {
+      await navigator.clipboard.writeText(`@${accountHandle}`);
+      setHandleCopied(true);
+      setTimeout(() => setHandleCopied(false), 1500);
+    } catch { /* clipboard unavailable */ }
+  }
+
   function handleSignOut() {
     sessionStorage.clear();
     router.replace("/signin");
@@ -374,6 +388,18 @@ export default function AccountPage() {
         />
       )}
 
+      {showChangeHandle && token && (
+        <ChangeHandleModal
+          currentHandle={accountHandle}
+          token={token}
+          onClose={() => setShowChangeHandle(false)}
+          onSuccess={(newHandle) => {
+            setAccountHandle(newHandle);
+            setShowChangeHandle(false);
+          }}
+        />
+      )}
+
       {showChangePassword && token && accountId && (
         <ChangePasswordModal
           accountId={accountId}
@@ -411,6 +437,35 @@ export default function AccountPage() {
           <div className="mb-10">
             <p className="font-mono text-xs text-cyan-400 mb-3">— account</p>
             <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] divide-y divide-[#1e1e2e]">
+              {/* Handle row */}
+              <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Handle</p>
+                  <p className="text-sm text-white">{accountHandle ? `@${accountHandle}` : "—"}</p>
+                  {displayTier === "free" && (
+                    <div className="mt-1">
+                      <p className="text-xs text-zinc-500">Custom handles are a Pro feature.</p>
+                      <p className="text-xs text-zinc-500">Others can still reach you at this handle.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => void handleCopyHandle()}
+                    className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                  >
+                    {handleCopied ? "Copied" : "Copy"}
+                  </button>
+                  {displayTier !== "free" && (
+                    <button
+                      onClick={() => setShowChangeHandle(true)}
+                      className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                    >
+                      Change handle
+                    </button>
+                  )}
+                </div>
+              </div>
               {/* Email + password row */}
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>

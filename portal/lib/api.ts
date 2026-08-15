@@ -51,6 +51,8 @@ export interface MeResponse {
   trial_ends_at: number | null;
   email_verified: boolean;
   wrapped_user_secrets: string | null;
+  handle: string;
+  handle_is_custom: boolean;
 }
 
 export interface CheckoutResponse {
@@ -94,6 +96,14 @@ export function updateEmail(newEmail: string, authKey: string, token: string): P
   return request<void>(
     "/v1/auth/email",
     { method: "PUT", body: JSON.stringify({ new_email: newEmail, auth_key: authKey }) },
+    token,
+  );
+}
+
+export function updateHandle(handle: string, token: string): Promise<void> {
+  return request<void>(
+    "/v1/users/me/handle",
+    { method: "PUT", body: JSON.stringify({ handle }) },
     token,
   );
 }
