@@ -450,13 +450,15 @@ export default function AccountPage() {
                   )}
                 </div>
                 <div className="flex gap-2 shrink-0">
-                  <button
-                    onClick={() => void handleCopyHandle()}
-                    className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
-                  >
-                    {handleCopied ? "Copied" : "Copy"}
-                  </button>
-                  {displayTier !== "free" && (
+                  {accountHandle && (
+                    <button
+                      onClick={() => void handleCopyHandle()}
+                      className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                    >
+                      {handleCopied ? "Copied" : "Copy"}
+                    </button>
+                  )}
+                  {displayTier != null && displayTier !== "free" && (
                     <button
                       onClick={() => setShowChangeHandle(true)}
                       className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"

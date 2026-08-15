@@ -25,7 +25,7 @@ export default function ChangeHandleModal({ currentHandle, token, onClose, onSuc
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    const trimmed = newHandle.trim().toLowerCase();
+    const trimmed = newHandle.trim().toLowerCase().replace(/^@+/, "");
     if (!isValidHandleFormat(trimmed)) {
       setError("3-30 characters: lowercase letters, digits, hyphens, or underscores. Cannot start or end with a separator.");
       return;
@@ -35,10 +35,6 @@ export default function ChangeHandleModal({ currentHandle, token, onClose, onSuc
     setError("");
     try {
       await updateHandle(trimmed, token);
-      const me = await getMe(token);
-      setSavedHandle(me.handle);
-      setDone(true);
-      onSuccess(me.handle);
     } catch (err) {
       if (err instanceof ApiError && err.status === 402) {
         setError("Custom handles require Pro or above.");
@@ -51,9 +47,23 @@ export default function ChangeHandleModal({ currentHandle, token, onClose, onSuc
       } else {
         setError(err instanceof Error ? err.message : "Failed to update handle.");
       }
-    } finally {
       setLoading(false);
+      return;
     }
+
+    // The rename already committed above. This refetch is best-effort display
+    // polish — its failure must not be reported as the rename having failed.
+    let handle = trimmed;
+    try {
+      const me = await getMe(token);
+      handle = me.handle;
+    } catch {
+      // fall back to the trimmed input we just saved
+    }
+    setSavedHandle(handle);
+    setDone(true);
+    setLoading(false);
+    onSuccess(handle);
   }
 
   return (
