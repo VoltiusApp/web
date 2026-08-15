@@ -90,14 +90,6 @@ export function getMe(token: string): Promise<MeResponse> {
   return request<MeResponse>("/v1/auth/me", {}, token);
 }
 
-export function updateDisplayName(displayName: string, token: string): Promise<void> {
-  return request<void>(
-    "/v1/auth/display-name",
-    { method: "PUT", body: JSON.stringify({ display_name: displayName }) },
-    token,
-  );
-}
-
 export function updateEmail(newEmail: string, authKey: string, token: string): Promise<void> {
   return request<void>(
     "/v1/auth/email",

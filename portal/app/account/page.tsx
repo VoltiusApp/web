@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail, updateDisplayName } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 
@@ -130,11 +130,6 @@ export default function AccountPage() {
   const [verificationResent, setVerificationResent] = useState(false);
   const [showEditEmail, setShowEditEmail] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [accountDisplayName, setAccountDisplayName] = useState("");
-  const [editingDisplayName, setEditingDisplayName] = useState(false);
-  const [displayNameInput, setDisplayNameInput] = useState("");
-  const [displayNameLoading, setDisplayNameLoading] = useState(false);
-  const [displayNameError, setDisplayNameError] = useState("");
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -194,7 +189,6 @@ export default function AccountPage() {
         const me = await getMe(activeToken);
         setAccountId(me.account_id);
         setAccountEmail(me.email);
-        setAccountDisplayName(me.display_name ?? "");
       } catch { /* non-critical */ }
 
       // Trial expired modal
@@ -417,62 +411,6 @@ export default function AccountPage() {
           <div className="mb-10">
             <p className="font-mono text-xs text-cyan-400 mb-3">— account</p>
             <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] divide-y divide-[#1e1e2e]">
-              {/* Display name row */}
-              <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Display name</p>
-                  {editingDisplayName ? (
-                    <div className="flex items-center gap-2 mt-1">
-                      <input
-                        autoFocus
-                        type="text"
-                        value={displayNameInput}
-                        maxLength={50}
-                        onChange={(e) => { setDisplayNameInput(e.target.value); setDisplayNameError(""); }}
-                        className="bg-[#0a0a0f] border border-[#1e1e2e] focus:border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white outline-none"
-                      />
-                      <button
-                        onClick={async () => {
-                          const trimmed = displayNameInput.trim();
-                          if (!trimmed) { setDisplayNameError("Cannot be empty"); return; }
-                          setDisplayNameLoading(true);
-                          setDisplayNameError("");
-                          try {
-                            await updateDisplayName(trimmed, token!);
-                            setAccountDisplayName(trimmed);
-                            setEditingDisplayName(false);
-                          } catch (e) {
-                            setDisplayNameError(e instanceof Error ? e.message : "Update failed");
-                          } finally {
-                            setDisplayNameLoading(false);
-                          }
-                        }}
-                        disabled={displayNameLoading}
-                        className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black text-sm font-semibold transition-colors"
-                      >
-                        {displayNameLoading ? "Saving…" : "Save"}
-                      </button>
-                      <button
-                        onClick={() => { setEditingDisplayName(false); setDisplayNameError(""); }}
-                        className="px-3 py-1.5 rounded-lg border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm transition-colors"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-white">{accountDisplayName || "—"}</p>
-                  )}
-                  {displayNameError && <p className="mt-1 text-xs text-red-400">{displayNameError}</p>}
-                </div>
-                {!editingDisplayName && (
-                  <button
-                    onClick={() => { setDisplayNameInput(accountDisplayName); setDisplayNameError(""); setEditingDisplayName(true); }}
-                    className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors shrink-0"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
               {/* Email + password row */}
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
