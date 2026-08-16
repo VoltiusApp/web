@@ -3,9 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail, updateDisplayName } from "../../lib/api";
+import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
+import ChangeHandleModal from "./ChangeHandleModal";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -130,11 +131,9 @@ export default function AccountPage() {
   const [verificationResent, setVerificationResent] = useState(false);
   const [showEditEmail, setShowEditEmail] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
-  const [accountDisplayName, setAccountDisplayName] = useState("");
-  const [editingDisplayName, setEditingDisplayName] = useState(false);
-  const [displayNameInput, setDisplayNameInput] = useState("");
-  const [displayNameLoading, setDisplayNameLoading] = useState(false);
-  const [displayNameError, setDisplayNameError] = useState("");
+  const [accountHandle, setAccountHandle] = useState("");
+  const [showChangeHandle, setShowChangeHandle] = useState(false);
+  const [handleCopied, setHandleCopied] = useState(false);
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -194,7 +193,7 @@ export default function AccountPage() {
         const me = await getMe(activeToken);
         setAccountId(me.account_id);
         setAccountEmail(me.email);
-        setAccountDisplayName(me.display_name ?? "");
+        setAccountHandle(me.handle);
       } catch { /* non-critical */ }
 
       // Trial expired modal
@@ -315,6 +314,15 @@ export default function AccountPage() {
     }
   }
 
+  async function handleCopyHandle() {
+    if (!accountHandle) return;
+    try {
+      await navigator.clipboard.writeText(`@${accountHandle}`);
+      setHandleCopied(true);
+      setTimeout(() => setHandleCopied(false), 1500);
+    } catch { /* clipboard unavailable */ }
+  }
+
   function handleSignOut() {
     sessionStorage.clear();
     router.replace("/signin");
@@ -380,6 +388,18 @@ export default function AccountPage() {
         />
       )}
 
+      {showChangeHandle && token && (
+        <ChangeHandleModal
+          currentHandle={accountHandle}
+          token={token}
+          onClose={() => setShowChangeHandle(false)}
+          onSuccess={(newHandle) => {
+            setAccountHandle(newHandle);
+            setShowChangeHandle(false);
+          }}
+        />
+      )}
+
       {showChangePassword && token && accountId && (
         <ChangePasswordModal
           accountId={accountId}
@@ -417,61 +437,36 @@ export default function AccountPage() {
           <div className="mb-10">
             <p className="font-mono text-xs text-cyan-400 mb-3">— account</p>
             <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] divide-y divide-[#1e1e2e]">
-              {/* Display name row */}
+              {/* Handle row */}
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Display name</p>
-                  {editingDisplayName ? (
-                    <div className="flex items-center gap-2 mt-1">
-                      <input
-                        autoFocus
-                        type="text"
-                        value={displayNameInput}
-                        maxLength={50}
-                        onChange={(e) => { setDisplayNameInput(e.target.value); setDisplayNameError(""); }}
-                        className="bg-[#0a0a0f] border border-[#1e1e2e] focus:border-zinc-600 rounded-lg px-3 py-1.5 text-sm text-white outline-none"
-                      />
-                      <button
-                        onClick={async () => {
-                          const trimmed = displayNameInput.trim();
-                          if (!trimmed) { setDisplayNameError("Cannot be empty"); return; }
-                          setDisplayNameLoading(true);
-                          setDisplayNameError("");
-                          try {
-                            await updateDisplayName(trimmed, token!);
-                            setAccountDisplayName(trimmed);
-                            setEditingDisplayName(false);
-                          } catch (e) {
-                            setDisplayNameError(e instanceof Error ? e.message : "Update failed");
-                          } finally {
-                            setDisplayNameLoading(false);
-                          }
-                        }}
-                        disabled={displayNameLoading}
-                        className="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black text-sm font-semibold transition-colors"
-                      >
-                        {displayNameLoading ? "Saving…" : "Save"}
-                      </button>
-                      <button
-                        onClick={() => { setEditingDisplayName(false); setDisplayNameError(""); }}
-                        className="px-3 py-1.5 rounded-lg border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm transition-colors"
-                      >
-                        Cancel
-                      </button>
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Handle</p>
+                  <p className="text-sm text-white">{accountHandle ? `@${accountHandle}` : "—"}</p>
+                  {displayTier === "free" && (
+                    <div className="mt-1">
+                      <p className="text-xs text-zinc-500">Custom handles are a Pro feature.</p>
+                      <p className="text-xs text-zinc-500">Others can still reach you at this handle.</p>
                     </div>
-                  ) : (
-                    <p className="text-sm text-white">{accountDisplayName || "—"}</p>
                   )}
-                  {displayNameError && <p className="mt-1 text-xs text-red-400">{displayNameError}</p>}
                 </div>
-                {!editingDisplayName && (
-                  <button
-                    onClick={() => { setDisplayNameInput(accountDisplayName); setDisplayNameError(""); setEditingDisplayName(true); }}
-                    className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors shrink-0"
-                  >
-                    Edit
-                  </button>
-                )}
+                <div className="flex gap-2 shrink-0">
+                  {accountHandle && (
+                    <button
+                      onClick={() => void handleCopyHandle()}
+                      className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                    >
+                      {handleCopied ? "Copied" : "Copy"}
+                    </button>
+                  )}
+                  {displayTier != null && displayTier !== "free" && (
+                    <button
+                      onClick={() => setShowChangeHandle(true)}
+                      className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
+                    >
+                      Change handle
+                    </button>
+                  )}
+                </div>
               </div>
               {/* Email + password row */}
               <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
