@@ -194,6 +194,10 @@ export default function AccountPage() {
         setAccountId(me.account_id);
         setAccountEmail(me.email);
         setAccountHandle(me.handle);
+        // Authoritative over the JWT claim above: the token predates a
+        // verification the user may have completed since it was issued, and
+        // this value now decides whether the handle control is offered.
+        setEmailVerified(me.email_verified);
       } catch { /* non-critical */ }
 
       // Trial expired modal
@@ -442,12 +446,13 @@ export default function AccountPage() {
                 <div>
                   <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Handle</p>
                   <p className="text-sm text-white">{accountHandle ? `@${accountHandle}` : "—"}</p>
-                  {displayTier === "free" && (
-                    <div className="mt-1">
-                      <p className="text-xs text-zinc-500">Custom handles are a Pro feature.</p>
-                      <p className="text-xs text-zinc-500">Others can still reach you at this handle.</p>
-                    </div>
-                  )}
+                  <div className="mt-1">
+                    <p className="text-xs text-zinc-500">A custom handle makes you findable by people outside your teams.</p>
+                    <p className="text-xs text-zinc-500">Your current handle already works for anyone you give it to.</p>
+                    {emailVerified === false && (
+                      <p className="text-xs text-amber-300 mt-1">Verify your email to choose a custom handle.</p>
+                    )}
+                  </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
                   {accountHandle && (
@@ -458,14 +463,15 @@ export default function AccountPage() {
                       {handleCopied ? "Copied" : "Copy"}
                     </button>
                   )}
-                  {displayTier != null && displayTier !== "free" && (
-                    <button
-                      onClick={() => setShowChangeHandle(true)}
-                      className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm font-semibold transition-colors"
-                    >
-                      Change handle
-                    </button>
-                  )}
+                  {/* Disabled with the reason rather than hidden — hiding it is
+                      what made the old tier gate unreadable. */}
+                  <button
+                    onClick={() => setShowChangeHandle(true)}
+                    disabled={emailVerified === false}
+                    className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-[#1e1e2e] text-zinc-400 hover:text-white disabled:hover:text-zinc-400 text-sm font-semibold transition-colors"
+                  >
+                    Change handle
+                  </button>
                 </div>
               </div>
               {/* Email + password row */}

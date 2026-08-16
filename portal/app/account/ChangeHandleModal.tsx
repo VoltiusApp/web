@@ -36,8 +36,8 @@ export default function ChangeHandleModal({ currentHandle, token, onClose, onSuc
     try {
       await updateHandle(trimmed, token);
     } catch (err) {
-      if (err instanceof ApiError && err.status === 402) {
-        setError("Custom handles require Pro or above.");
+      if (err instanceof ApiError && err.status === 403) {
+        setError("Verify your email first, then choose your handle.");
       } else if (err instanceof ApiError && err.status === 409) {
         setError("That handle is taken.");
       } else if (err instanceof ApiError && err.status === 422) {
