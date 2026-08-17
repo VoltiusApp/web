@@ -135,8 +135,8 @@ export function login(authKey: string, accountId: string): Promise<AuthResponse>
   });
 }
 
-export function verifyEmail(token: string): Promise<{ email: string }> {
-  return request<{ email: string }>("/v1/auth/verify-email", {
+export function verifyEmail(token: string): Promise<{ email: string; user_id: string }> {
+  return request<{ email: string; user_id: string }>("/v1/auth/verify-email", {
     method: "POST",
     body: JSON.stringify({ token }),
   });

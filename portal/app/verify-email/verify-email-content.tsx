@@ -12,6 +12,7 @@ export default function VerifyEmailContent() {
   const token = params.get("token") ?? "";
   const [state, setState] = useState<VerifyState>(token ? "pending" : "invalid");
   const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [message, setMessage] = useState("");
   const [resending, setResending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
@@ -27,6 +28,7 @@ export default function VerifyEmailContent() {
     verifyEmail(token)
       .then((result) => {
         setEmail(result.email);
+        setUserId(result.user_id ?? "");
         setState("success");
       })
       .catch((err) => {
@@ -80,16 +82,31 @@ export default function VerifyEmailContent() {
             <div>
               <h2 className="text-base font-semibold text-white mb-1">Email verified</h2>
               <p className="text-sm text-zinc-400">
-                Your email is verified. Return to the Voltius app.
+                {userId
+                  ? "Your email is verified. Open Voltius to pick up where you left off."
+                  : "Your email is verified. Return to the Voltius app."}
               </p>
               {email && <p className="text-xs text-zinc-600 mt-2">{email}</p>}
             </div>
+            {userId && (
+              <a
+                href={`voltius://verified?u=${encodeURIComponent(userId)}`}
+                className="block w-full py-2.5 rounded-xl text-sm font-medium text-white text-center"
+                style={{ background: "#6366f1" }}
+              >
+                Open Voltius
+              </a>
+            )}
             <a
               href="/account"
-              className="block w-full py-2.5 rounded-xl text-sm font-medium text-white text-center"
-              style={{ background: "#6366f1" }}
+              className={
+                userId
+                  ? "block w-full text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-center"
+                  : "block w-full py-2.5 rounded-xl text-sm font-medium text-white text-center"
+              }
+              style={userId ? undefined : { background: "#6366f1" }}
             >
-              Go to account &gt;
+              {userId ? "Go to account →" : "Go to account >"}
             </a>
           </>
         )}
