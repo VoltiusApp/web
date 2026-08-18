@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { readFragment } from "./fragment";
 
 const UUID = "3f2504e0-4f89-11d3-9a0c-0305e82c3301";
@@ -118,4 +118,37 @@ describe("the navigate routes", () => {
   it("builds a billing target with no query string", () => {
     expect(readFragment("#billing")).toEqual({ url: "voltius://billing", code: null });
   });
+});
+
+test("an invite fragment forwards a well-formed handle and rejects anything else", () => {
+  expect(readFragment("#invite?h=%40kevin-p")?.url).toBe("voltius://invite?h=%40kevin-p");
+  expect(readFragment("#invite?h=kevin-p")?.url).toBe("voltius://invite?h=kevin-p");
+  expect(readFragment("#invite?h=ab")).toBeNull();
+  expect(readFragment("#invite?h=-kevin")).toBeNull();
+  expect(readFragment("#invite")).toBeNull();
+});
+
+test("a plugin-install fragment forwards a valid id and rejects a path-escaping one", () => {
+  expect(readFragment("#plugin-install?id=docker&src=voltius")?.url).toBe(
+    "voltius://plugin-install?id=docker&src=voltius",
+  );
+  expect(readFragment("#plugin-install?id=docker")?.url).toBe("voltius://plugin-install?id=docker");
+  expect(readFragment("#plugin-install?id=../evil")).toBeNull();
+  expect(readFragment("#plugin-install?id=__meta__")).toBeNull();
+  expect(readFragment("#plugin-install?id=Docker")).toBeNull();
+  expect(readFragment("#plugin-install")).toBeNull();
+});
+
+test("a snippet-install fragment forwards a non-empty id and rejects an over-long one", () => {
+  expect(readFragment("#snippet-install?id=docker-cleanup")?.url).toBe(
+    "voltius://snippet-install?id=docker-cleanup",
+  );
+  expect(readFragment("#snippet-install?id=")).toBeNull();
+  expect(readFragment("#snippet-install?id=" + "a".repeat(101))).toBeNull();
+});
+
+test("no new route produces a paste-able code", () => {
+  expect(readFragment("#invite?h=kevin-p")?.code).toBeNull();
+  expect(readFragment("#plugin-install?id=docker")?.code).toBeNull();
+  expect(readFragment("#snippet-install?id=docker-cleanup")?.code).toBeNull();
 });
