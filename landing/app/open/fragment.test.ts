@@ -32,10 +32,10 @@ describe("readFragment", () => {
     // Every route the app understands must also be listed here before a link to
     // it can work; an unlisted one has to fail closed rather than hop.
     it.each([
-      "#settings?section=mcp",
       "#plugin/install?id=evil",
       "#snippet/install?id=evil",
       "#notification/1",
+      "#pluginInstall?id=evil",
       "#connect?host=evil.example",
       "#JOIN?s=" + UUID + "&t=tok3n",
       "#join/../verified?u=" + UUID,
@@ -81,5 +81,41 @@ describe("readFragment", () => {
       const target = readFragment(`#join?s=${UUID}&t=tok3n%23x`);
       expect(target?.code).toBe(`${UUID}:tok3n#x`);
     });
+  });
+});
+
+describe("the navigate routes", () => {
+  it("builds a notification target with and without an entry id", () => {
+    expect(readFragment("#notification?n=invite%3A42")).toEqual({
+      url: "voltius://notification?n=invite%3A42",
+      code: null,
+    });
+    expect(readFragment("#notification")).toEqual({
+      url: "voltius://notification",
+      code: null,
+    });
+  });
+
+  it("rejects an entry id past the length the app accepts", () => {
+    expect(readFragment(`#notification?n=${"a".repeat(201)}`)).toBeNull();
+    expect(readFragment(`#notification?n=${"a".repeat(200)}`)).not.toBeNull();
+  });
+
+  it("passes a settings section the app can render", () => {
+    expect(readFragment("#settings?section=integrations")).toEqual({
+      url: "voltius://settings?section=integrations",
+      code: null,
+    });
+  });
+
+  it.each(["#settings?section=mcp", "#settings?section=__proto__", "#settings"])(
+    "rejects %s",
+    (hash) => {
+      expect(readFragment(hash)).toBeNull();
+    },
+  );
+
+  it("builds a billing target with no query string", () => {
+    expect(readFragment("#billing")).toEqual({ url: "voltius://billing", code: null });
   });
 });

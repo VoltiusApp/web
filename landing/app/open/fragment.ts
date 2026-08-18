@@ -12,9 +12,24 @@ const isSessionId = (value: string): boolean => UUID_RE.test(value);
 // reject a malformed one: an unparseable fragment must skip the hop entirely
 // and render the invalid state, not bounce the user out to a scheme URL the
 // client silently drops.
+// Mirrors `SETTINGS_SECTIONS` in voltius (src/stores/uiStore.ts). A section the
+// app cannot render must fail here rather than open an empty modal.
+const SETTINGS_SECTIONS = new Set([
+  "appearance", "account", "sync", "vaults", "plugins", "integrations", "terminal",
+  "sftp", "portForwarding", "hosts", "shortcuts", "diagnostics", "about",
+]);
+
+// Mirrors `MAX_ENTRY_ID` in voltius (src/services/deepLinkUrl.ts).
+const MAX_ENTRY_ID = 200;
+
 const ROUTE_VALIDATORS: Record<string, (params: URLSearchParams) => boolean> = {
   join: (params) => isSessionId(params.get("s") ?? "") && !!params.get("t"),
   verified: (params) => isSessionId(params.get("u") ?? ""),
+  // The inbox id is opaque — entries are re-derived from server state — so only
+  // its length is checked; an id the app no longer holds just opens the centre.
+  notification: (params) => (params.get("n") ?? "").length <= MAX_ENTRY_ID,
+  settings: (params) => SETTINGS_SECTIONS.has(params.get("section") ?? ""),
+  billing: () => true,
 };
 
 export type Target = {
