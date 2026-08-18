@@ -8,6 +8,9 @@ const RELEASE_CERT_SHA256 =
   "FB:08:A9:35:EA:0C:EA:E2:F1:7D:3E:F7:9A:2F:7E:8A:C6:8A:EE:DF:64:81:C3:30:EE:26:13:C2:45:77:FD:65";
 
 export const dynamic = "force-static";
+// A signing-key rotation must not be masked by up to a year of CDN cache on a
+// security-relevant file.
+export const revalidate = 3600;
 
 export function GET() {
   return Response.json([

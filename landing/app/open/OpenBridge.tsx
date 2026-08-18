@@ -53,7 +53,13 @@ export default function OpenBridge() {
 
   async function copyCode() {
     if (!target?.code) return;
-    await navigator.clipboard.writeText(target.code);
+    try {
+      await navigator.clipboard.writeText(target.code);
+    } catch {
+      // Denied permission or an insecure context. The code stays visible in
+      // the button, so there is nothing more to do here.
+      return;
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
