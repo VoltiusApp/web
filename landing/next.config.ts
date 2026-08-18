@@ -1,19 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  async headers() {
+  async redirects() {
     return [
-      {
-        // /open assigns location.href on mount with no user gesture; framing
-        // protection stops a third-party page from iframing it to trigger an
-        // unprompted scheme launch.
-        source: "/open",
-        headers: [
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
-        ],
-      },
+      // The in-app updater and the README send users to /download; the download
+      // section lives on the home page. Temporary so a future real page isn't
+      // shadowed by a cached 308.
+      { source: "/download", destination: "/#download", permanent: false },
     ];
   },
 };
