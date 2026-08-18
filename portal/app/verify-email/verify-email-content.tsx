@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ApiError, resendVerificationEmail, verifyEmail } from "../../lib/api";
@@ -16,6 +16,9 @@ export default function VerifyEmailContent() {
   const [message, setMessage] = useState("");
   const [resending, setResending] = useState(false);
   const [resendSent, setResendSent] = useState(false);
+  const [autoOpenStalled, setAutoOpenStalled] = useState(false);
+  const autoOpened = useRef(false);
+  const openAppUrl = userId ? `voltius://verified?u=${encodeURIComponent(userId)}` : "";
   const hasSession = typeof window !== "undefined" && Boolean(sessionStorage.getItem("access_token"));
 
   useEffect(() => {
@@ -37,6 +40,14 @@ export default function VerifyEmailContent() {
         else setState("error");
       });
   }, [token]);
+
+  useEffect(() => {
+    if (state !== "success" || !openAppUrl || autoOpened.current) return;
+    autoOpened.current = true;
+    window.location.href = openAppUrl;
+    const timer = setTimeout(() => setAutoOpenStalled(true), 2500);
+    return () => clearTimeout(timer);
+  }, [state, openAppUrl]);
 
   async function handleResend() {
     const authToken = sessionStorage.getItem("access_token");
@@ -82,15 +93,17 @@ export default function VerifyEmailContent() {
             <div>
               <h2 className="text-base font-semibold text-white mb-1">Email verified</h2>
               <p className="text-sm text-zinc-400">
-                {userId
-                  ? "Your email is verified. Open Voltius to pick up where you left off."
-                  : "Your email is verified. Return to the Voltius app."}
+                {!openAppUrl
+                  ? "Your email is verified. Return to the Voltius app."
+                  : autoOpenStalled
+                    ? "Your email is verified. If Voltius did not open, use the button below."
+                    : "Your email is verified. Opening Voltius..."}
               </p>
               {email && <p className="text-xs text-zinc-600 mt-2">{email}</p>}
             </div>
-            {userId && (
+            {openAppUrl && (
               <a
-                href={`voltius://verified?u=${encodeURIComponent(userId)}`}
+                href={openAppUrl}
                 className="block w-full py-2.5 rounded-xl text-sm font-medium text-white text-center"
                 style={{ background: "#6366f1" }}
               >
@@ -100,13 +113,13 @@ export default function VerifyEmailContent() {
             <a
               href="/account"
               className={
-                userId
+                openAppUrl
                   ? "block w-full text-xs text-zinc-500 hover:text-zinc-300 transition-colors text-center"
                   : "block w-full py-2.5 rounded-xl text-sm font-medium text-white text-center"
               }
-              style={userId ? undefined : { background: "#6366f1" }}
+              style={openAppUrl ? undefined : { background: "#6366f1" }}
             >
-              {userId ? "Go to account →" : "Go to account >"}
+              {openAppUrl ? "Go to account →" : "Go to account >"}
             </a>
           </>
         )}
