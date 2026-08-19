@@ -22,6 +22,20 @@ const SETTINGS_SECTIONS = new Set([
 // Mirrors `MAX_ENTRY_ID` in voltius (src/services/deepLinkUrl.ts).
 const MAX_ENTRY_ID = 200;
 
+// Mirrors `HANDLE_RE` in voltius (src/services/deepLinkUrl.ts), itself the
+// server's `validate_custom_handle` rule.
+const HANDLE_RE = /^[a-z0-9][a-z0-9_-]{1,28}[a-z0-9]$/;
+
+// Mirrors `isValidPluginId` in voltius (src/plugins/pluginId.ts). The leading
+// alphanumeric is what keeps `__meta__` and `..` unclaimable, so it is not
+// cosmetic — a plugin id becomes a directory name on the client.
+const PLUGIN_ID_RE = /^[a-z0-9][a-z0-9._-]*$/;
+const PLUGIN_ID_MAX_LENGTH = 64;
+
+// Mirrors `MAX_SOURCE_ID` and `MAX_CATALOG_ID` in voltius (src/services/deepLinkUrl.ts).
+const MAX_SOURCE_ID = 100;
+const MAX_CATALOG_ID = 100;
+
 const ROUTE_VALIDATORS: Record<string, (params: URLSearchParams) => boolean> = {
   join: (params) => isSessionId(params.get("s") ?? "") && !!params.get("t"),
   verified: (params) => isSessionId(params.get("u") ?? ""),
@@ -30,6 +44,24 @@ const ROUTE_VALIDATORS: Record<string, (params: URLSearchParams) => boolean> = {
   notification: (params) => (params.get("n") ?? "").length <= MAX_ENTRY_ID,
   settings: (params) => SETTINGS_SECTIONS.has(params.get("section") ?? ""),
   billing: () => true,
+  invite: (params) => HANDLE_RE.test((params.get("h") ?? "").replace(/^@/, "").toLowerCase()),
+  // The source is a catalogue *id* the client resolves against its own configured
+  // sources, never a URL — so only its length is checked here.
+  "plugin-install": (params) => {
+    const id = params.get("id") ?? "";
+    return (
+      id.length > 0 &&
+      id.length <= PLUGIN_ID_MAX_LENGTH &&
+      PLUGIN_ID_RE.test(id) &&
+      (params.get("src") ?? "").length <= MAX_SOURCE_ID
+    );
+  },
+  // The catalogue id is opaque — the client fetches the catalogue at confirm time —
+  // so only its presence and length are checked.
+  "snippet-install": (params) => {
+    const id = params.get("id") ?? "";
+    return id.length > 0 && id.length <= MAX_CATALOG_ID;
+  },
 };
 
 export type Target = {
