@@ -112,14 +112,15 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
               {p.platform === "macos" && (
                 <div className="border-t border-white/5 pt-3 pb-1">
                   <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
-                    Recommended — Homebrew (skips Gatekeeper):
+                    Recommended — Homebrew (auto-updating)
                   </p>
-                  <CopyCommand command="brew install --cask --no-quarantine voltiusapp/voltius/voltius" />
+                  <CopyCommand command="brew install --cask voltiusapp/voltius/voltius" />
                   <p className="text-[11px] text-zinc-500 mt-2.5 mb-1.5 px-1">
-                    Downloaded the .dmg and macOS says it’s “damaged”? Clear the
-                    quarantine flag:
+                    Gatekeeper warns on first launch — Control-click Voltius in
+                    Applications and choose Open. If macOS calls it
+                    “damaged”, strip the quarantine metadata:
                   </p>
-                  <CopyCommand command="xattr -cr /Applications/Voltius.app" />
+                  <CopyCommand command="xattr -dr com.apple.quarantine /Applications/Voltius.app" />
                 </div>
               )}
               {p.platform === "android" && (
