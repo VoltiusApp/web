@@ -107,6 +107,17 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
                     Recommended — apt / dnf (auto-updating)
                   </p>
                   <CopyCommand command="curl -fsSL https://repo.voltius.app/setup.sh | sudo bash" />
+                  <p className="text-[11px] text-zinc-500 mt-2.5 mb-1.5 px-1">
+                    Arch — AUR (community-maintained by{" "}
+                    <a
+                      href="https://aur.archlinux.org/account/ezhkov/"
+                      className="underline hover:text-cyan-400"
+                    >
+                      ezhkov
+                    </a>
+                    , not built by our CI):
+                  </p>
+                  <CopyCommand command="yay -S voltius-bin" />
                 </div>
               )}
               {p.platform === "macos" && (
