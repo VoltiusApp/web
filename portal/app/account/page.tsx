@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { PLANS, PER_SEAT_PLAN_IDS, MIN_SEATS, planOrder, trialLabel } from "@shared/plans";
 import Image from "next/image";
 import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
@@ -19,96 +20,11 @@ const PLAN_LABELS: Record<string, string> = {
   pro_trial: "Pro (Trial)",
 };
 
-const PLAN_ORDER: Record<string, number> = { free: 0, pro: 1, teams: 2, business: 3 };
-
-// Billed on quantity by the server, which floors both at 3 seats.
-const PER_SEAT_PLAN_IDS = ["teams", "business"];
-const MIN_SEATS = 3;
-
-const allPlans = [
-  {
-    id: "free",
-    name: "Free",
-    annualPrice: 0,
-    monthlyPrice: 0,
-    period: "forever",
-    desc: "Everything you need, no account required.",
-    trial: null as string | null,
-    noCreditCard: false,
-    comingSoon: false,
-    features: [
-      "All core SSH features",
-      "SFTP with drag & drop",
-      "Docker & serial console",
-      "Gist E2EE sync (free)",
-      "Plugin system",
-      "Custom themes",
-      "Local terminal",
-      "Port forwarding",
-      "Audit logs",
-      "Snippets & command palette",
-      "Import / Export (no lock-in)",
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    annualPrice: 7,
-    monthlyPrice: 9,
-    period: "/ month",
-    savings: "Save 22% with annual billing",
-    desc: "Real-time sync and unlimited vaults for power users.",
-    trial: "14-day free trial" as string | null,
-    noCreditCard: true,
-    comingSoon: false,
-    features: [
-      "Everything in Free",
-      "Real-time cloud sync (CRDTs)",
-      "Sub-second updates via SSE",
-      "Unlimited private vaults",
-      "Real-time collaboration — 1 session · 1 participant",
-    ],
-  },
-  {
-    id: "teams",
-    name: "Teams",
-    annualPrice: 15,
-    monthlyPrice: 18,
-    period: "/ user / month",
-    savings: "Save 17% with annual billing",
-    desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
-    trial: "14-day free trial" as string | null,
-    noCreditCard: false,
-    comingSoon: false,
-    features: [
-      "Everything in Pro",
-      "Team vaults & invites",
-      "Real-time collaboration — 5 sessions · 10 participants each",
-      "Built-in roles (Owner, Manager, Editor, Member)",
-      "Team audit logs",
-    ],
-  },
-  {
-    id: "business",
-    name: "Business",
-    annualPrice: 25,
-    monthlyPrice: 30,
-    period: "/ user / month",
-    savings: "Save 17% with annual billing" as string | null,
-    desc: "Commercial license, advanced collaboration, and dedicated support for organizations (3-user minimum).",
-    trial: null as string | null,
-    noCreditCard: false,
-    comingSoon: false,
-    features: [
-      "Everything in Teams",
-      "Real-time collaboration — 20 sessions · 50 participants each",
-      "Custom roles & granular permissions",
-      "Commercial license exception",
-      "Priority SLA support",
-      "Custom contracts",
-    ],
-  },
-];
+const allPlans = PLANS.map((plan) => ({
+  ...plan,
+  trial: plan.trial ? trialLabel(plan.trial) : null,
+  noCreditCard: plan.trial ? !plan.trial.creditCardRequired : false,
+}));
 
 export default function AccountPage() {
   const router = useRouter();
@@ -648,10 +564,9 @@ function PlanCard({
     : billingPeriod === "annual" ? "billed annually"
     : "billed monthly";
 
-  const currentOrder = PLAN_ORDER[activePlanId] ?? 0;
-  const planOrder = PLAN_ORDER[plan.id] ?? 0;
+  const currentOrder = planOrder(activePlanId);
   const isActive = plan.id === activePlanId;
-  const isUpgrade = planOrder > currentOrder;
+  const isUpgrade = planOrder(plan.id) > currentOrder;
 
   const loading = checkoutLoading || portalLoading;
   const renewalDate = formatBillingDate(renewsAt);
@@ -764,13 +679,7 @@ function PlanCard({
       )}
 
       {/* CTA */}
-      {plan.comingSoon ? (
-        <div
-          className="w-full py-2.5 rounded-xl text-sm font-semibold text-center border border-[#1e1e2e] text-zinc-600 cursor-default select-none"
-        >
-          Coming soon
-        </div>
-      ) : isActive ? (
+      {isActive ? (
         <div className="flex flex-col gap-2">
           {onTrial && plan.id === "pro" ? (
             <>

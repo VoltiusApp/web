@@ -2,91 +2,24 @@
 
 import { useFadeIn } from "../hooks/useFadeIn";
 
-const plans = [
-  {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    desc: "Everything you need, no account required.",
-    highlight: false,
-    cta: "Download",
-    ctaHref: "#download",
-    features: [
-      "All core SSH features",
-      "SFTP with drag & drop",
-      "Docker & serial console",
-      "Gist E2EE sync (free)",
-      "Plugin system",
-      "Custom themes",
-      "Local terminal",
-      "Persistent sessions & workspace restore",
-      "Port forwarding",
-      "Audit logs",
-      "Snippets & command palette",
-      "Import / Export (no lock-in)",
-    ],
-  },
-  {
-    name: "Pro",
-    price: "$7",
-    period: "/ month",
-    billingNote: "billed annually",
-    monthlyOption: "or $9 billed monthly",
-    savings: "Save 22% with annual billing",
-    desc: "Real-time sync and unlimited vaults for power users.",
-    highlight: true,
-    trial: "14-day free trial",
-    cta: "Start free trial",
-    ctaHref: "https://app.voltius.app/signup?plan=pro",
-    features: [
-      "Everything in Free",
-      "Real-time cloud sync (CRDTs)",
-      "Sub-second updates via SSE",
-      "Cross-device sessions — one live terminal, shared on all your devices",
-      "Unlimited private vaults",
-      "Real-time collaboration — 1 session · 1 participant",
-    ],
-  },
-  {
-    name: "Teams",
-    price: "$15",
-    period: "/ user / month",
-    billingNote: "billed annually",
-    monthlyOption: "or $18 billed monthly",
-    savings: "Save 17% with annual billing",
-    desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
-    highlight: false,
-    cta: "Get Teams",
-    ctaHref: "https://app.voltius.app/signup?plan=teams",
-    features: [
-      "Everything in Pro",
-      "Team vaults & invites",
-      "Real-time collaboration — 5 sessions · 10 participants each",
-      "Built-in roles (Owner, Manager, Editor, Member)",
-      "Team audit logs",
-    ],
-  },
-  {
-    name: "Business",
-    price: "$25",
-    period: "/ user / month",
-    billingNote: "billed annually",
-    monthlyOption: "or $30 billed monthly",
-    savings: "Save 17% with annual billing",
-    desc: "Commercial license, advanced collaboration, and dedicated support for organizations (3-user minimum).",
-    highlight: false,
-    cta: "Get Business",
-    ctaHref: "https://app.voltius.app/signup?plan=business",
-    features: [
-      "Everything in Teams",
-      "Real-time collaboration — 20 sessions · 50 participants each",
-      "Custom roles & granular permissions",
-      "Commercial license",
-      "Priority support",
-      "Custom contracts",
-    ],
-  },
-];
+import { PLANS, priceLabel, trialLabel, trialCardLabel, type PlanId } from "@shared/plans";
+
+/** Presentation that belongs to this page only: which card is featured and where its button goes. */
+const PRESENTATION: Record<PlanId, { highlight: boolean; cta: string; ctaHref: string }> = {
+  free: { highlight: false, cta: "Download", ctaHref: "#download" },
+  pro: { highlight: true, cta: "Start free trial", ctaHref: "https://app.voltius.app/signup?plan=pro" },
+  teams: { highlight: false, cta: "Get Teams", ctaHref: "https://app.voltius.app/signup?plan=teams" },
+  business: { highlight: false, cta: "Get Business", ctaHref: "https://app.voltius.app/signup?plan=business" },
+};
+
+const plans = PLANS.map((plan) => ({
+  ...plan,
+  ...PRESENTATION[plan.id],
+  price: priceLabel(plan.annualPrice),
+  billingNote: plan.annualPrice > 0 ? "billed annually" : null,
+  monthlyOption: plan.monthlyPrice > 0 ? `or ${priceLabel(plan.monthlyPrice)} billed monthly` : null,
+  trialNote: plan.trial ? `${trialLabel(plan.trial)} • ${trialCardLabel(plan.trial)}` : null,
+}));
 
 function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }) {
   const ref = useFadeIn(index * 80);
@@ -111,13 +44,13 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
           <span className="text-3xl font-bold text-white">{plan.price}</span>
           {plan.period && <span className="text-sm text-zinc-500">{plan.period}</span>}
         </div>
-        {"billingNote" in plan && plan.billingNote && (
+        {plan.billingNote && (
           <p className="mt-1 text-xs text-zinc-500">{plan.billingNote}</p>
         )}
-        {"monthlyOption" in plan && plan.monthlyOption && (
+        {plan.monthlyOption && (
           <p className="mt-1 text-xs text-zinc-500">{plan.monthlyOption}</p>
         )}
-        {"savings" in plan && plan.savings && (
+        {plan.savings && (
           <p className="mt-1 text-xs font-medium text-cyan-400">{plan.savings}</p>
         )}
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
@@ -133,10 +66,8 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
       >
         {plan.cta}
       </a>
-      {"trial" in plan && (
-        <p className="-mt-3 text-center text-xs text-zinc-500">
-          {plan.trial as string} • {"trialNote" in plan ? plan.trialNote as string : "no credit card required"}
-        </p>
+      {plan.trialNote && (
+        <p className="-mt-3 text-center text-xs text-zinc-500">{plan.trialNote}</p>
       )}
 
       <ul className="flex flex-col gap-2">

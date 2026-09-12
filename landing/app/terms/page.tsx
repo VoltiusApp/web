@@ -1,9 +1,18 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { PLANS, MIN_SEATS, priceLabel, trialLabel, trialCardLabel, type Plan } from "@shared/plans";
 
 export const metadata: Metadata = {
   title: "Terms of Service — Voltius",
 };
+
+/** Renders the billing terms for one plan from the catalogue, so prices are stated once. */
+function planPriceSentence(plan: Plan): string {
+  if (plan.annualPrice === 0) return "$0, no account required.";
+  const rate = plan.perSeat ? "/user/month" : "/month";
+  const seats = plan.perSeat ? `, billed per seat with a ${MIN_SEATS}-user minimum` : "";
+  return `${priceLabel(plan.annualPrice)}${rate} (billed annually) or ${priceLabel(plan.monthlyPrice)}${rate} (billed monthly)${seats}.`;
+}
 
 const EFFECTIVE_DATE = "April 23, 2026";
 const CONTACT_EMAIL = "contact@voltius.app";
@@ -56,23 +65,13 @@ export default function TermsPage() {
               date. No refunds are issued for partial periods, except as required by applicable law.
             </p>
             <ul className="list-disc pl-6 mt-3 space-y-1 text-sm">
-              <li>
-                <strong className="text-white">Free</strong> — $0, no account required.
-              </li>
-              <li>
-                <strong className="text-white">Pro</strong> — $7/month (billed annually) or
-                $9/month (billed monthly). Includes a 14-day free trial, no credit card required.
-              </li>
-              <li>
-                <strong className="text-white">Teams</strong> — $15/user/month (billed annually) or
-                $18/user/month (billed monthly), billed per seat with a 3-user minimum. Includes a
-                14-day free trial, credit card required.
-              </li>
-              <li>
-                <strong className="text-white">Business</strong> — $25/user/month (billed annually)
-                or $30/user/month (billed monthly), billed per seat with a 3-user minimum.
-                Contact us for custom contracts and self-hosted deployment.
-              </li>
+              {PLANS.map((plan) => (
+                <li key={plan.id}>
+                  <strong className="text-white">{plan.name}</strong> — {planPriceSentence(plan)}
+                  {plan.trial && ` Includes a ${trialLabel(plan.trial)}, ${trialCardLabel(plan.trial)}.`}
+                  {plan.id === "business" && " Contact us for custom contracts and self-hosted deployment."}
+                </li>
+              ))}
             </ul>
           </Section>
 
