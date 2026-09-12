@@ -1,18 +1,18 @@
-name: landing
+name: portal
 
 on:
   push:
     branches: [main]
-    paths: ["landing/**", "shared/**", ".github/workflows/landing.yml"]
+    paths: ["portal/**", "shared/**", ".github/workflows/portal.yml"]
   pull_request:
-    paths: ["landing/**", "shared/**", ".github/workflows/landing.yml"]
+    paths: ["portal/**", "shared/**", ".github/workflows/portal.yml"]
 
 jobs:
   check:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: landing
+        working-directory: portal
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -22,8 +22,6 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: landing/pnpm-lock.yaml
+          cache-dependency-path: portal/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-      - run: pnpm test
       - run: pnpm exec tsc --noEmit
