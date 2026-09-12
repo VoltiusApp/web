@@ -65,12 +65,13 @@ export default function TermsPage() {
               </li>
               <li>
                 <strong className="text-white">Teams</strong> — $15/user/month (billed annually) or
-                $18/user/month (billed monthly), billed per seat with a 3-user minimum.
+                $18/user/month (billed monthly), billed per seat with a 3-user minimum. Includes a
+                14-day free trial, credit card required.
               </li>
               <li>
                 <strong className="text-white">Business</strong> — $25/user/month (billed annually)
-                or $30/user/month (billed monthly), billed per seat with a 3-user minimum. Not yet
-                available for purchase. Contact us for custom contracts and self-hosted deployment.
+                or $30/user/month (billed monthly), billed per seat with a 3-user minimum.
+                Contact us for custom contracts and self-hosted deployment.
               </li>
             </ul>
           </Section>
