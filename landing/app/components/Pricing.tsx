@@ -75,9 +75,8 @@ const plans = [
     savings: "Save 17% with annual billing",
     desc: "Commercial license, advanced collaboration, and dedicated support for organizations (3-user minimum).",
     highlight: false,
-    comingSoon: true,
-    cta: "Coming soon",
-    ctaHref: "",
+    cta: "Get Business",
+    ctaHref: "https://app.voltius.app/signup?plan=business",
     features: [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
@@ -94,18 +93,12 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
   return (
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
-      className={`fade-in relative rounded-2xl border p-6 flex flex-col gap-6 transition-all duration-300 ${"comingSoon" in plan && plan.comingSoon
-        ? "border-border bg-surface opacity-60"
-        : plan.highlight
+      className={`fade-in relative rounded-2xl border p-6 flex flex-col gap-6 transition-all duration-300 ${
+        plan.highlight
           ? "border-cyan-500/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20"
           : "border-border bg-surface hover:border-zinc-700 hover:shadow-[0_0_24px_rgba(255,255,255,0.03)]"
       }`}
     >
-      {"comingSoon" in plan && plan.comingSoon && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-zinc-700 text-zinc-300">
-          Coming soon
-        </span>
-      )}
       {plan.highlight && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-cyan-500 text-black">
           Recommended
@@ -130,22 +123,16 @@ function PricingCard({ plan, index }: { plan: (typeof plans)[0]; index: number }
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
       </div>
 
-      {"comingSoon" in plan && plan.comingSoon ? (
-        <div className="text-center text-sm font-medium py-2.5 rounded-xl border border-border text-zinc-600 cursor-default select-none">
-          Coming soon
-        </div>
-      ) : (
-        <a
-          href={plan.ctaHref}
-          className={`text-center text-sm font-medium py-2.5 rounded-xl transition-all duration-200 ${
-            plan.highlight
-              ? "bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
-              : "border border-border hover:border-zinc-600 text-zinc-300 hover:text-white"
-          }`}
-        >
-          {plan.cta}
-        </a>
-      )}
+      <a
+        href={plan.ctaHref}
+        className={`text-center text-sm font-medium py-2.5 rounded-xl transition-all duration-200 ${
+          plan.highlight
+            ? "bg-cyan-500 hover:bg-cyan-400 text-black shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
+            : "border border-border hover:border-zinc-600 text-zinc-300 hover:text-white"
+        }`}
+      >
+        {plan.cta}
+      </a>
       {"trial" in plan && (
         <p className="-mt-3 text-center text-xs text-zinc-500">
           {plan.trial as string} • {"trialNote" in plan ? plan.trialNote as string : "no credit card required"}
