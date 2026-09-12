@@ -68,8 +68,9 @@ export default function TermsPage() {
                 $18/user/month (billed monthly), billed per seat with a 3-user minimum.
               </li>
               <li>
-                <strong className="text-white">Business</strong> — $30/user/month. Not yet available
-                for purchase. Contact us for custom contracts and self-hosted deployment.
+                <strong className="text-white">Business</strong> — $25/user/month (billed annually)
+                or $30/user/month (billed monthly), billed per seat with a 3-user minimum. Not yet
+                available for purchase. Contact us for custom contracts and self-hosted deployment.
               </li>
             </ul>
           </Section>
