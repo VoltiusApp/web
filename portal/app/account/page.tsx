@@ -200,13 +200,14 @@ export default function AccountPage() {
         setEmailVerified(me.email_verified);
       } catch { /* non-critical */ }
 
-      // Trial expired modal
+      // Trial expired modal. The server clears trial_ends_at once a trial
+      // lapses, claim included, so trial_used is the only signal that survives.
       const finalTier = sessionStorage.getItem("tier") ?? "free";
       const trialEndsAt = sessionStorage.getItem("trial_ends_at");
       const trialExpired =
-        trialEndsAt &&
-        Date.now() / 1000 > Number(trialEndsAt) &&
-        finalTier === "free";
+        payload.trial_used === true &&
+        finalTier === "free" &&
+        (!trialEndsAt || Date.now() / 1000 > Number(trialEndsAt));
       if (trialExpired && !localStorage.getItem(TRIAL_EXPIRED_MODAL_KEY)) {
         setShowTrialModal(true);
         localStorage.setItem(TRIAL_EXPIRED_MODAL_KEY, "1");
@@ -580,10 +581,18 @@ export default function AccountPage() {
   );
 }
 
-function decodeJwtPayload(token: string): { tier?: string; trial_ends_at?: number | null; email_verified?: boolean; email?: string } {
+type JwtPayload = {
+  tier?: string;
+  trial_ends_at?: number | null;
+  trial_used?: boolean;
+  email_verified?: boolean;
+  email?: string;
+};
+
+function decodeJwtPayload(token: string): JwtPayload {
   try {
     const raw = atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/"));
-    return JSON.parse(raw) as { tier?: string; trial_ends_at?: number | null; email_verified?: boolean; email?: string };
+    return JSON.parse(raw) as JwtPayload;
   } catch {
     return {};
   }
