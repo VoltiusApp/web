@@ -56,9 +56,8 @@ const plans = [
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
     highlight: false,
-    comingSoon: true,
-    cta: "Coming soon",
-    ctaHref: "",
+    cta: "Get Teams",
+    ctaHref: "https://app.voltius.app/signup?plan=teams",
     features: [
       "Everything in Pro",
       "Team vaults & invites",
