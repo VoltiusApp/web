@@ -21,6 +21,10 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_ORDER: Record<string, number> = { free: 0, pro: 1, teams: 2, business: 3 };
 
+// Billed on quantity by the server, which floors both at 3 seats.
+const PER_SEAT_PLAN_IDS = ["teams", "business"];
+const MIN_SEATS = 3;
+
 const allPlans = [
   {
     id: "free",
@@ -73,9 +77,9 @@ const allPlans = [
     period: "/ user / month",
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
-    trial: null as string | null,
+    trial: "14-day free trial" as string | null,
     noCreditCard: false,
-    comingSoon: true,
+    comingSoon: false,
     features: [
       "Everything in Pro",
       "Team vaults & invites",
@@ -87,14 +91,14 @@ const allPlans = [
   {
     id: "business",
     name: "Business",
-    annualPrice: 30,
+    annualPrice: 25,
     monthlyPrice: 30,
     period: "/ user / month",
-    savings: null as string | null,
-    desc: "Self-hosted backend with SLA and dedicated support.",
+    savings: "Save 17% with annual billing" as string | null,
+    desc: "Commercial license, advanced collaboration, and dedicated support for organizations (3-user minimum).",
     trial: null as string | null,
     noCreditCard: false,
-    comingSoon: true,
+    comingSoon: false,
     features: [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
@@ -631,11 +635,15 @@ function PlanCard({
   portalLoading: boolean;
   seatsLoading: boolean;
 }) {
-  const isTeams = plan.id === "teams";
-  const seats = isTeams ? teamsSeats : undefined;
+  const isPerSeat = PER_SEAT_PLAN_IDS.includes(plan.id);
+  // Mirrors teamsSeats so the field can hold a transient value while typing,
+  // but still follows the +/- buttons, which change it from outside.
+  const [seatDraft, setSeatDraft] = useState(String(teamsSeats));
+  useEffect(() => setSeatDraft(String(teamsSeats)), [teamsSeats]);
+  const seats = isPerSeat ? teamsSeats : undefined;
   const unitPrice = billingPeriod === "annual" ? plan.annualPrice : plan.monthlyPrice;
-  const displayPrice = isTeams ? unitPrice * teamsSeats : unitPrice;
-  const displayPeriod = isTeams ? "/ month" : plan.period;
+  const displayPrice = isPerSeat ? unitPrice * teamsSeats : unitPrice;
+  const displayPeriod = isPerSeat ? "/ month" : plan.period;
   const billingNote = plan.annualPrice === 0 ? "no account required"
     : billingPeriod === "annual" ? "billed annually"
     : "billed monthly";
@@ -706,23 +714,43 @@ function PlanCard({
       </div>
 
       {/* Seat selector for teams */}
-      {isTeams && (
+      {isPerSeat && (
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-zinc-500">Seats</span>
           <div className="flex items-center gap-1.5">
             <button
-              onClick={() => onChangeTeamsSeats(Math.max(3, teamsSeats - 1))}
+              onClick={() => onChangeTeamsSeats(Math.max(MIN_SEATS, teamsSeats - 1))}
               className="w-7 h-7 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-xs transition-colors"
               aria-label="Remove seat"
             >−</button>
-            <span className="w-8 text-center text-sm font-semibold text-white">{teamsSeats}</span>
+            <input
+              type="number"
+              min={MIN_SEATS}
+              inputMode="numeric"
+              value={seatDraft}
+              onChange={(e) => {
+                setSeatDraft(e.target.value);
+                const n = Number(e.target.value);
+                // Commit only a usable value; a half-typed "1" on the way to
+                // "10" must not snap the field back to the minimum.
+                if (Number.isInteger(n) && n >= MIN_SEATS) onChangeTeamsSeats(n);
+              }}
+              onBlur={() => {
+                const n = Number(seatDraft);
+                const clamped = Number.isInteger(n) && n >= MIN_SEATS ? n : MIN_SEATS;
+                setSeatDraft(String(clamped));
+                onChangeTeamsSeats(clamped);
+              }}
+              aria-label="Seats"
+              className="w-12 text-center text-sm font-semibold text-white bg-transparent border border-transparent rounded-lg focus:border-zinc-600 focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
             <button
               onClick={() => onChangeTeamsSeats(teamsSeats + 1)}
               className="w-7 h-7 rounded-lg border border-[#1e1e2e] bg-[#0a0a0f] text-zinc-400 hover:text-white hover:border-zinc-600 text-xs transition-colors"
               aria-label="Add seat"
             >+</button>
           </div>
-          <span className="text-xs text-zinc-600">min. 3</span>
+          <span className="text-xs text-zinc-600">min. {MIN_SEATS}</span>
           {isActive && (
             <button
               onClick={() => onUpdateSeats(teamsSeats)}
