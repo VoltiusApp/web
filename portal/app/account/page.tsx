@@ -21,6 +21,9 @@ const PLAN_LABELS: Record<string, string> = {
 
 const PLAN_ORDER: Record<string, number> = { free: 0, pro: 1, teams: 2, business: 3 };
 
+// Billed on quantity by the server, which floors both at 3 seats.
+const PER_SEAT_PLAN_IDS = ["teams", "business"];
+
 const allPlans = [
   {
     id: "free",
@@ -73,9 +76,9 @@ const allPlans = [
     period: "/ user / month",
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
-    trial: null as string | null,
+    trial: "14-day free trial" as string | null,
     noCreditCard: false,
-    comingSoon: true,
+    comingSoon: false,
     features: [
       "Everything in Pro",
       "Team vaults & invites",
@@ -87,14 +90,14 @@ const allPlans = [
   {
     id: "business",
     name: "Business",
-    annualPrice: 30,
+    annualPrice: 25,
     monthlyPrice: 30,
     period: "/ user / month",
-    savings: null as string | null,
-    desc: "Self-hosted backend with SLA and dedicated support.",
+    savings: "Save 17% with annual billing" as string | null,
+    desc: "Commercial license, advanced collaboration, and dedicated support for organizations (3-user minimum).",
     trial: null as string | null,
     noCreditCard: false,
-    comingSoon: true,
+    comingSoon: false,
     features: [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
@@ -631,11 +634,11 @@ function PlanCard({
   portalLoading: boolean;
   seatsLoading: boolean;
 }) {
-  const isTeams = plan.id === "teams";
-  const seats = isTeams ? teamsSeats : undefined;
+  const isPerSeat = PER_SEAT_PLAN_IDS.includes(plan.id);
+  const seats = isPerSeat ? teamsSeats : undefined;
   const unitPrice = billingPeriod === "annual" ? plan.annualPrice : plan.monthlyPrice;
-  const displayPrice = isTeams ? unitPrice * teamsSeats : unitPrice;
-  const displayPeriod = isTeams ? "/ month" : plan.period;
+  const displayPrice = isPerSeat ? unitPrice * teamsSeats : unitPrice;
+  const displayPeriod = isPerSeat ? "/ month" : plan.period;
   const billingNote = plan.annualPrice === 0 ? "no account required"
     : billingPeriod === "annual" ? "billed annually"
     : "billed monthly";
@@ -706,7 +709,7 @@ function PlanCard({
       </div>
 
       {/* Seat selector for teams */}
-      {isTeams && (
+      {isPerSeat && (
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-zinc-500">Seats</span>
           <div className="flex items-center gap-1.5">
