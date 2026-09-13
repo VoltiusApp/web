@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Icon } from "@iconify/react";
 import { getAssetsForPlatform, type Asset, type Platform } from "../lib/downloadAssets";
 import { GITHUB_REPO_URL } from "../lib/github";
+import { OBTAINIUM_ADD_URL } from "../lib/obtainium";
 import CopyCommand from "./CopyCommand";
 import MobileWaitlistForm from "./MobileWaitlistForm";
 
@@ -40,7 +42,7 @@ const platforms: readonly PlatformCard[] = [
   {
     name: "Android",
     icon: "material-symbols:android",
-    ext: "arm64 · sideload .apk",
+    ext: "Obtainium · arm64 .apk",
     platform: "android",
     experimental: true,
   },
@@ -137,8 +139,26 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
               {p.platform === "android" && (
                 <div className="border-t border-white/5 pt-3 pb-1">
                   <p className="text-[11px] text-zinc-500 mb-1.5 px-1">
-                    Sideload — enable “Install unknown apps” for your browser,
-                    then open the .apk. No auto-updates yet.
+                    Recommended — Obtainium (auto-updating)
+                  </p>
+                  <a
+                    href={OBTAINIUM_ADD_URL}
+                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-xs text-zinc-400 hover:bg-white/5 hover:text-cyan-400 transition-colors"
+                  >
+                    <Image
+                      src="/obtainium-badge.png"
+                      alt="Get it on Obtainium"
+                      width={646}
+                      height={250}
+                      className="h-9 w-auto shrink-0"
+                    />
+                    <span>
+                      Open on your phone — installs every release as it lands
+                    </span>
+                  </a>
+                  <p className="text-[11px] text-zinc-500 mt-2.5 px-1">
+                    Or sideload by hand — enable “Install unknown apps” for your
+                    browser, then open the .apk. Updates are manual that way.
                   </p>
                 </div>
               )}
