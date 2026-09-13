@@ -9,20 +9,33 @@ import {
   type Release,
 } from "../lib/downloadAssets";
 import { GITHUB_LATEST_RELEASE_API_URL, GITHUB_REPO_URL } from "../lib/github";
+import { OBTAINIUM_ADD_URL } from "../lib/obtainium";
 import CopyCommand from "./CopyCommand";
 
 const LINUX_INSTALL_CMD = "curl -fsSL https://repo.voltius.app/setup.sh | sudo bash";
 const MACOS_INSTALL_CMD = "brew install --cask voltiusapp/voltius/voltius";
 const WINDOWS_INSTALL_CMD = "winget install --id Voltius.Voltius -e";
 
-const INSTALL_CMD: Partial<Record<Platform, { label: string; command: string }>> = {
+type InstallAction =
+  | { label: string; command: string }
+  | { label: string; href: string; cta: string };
+
+const INSTALL_CMD: Partial<Record<Platform, InstallAction>> = {
   windows: { label: "Install on Windows — via winget:", command: WINDOWS_INSTALL_CMD },
   macos: { label: "Install on macOS — via Homebrew:", command: MACOS_INSTALL_CMD },
   linux: {
     label: "Install on Linux — signed apt & dnf repo, auto-updating:",
     command: LINUX_INSTALL_CMD,
   },
+  android: {
+    label: "Install on Android — via Obtainium, auto-updating:",
+    href: OBTAINIUM_ADD_URL,
+    cta: "Add to Obtainium",
+  },
 };
+
+const PRIMARY_CTA_CLASS =
+  "px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-all duration-200 shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_24px_rgba(6,182,212,0.4)]";
 
 type NavigatorWithUserAgentData = Navigator & {
   userAgentData?: {
@@ -121,6 +134,8 @@ export default function Hero() {
       .then((d) => setPlatform(d?.platform ?? null))
       .catch(() => {});
   }, []);
+
+  const install = platform ? INSTALL_CMD[platform] : undefined;
 
   async function handleDownloadClick(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault();
@@ -223,10 +238,16 @@ export default function Hero() {
         ref={ctaRef as React.RefObject<HTMLDivElement>}
         className="fade-in mt-10 flex flex-col items-center gap-3 w-full"
       >
-        {platform && INSTALL_CMD[platform] ? (
+        {install ? (
           <>
-            <p className="text-sm text-zinc-400">{INSTALL_CMD[platform]!.label}</p>
-            <CopyCommand command={INSTALL_CMD[platform]!.command} />
+            <p className="text-sm text-zinc-400">{install.label}</p>
+            {"command" in install ? (
+              <CopyCommand command={install.command} />
+            ) : (
+              <a href={install.href} className={PRIMARY_CTA_CLASS}>
+                {install.cta}
+              </a>
+            )}
             <div className="flex flex-col sm:flex-row gap-4 items-center mt-1">
               <a
                 href="#download"
@@ -247,7 +268,7 @@ export default function Hero() {
             <a
               href="#download"
               onClick={handleDownloadClick}
-              className="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-semibold text-sm transition-all duration-200 shadow-[0_0_0_0_rgba(6,182,212,0)] hover:shadow-[0_0_24px_rgba(6,182,212,0.4)]"
+              className={PRIMARY_CTA_CLASS}
             >
               Download
             </a>
