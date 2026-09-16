@@ -43,7 +43,7 @@ const features = [
   {
     icon: "lucide:puzzle",
     title: "Plugin system",
-    desc: "Extend Voltius with first-party and community plugins. Gist Sync, process manager, and more.",
+    desc: "Extend Voltius with first-party and community plugins. Gist Sync, Cloudflare Sync, process manager, and more.",
   },
   {
     icon: "lucide:container",

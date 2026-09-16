@@ -45,7 +45,7 @@ export const PLANS: Plan[] = [
       "All core SSH features",
       "SFTP with drag & drop",
       "Docker & serial console",
-      "Gist E2EE sync (free)",
+      "Gist & Cloudflare E2EE sync (free)",
       "Plugin system",
       "Custom themes",
       "Local terminal",
