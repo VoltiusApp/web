@@ -89,7 +89,7 @@ export const PLANS: Plan[] = [
       "Everything in Pro",
       "Team vaults & invites",
       "Real-time collaboration — 5 sessions · 10 participants each",
-      "Built-in roles (Owner, Manager, Editor, Member)",
+      "Built-in roles (Owner, Manager, Editor, Member, Connect-Only)",
       "Team audit logs",
     ],
   },
@@ -106,7 +106,7 @@ export const PLANS: Plan[] = [
     features: [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
-      "Custom roles & granular permissions",
+      "Custom roles, per-member & per-object permissions",
       "Commercial license",
       "Priority support",
       "Custom contracts",
