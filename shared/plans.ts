@@ -89,7 +89,7 @@ export const PLANS: Plan[] = [
       "Everything in Pro",
       "Team vaults & invites",
       "Real-time collaboration — 5 sessions · 10 participants each",
-      "Built-in roles (Owner, Manager, Editor, Member)",
+      "Built-in roles (Owner, Manager, Editor, Member, Connect-Only)",
       "Team audit logs",
     ],
   },
