@@ -48,6 +48,31 @@ const platforms: readonly PlatformCard[] = [
   },
 ];
 
+function CommunityInstall({
+  label,
+  maintainer,
+  href,
+  command,
+}: {
+  label: string;
+  maintainer: string;
+  href: string;
+  command: string;
+}) {
+  return (
+    <>
+      <p className="text-[11px] text-zinc-500 mt-2.5 mb-1.5 px-1">
+        {label} (community-maintained by{" "}
+        <a href={href} className="underline hover:text-cyan-400">
+          {maintainer}
+        </a>
+        , not built by our CI):
+      </p>
+      <CopyCommand command={command} />
+    </>
+  );
+}
+
 export default function DownloadCards({ assets }: { assets: Asset[] }) {
   // Hover reveals on desktop; touch devices have no hover, so tapping the card
   // header toggles the same panel. Both paths drive the panel's open classes.
@@ -91,8 +116,8 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
             </button>
 
             <div
-              className={`overflow-hidden px-3 transition-all duration-500 ease-out group-hover:max-h-[34rem] group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-[34rem] group-focus-within:pb-3 group-focus-within:opacity-100 ${
-                isOpen ? "max-h-[34rem] pb-3 opacity-100" : "max-h-0 opacity-0"
+              className={`overflow-hidden px-3 transition-all duration-500 ease-out group-hover:max-h-[44rem] group-hover:pb-3 group-hover:opacity-100 group-focus-within:max-h-[44rem] group-focus-within:pb-3 group-focus-within:opacity-100 ${
+                isOpen ? "max-h-[44rem] pb-3 opacity-100" : "max-h-0 opacity-0"
               }`}
             >
               {p.platform === "windows" && (
@@ -109,17 +134,18 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
                     Recommended — apt / dnf (auto-updating)
                   </p>
                   <CopyCommand command="curl -fsSL https://repo.voltius.app/setup.sh | sudo bash" />
-                  <p className="text-[11px] text-zinc-500 mt-2.5 mb-1.5 px-1">
-                    Arch — AUR (community-maintained by{" "}
-                    <a
-                      href="https://aur.archlinux.org/account/ezhkov/"
-                      className="underline hover:text-cyan-400"
-                    >
-                      ezhkov
-                    </a>
-                    , not built by our CI):
-                  </p>
-                  <CopyCommand command="yay -S voltius-bin" />
+                  <CommunityInstall
+                    label="Arch — AUR"
+                    maintainer="ezhkov"
+                    href="https://aur.archlinux.org/account/ezhkov/"
+                    command="yay -S voltius-bin"
+                  />
+                  <CommunityInstall
+                    label="Flatpak — FlatPark, x86_64"
+                    maintainer="jing2uo"
+                    href="https://flatpark.org/apps/app.voltius.Voltius"
+                    command="flatpak install https://dl.flatpark.org/app.voltius.Voltius.flatpakref"
+                  />
                 </div>
               )}
               {p.platform === "macos" && (
