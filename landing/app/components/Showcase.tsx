@@ -27,7 +27,7 @@ const shots = [
   {
     src: "/screenshots/teams-roles.png",
     title: "Team vaults & granular roles",
-    desc: "Share access with your team and control exactly what each member can do.",
+    desc: "Built-in roles on Teams; custom roles and per-object permissions on Business.",
   },
   {
     src: "/screenshots/themes-creator.png",
