@@ -37,7 +37,11 @@ export default function ChangeHandleModal({ currentHandle, token, onClose, onSuc
       await updateHandle(trimmed, token);
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {
-        setError("Verify your email first, then choose your handle.");
+        setError(
+          err.message.includes("HANDLE_MANAGED")
+            ? "Managed by your organization. Ask your administrator to change it."
+            : "Verify your email first, then choose your handle.",
+        );
       } else if (err instanceof ApiError && err.status === 409) {
         setError("That handle is taken.");
       } else if (err instanceof ApiError && err.status === 422) {

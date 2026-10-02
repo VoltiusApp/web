@@ -53,6 +53,7 @@ export interface MeResponse {
   wrapped_user_secrets: string | null;
   handle: string;
   handle_is_custom: boolean;
+  handle_managed?: boolean;
 }
 
 export interface CheckoutResponse {

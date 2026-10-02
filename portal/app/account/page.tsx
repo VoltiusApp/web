@@ -53,6 +53,7 @@ export default function AccountPage() {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [accountHandle, setAccountHandle] = useState("");
   const [showChangeHandle, setShowChangeHandle] = useState(false);
+  const [handleManaged, setHandleManaged] = useState(false);
   const [handleCopied, setHandleCopied] = useState(false);
 
   useEffect(() => {
@@ -118,6 +119,7 @@ export default function AccountPage() {
         // verification the user may have completed since it was issued, and
         // this value now decides whether the handle control is offered.
         setEmailVerified(me.email_verified);
+        setHandleManaged(!!me.handle_managed);
       } catch { /* non-critical */ }
 
       // Trial expired modal. The server clears trial_ends_at once a trial
@@ -368,8 +370,14 @@ export default function AccountPage() {
                   <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Handle</p>
                   <p className="text-sm text-white">{accountHandle ? `@${accountHandle}` : "—"}</p>
                   <div className="mt-1">
-                    <p className="text-xs text-zinc-500">A custom handle makes you findable by people outside your teams.</p>
-                    <p className="text-xs text-zinc-500">Your current handle already works for anyone you give it to.</p>
+                    {handleManaged ? (
+                      <p className="text-xs text-zinc-500">Managed by your organization. Ask your administrator to change it.</p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-zinc-500">A custom handle makes you findable by people outside your teams.</p>
+                        <p className="text-xs text-zinc-500">Your current handle already works for anyone you give it to.</p>
+                      </>
+                    )}
                     {emailVerified === false && (
                       <p className="text-xs text-amber-300 mt-1">Verify your email to choose a custom handle.</p>
                     )}
@@ -388,7 +396,7 @@ export default function AccountPage() {
                       what made the old tier gate unreadable. */}
                   <button
                     onClick={() => setShowChangeHandle(true)}
-                    disabled={emailVerified === false}
+                    disabled={emailVerified === false || handleManaged}
                     className="px-4 py-2 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-[#1e1e2e] text-zinc-400 hover:text-white disabled:hover:text-zinc-400 text-sm font-semibold transition-colors"
                   >
                     Change handle
