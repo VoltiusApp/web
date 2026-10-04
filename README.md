@@ -20,7 +20,11 @@ node stills.mjs Demo 20 70 120 ...   # spot-check frames in frames/ (optional)
 
 Then publish:
 - **README**: drag `out/demo.webp` into a GitHub comment/editor to get a `user-attachments` URL, replace the `<img src>` in `voltius/README.md`. Keep it under 10 MB (`WEBP_Q=50 ./encode-demo.sh` if not).
-- **Landing**: upload `out/demo.mp4` over `demo.mp4` in the public R2 bucket used by `web/landing/app/components/Hero.tsx`.
+- **Landing**: `out/demo.mp4` replaces `demo.mp4` in R2 bucket `voltius-assets` (public at `pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev`, referenced by `web/landing/app/components/Hero.tsx`). wrangler's own login expires; the OpenTofu token can write the bucket:
+  ```bash
+  ( set -a; . ~/fourretout/voltius-tofu/.env.tofu; set +a; CLOUDFLARE_ACCOUNT_ID=$TF_VAR_account_id \
+    wrangler r2 object put voltius-assets/demo.mp4 --file out/demo.mp4 --content-type video/mp4 --remote )
+  ```
 
 ### How it works
 
