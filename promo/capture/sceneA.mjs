@@ -1,0 +1,15 @@
+import { ensureSession, keys, KEY, typeHuman, sleep, mark, js } from './wd.mjs';
+await ensureSession();
+await sleep(1200);
+mark('palette-open');
+await keys([KEY.Control, 'k']);
+await sleep(700);
+await typeHuman('web-01', { min: 90, max: 160 });
+await sleep(600);
+mark('enter');
+await keys([KEY.Enter]);
+await sleep(3500);
+mark('type');
+await typeHuman('fastfetch\n', { min: 70, max: 130 });
+await sleep(3500);
+mark('end');
