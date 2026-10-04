@@ -1,0 +1,6 @@
+node_modules/
+out/
+frames/
+/*.png
+/*.mp4
+capture/disp

@@ -1,0 +1,24 @@
+import { ensureSession, jsAsync, js, sleep, clickText, mark } from './wd.mjs';
+await ensureSession();
+await sleep(1000);
+mark('open-import');
+await jsAsync(`const { useUIStore } = await import('/src/stores/uiStore.ts'); useUIStore.getState().openImportExport('import');`);
+await sleep(1400);
+for (const src of ['Termius', 'ZOC Terminal', 'SecureCRT']) { mark('src ' + src); await clickText(src); await sleep(700); }
+mark('src PuTTY');
+await clickText('PuTTY');
+await sleep(1100);
+mark('extract');
+await js("[...document.querySelectorAll('button')].find(b=>b.textContent.includes('Extract from')).click()");
+await sleep(1500);
+mark('review');
+await js("[...document.querySelectorAll('button')].find(b=>/^Review \\d+ items$/.test(b.textContent.trim())).click()");
+await sleep(2200);
+mark('import');
+await js("[...document.querySelectorAll('button')].find(b=>/^Import \\d+ items$/.test(b.textContent.trim())).click()");
+for (let i=0;i<40;i++){ const open = await js("return [...document.querySelectorAll('button')].some(b=>/Importing/.test(b.textContent))"); if(!open) break; await sleep(300);} mark('imported');
+await sleep(1200);
+await js("var b=[...document.querySelectorAll('button')].find(b=>{var r=b.getBoundingClientRect();return r.top>180&&r.top<230&&r.left>1000&&r.left<1050;}); if(b) b.click(); return !!b");
+mark('closed');
+await sleep(3000);
+mark('end');

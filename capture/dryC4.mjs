@@ -1,0 +1,14 @@
+import { ensureSession, sleep, shot, mouseAt, js } from './wd.mjs';
+await ensureSession();
+await js(`var b=document.elementFromPoint(797,138); (b.closest('button')||b).click(); return 1`);
+await sleep(1500);
+console.log(await mouseAt('dbl', 'backups', { xmin: 740 }));
+await sleep(1500);
+console.log(await mouseAt('dbl', 'Projects', { xmax: 700 }));
+await sleep(1200);
+console.log(await mouseAt('dbl', 'acme-api', { xmax: 700 }));
+await sleep(1200);
+console.log(await mouseAt('click', 'db-2026-10-01.sql.gz', { xmin: 740 }));
+console.log(await mouseAt('click', 'db-2026-10-03.sql.gz', { xmin: 740, shift: true }));
+await sleep(800);
+await shot('/tmp/work/look.png');
