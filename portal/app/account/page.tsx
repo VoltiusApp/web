@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PLANS, PER_SEAT_PLAN_IDS, MIN_SEATS, planOrder, trialLabel } from "@shared/plans";
 import Image from "next/image";
-import { getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
+import { ApiError, getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import ChangeHandleModal from "./ChangeHandleModal";
@@ -45,6 +45,7 @@ export default function AccountPage() {
   const [endsAt, setEndsAt] = useState<number | null>(null);
   const [subscriptionActionLoading, setSubscriptionActionLoading] = useState<"cancel" | "resume" | null>(null);
   const [emailVerified, setEmailVerified] = useState<boolean | null>(null);
+  const [emailUndeliverable, setEmailUndeliverable] = useState(false);
   const [accountEmail, setAccountEmail] = useState("");
   const [accountId, setAccountId] = useState("");
   const [verificationResending, setVerificationResending] = useState(false);
@@ -119,6 +120,7 @@ export default function AccountPage() {
         // verification the user may have completed since it was issued, and
         // this value now decides whether the handle control is offered.
         setEmailVerified(me.email_verified);
+        setEmailUndeliverable(me.email_undeliverable === true);
         setHandleManaged(!!me.handle_managed);
       } catch { /* non-critical */ }
 
@@ -221,6 +223,10 @@ export default function AccountPage() {
       await resendVerificationEmail(token);
       setVerificationResent(true);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 422) {
+        setEmailUndeliverable(true);
+        return;
+      }
       setError(err instanceof Error ? err.message : "Failed to resend verification email.");
     } finally {
       setVerificationResending(false);
@@ -310,6 +316,7 @@ export default function AccountPage() {
           onSuccess={(newEmail) => {
             setAccountEmail(newEmail);
             setEmailVerified(false);
+            setEmailUndeliverable(false);
             setShowEditEmail(false);
           }}
         />
@@ -345,16 +352,18 @@ export default function AccountPage() {
           {emailVerified === false && (
             <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-amber-100">
-                Please verify your email — we sent a link to {accountEmail || "your email"}.
+                {emailUndeliverable
+                  ? `We couldn't deliver mail to ${accountEmail || "your email"}. Check the address and change it if it's wrong.`
+                  : `Please verify your email — we sent a link to ${accountEmail || "your email"}.`}
               </p>
               <div className="flex items-center gap-3">
-                {verificationResent && <span className="text-xs text-amber-200">Sent.</span>}
+                {verificationResent && !emailUndeliverable && <span className="text-xs text-amber-200">Sent.</span>}
                 <button
-                  onClick={() => void handleResendVerification()}
+                  onClick={() => (emailUndeliverable ? setShowEditEmail(true) : void handleResendVerification())}
                   disabled={verificationResending}
                   className="shrink-0 px-4 py-2 rounded-xl bg-amber-300 hover:bg-amber-200 disabled:opacity-60 text-black font-semibold text-sm transition-colors"
                 >
-                  {verificationResending ? "Sending..." : "Resend"}
+                  {emailUndeliverable ? "Change email" : verificationResending ? "Sending..." : "Resend"}
                 </button>
               </div>
             </div>
