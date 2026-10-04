@@ -10,7 +10,7 @@ await idle(1200);
 
 mark('import-open');
 await clickOn(...UI.importMenu);
-await idle(1100);
+await idle(1600);
 mark('termius');
 await clickText('From Termius');
 await waitRect(byText, ['Review import']);
@@ -37,7 +37,7 @@ await idle(1500);
 
 mark('panel');
 await clickOn(...UI.panelToggle);
-await idle(1100);
+await idle(1400);
 mark('snippet');
 await clickText('Disk usage');
 await idle(300);
@@ -45,7 +45,7 @@ await clickOn(...UI.snippetRun('Disk usage'));
 await idle(1600);
 mark('docker');
 await clickOn(...UI.panelTab('Docker'));
-await idle(2400);
+await idle(2800);
 mark('themes');
 await clickOn(...UI.panelTab('Themes'));
 await idle(800);
@@ -71,7 +71,8 @@ await clickOn(tabByText, ['web-01']);
 await idle(700);
 const tab = await waitRect(tabByText, ['db-primary']);
 const term = await waitRect(...UI.terminal);
-await dragTo([tab[0], tab[1]], at(term, 0.78, 0.45));
+// Split drop zones are the outer quarter of the pane; the xterm canvas stops short of the minimap, so aim at its right edge.
+await dragTo([tab[0], tab[1]], at(term, 0.97, 0.45));
 mark('splitdone');
 await idle(1800);
 mark('end');

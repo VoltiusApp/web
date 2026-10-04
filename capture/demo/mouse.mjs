@@ -16,7 +16,7 @@ const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
 export async function moveTo(x, y, ms) {
   const d = Math.hypot(x - pos.x, y - pos.y);
-  const dur = ms ?? Math.min(900, 250 + d * 0.9);
+  const dur = ms ?? Math.min(1300, 400 + d * 1.1);
   const sx = pos.x, sy = pos.y, t0 = Date.now();
   const bend = (Math.random() - 0.5) * Math.min(80, d * 0.15);
   for (;;) {

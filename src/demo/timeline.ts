@@ -10,20 +10,22 @@ export const mk = (src: Src, name: string, d = 0) => M[src][name] + d;
 // Cuts are [mark, offset seconds] so a retake with different app timing keeps the same edit.
 type At = [string, number];
 const seg = (src: Src, a: At, b: At, rate: number): Seg => ({ src, from: mk(src, ...a), to: mk(src, ...b), rate });
+// For waits whose real length varies between takes (import, transfer): squeeze to a fixed on-screen duration.
+const fit = (src: Src, a: At, b: At, seconds: number): Seg => seg(src, a, b, Math.max(1, (mk(src, ...b) - mk(src, ...a)) / seconds));
 export const SEGS: Seg[] = [
-  seg('A', ['import-open', -1.4], ['termius', 0.2], 1.3),
-  seg('A', ['termius', 0.2], ['import', 0.1], 2),
-  seg('A', ['import', 0.1], ['imported', 0.15], 8),
-  seg('A', ['imported', 0.15], ['connect', 0], 1.6),
-  seg('A', ['connect', 0], ['type', -0.1], 2.5),
-  seg('A', ['type', -0.1], ['panel', -0.1], 1.2),
-  seg('A', ['panel', -0.1], ['snippet', 0], 1.3),
-  seg('A', ['docker', -0.1], ['themes', 0], 1.2),
-  seg('A', ['themes', 0], ['palette', -0.1], 1.6),
-  seg('A', ['palette', -0.1], ['split', -0.1], 1.8),
-  seg('A', ['split', -0.1], ['end', -1], 1.5),
-  seg('B', ['sftp', -0.25], ['dropped', 0.3], 1.4),
-  seg('B', ['dropped', 0.3], ['landed', 0.1], 2),
+  seg('A', ['import-open', -1.2], ['termius', 0.2], 1),
+  seg('A', ['termius', 0.2], ['import', 0.1], 1.25),
+  fit('A', ['import', 0.1], ['imported', 0.15], 2.5),
+  seg('A', ['imported', 0.15], ['connect', 0], 1),
+  fit('A', ['connect', 0], ['type', -0.1], 3.2),
+  seg('A', ['type', -0.1], ['panel', -0.1], 1),
+  seg('A', ['panel', -0.1], ['snippet', 0], 1),
+  seg('A', ['docker', -0.1], ['themes', 0], 1),
+  seg('A', ['themes', 0], ['palette', -0.1], 1.1),
+  seg('A', ['palette', -0.1], ['split', -0.1], 1.15),
+  seg('A', ['split', -0.1], ['end', -0.8], 1),
+  seg('B', ['sftp', -0.25], ['dropped', 0.3], 1),
+  fit('B', ['dropped', 0.3], ['landed', 0.1], 2),
   seg('B', ['landed', 0.1], ['end', -1.1], 1),
 ];
 

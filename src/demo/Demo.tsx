@@ -12,60 +12,51 @@ const WIN_TOP = 34;
 const END = 54;
 export const DEMO_FRAMES = FOOTAGE_FRAMES + END;
 
-type Cam = [Src, number, number, number, number];
-const REST = [1, 640, 400] as const;
-const CAM: Cam[] = [
-  ['A', mk('A', 'import-open', -1.4), ...REST],
-  ['A', mk('A', 'import-open', 0.1), ...REST],
-  ['A', mk('A', 'import-open', 0.8), 1.9, 1000, 300],
-  ['A', mk('A', 'termius', -0.1), 1.9, 1000, 300],
-  ['A', mk('A', 'termius', 0.9), 1.25, 640, 400],
-  ['A', mk('A', 'imported', 0.4), 1.25, 640, 400],
-  ['A', mk('A', 'grid', -0.1), ...REST],
-  ['A', mk('A', 'type', -0.5), ...REST],
-  ['A', mk('A', 'type', 0.1), 1.7, 330, 180],
-  ['A', mk('A', 'panel', 0.0), 1.7, 330, 180],
-  ['A', mk('A', 'panel', 0.8), 1.55, 1120, 360],
-  ['A', mk('A', 'light', 0.05), 1.55, 1120, 360],
-  ['A', mk('A', 'light', 0.7), ...REST],
-  ['A', mk('A', 'palette', 0.0), ...REST],
-  ['A', mk('A', 'palette', 0.5), 1.55, 640, 280],
-  ['A', mk('A', 'newtab', 0.2), 1.55, 640, 280],
-  ['A', mk('A', 'newtab', 1.0), ...REST],
-  ['B', mk('B', 'drag', -0.5), ...REST],
-  ['B', mk('B', 'drag', 0.3), 1.25, 620, 330],
-  ['B', mk('B', 'landed', 0.9), 1.25, 620, 330],
-  ['B', mk('B', 'landed', 2.0), ...REST],
+// Each move starts at a source moment and glides to its target over RAMP output frames.
+// Targets are clamped in Stage so the window never pans past its own edges; y=0 keeps the title bar in view.
+type View = { s: number; x: number; y: number };
+const REST: View = { s: 1, x: 640, y: 400 };
+const RAMP = 40;
+const MOVES: [Src, number, View][] = [
+  ['A', mk('A', 'import-open', -0.2), { s: 1.5, x: 1000, y: 300 }],
+  ['A', mk('A', 'termius', 0.3), { s: 1.15, x: 640, y: 400 }],
+  ['A', mk('A', 'imported', 0.5), REST],
+  ['A', mk('A', 'type', -0.7), { s: 1.4, x: 0, y: 0 }],
+  ['A', mk('A', 'panel', -0.1), { s: 1.3, x: 1280, y: 0 }],
+  ['A', mk('A', 'light', -0.4), REST],
+  ['A', mk('A', 'palette', 0.1), { s: 1.35, x: 640, y: 300 }],
+  ['A', mk('A', 'newtab', 0.5), REST],
+  ['B', mk('B', 'drag', -0.8), { s: 1.15, x: 620, y: 360 }],
+  ['B', mk('B', 'landed', 0.8), REST],
 ];
-const CAM_F = CAM.map(([src, t, s, x, y]) => ({ f: frameOf(src, t), s, x, y }));
+const MOVES_F = MOVES.map(([src, t, v]) => ({ f: frameOf(src, t), v }));
 
-const ease = Easing.inOut(Easing.cubic);
-function camAt(frame: number) {
-  if (frame <= CAM_F[0].f) return CAM_F[0];
-  for (let i = 1; i < CAM_F.length; i++) {
-    const a = CAM_F[i - 1], b = CAM_F[i];
-    if (frame <= b.f) {
-      const k = b.f === a.f ? 1 : ease((frame - a.f) / (b.f - a.f));
-      return { s: a.s + (b.s - a.s) * k, x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
-    }
+const ease = Easing.bezier(0.45, 0, 0.2, 1);
+const mix = (a: View, b: View, k: number): View => ({ s: a.s + (b.s - a.s) * k, x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k });
+function camAt(frame: number): View {
+  let cur = REST;
+  for (const m of MOVES_F) {
+    if (frame < m.f) break;
+    cur = mix(cur, m.v, ease(Math.min(1, (frame - m.f) / RAMP)));
   }
-  return CAM_F[CAM_F.length - 1];
+  return cur;
 }
 
 type Cap = [Src, number, Src, number, string];
 const CAPTIONS: Cap[] = [
-  ['A', mk('A', 'import-open', -1.4), 'A', mk('A', 'grid', 1.0), 'Import your hosts from Termius, PuTTY, SecureCRT…'],
+  ['A', mk('A', 'import-open', -1.2), 'A', mk('A', 'grid', 1.0), 'Import your hosts from Termius, PuTTY, SecureCRT…'],
   ['A', mk('A', 'connect', -0.2), 'A', mk('A', 'panel', -0.2), 'Connect in one click'],
   ['A', mk('A', 'panel', 0.1), 'A', mk('A', 'themes', -0.1), 'Docker containers right next to your shell'],
   ['A', mk('A', 'themes', 0.0), 'A', mk('A', 'palette', -0.3), 'Switch themes instantly'],
   ['A', mk('A', 'palette', 0.0), 'A', mk('A', 'split', -0.2), 'Ctrl+K to open any host'],
-  ['A', mk('A', 'split', 0.0), 'A', mk('A', 'end', -1), 'Drag a tab to split the view'],
+  ['A', mk('A', 'split', 0.0), 'A', mk('A', 'end', -0.8), 'Drag a tab to split the view'],
   ['B', mk('B', 'sftp', -0.25), 'B', mk('B', 'end', -1.1), 'Drag & drop files over SFTP'],
 ];
 
-const Background: React.FC = () => (
-  <AbsoluteFill style={{ background: 'linear-gradient(180deg, #0b1f24 0%, #122e36 100%)', overflow: 'hidden' }}>
-    <div style={{ position: 'absolute', left: -DH * 0.45, top: -DH * 0.45, width: DH * 1.35, height: DH * 1.35, borderRadius: '50%', background: 'rgba(87,199,216,0.16)', filter: 'blur(120px)' }} />
+const Background: React.FC<{ dim?: number }> = ({ dim = 0 }) => (
+  <AbsoluteFill style={{ background: '#0d1517' }}>
+    <Img src={staticFile('demo/wallpaper.jpg')} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    {dim > 0 && <AbsoluteFill style={{ background: `rgba(5,10,12,${dim})` }} />}
   </AbsoluteFill>
 );
 
@@ -139,8 +130,9 @@ const EndCard: React.FC<{ frame: number }> = ({ frame }) => {
   if (o <= 0) return null;
   const out = interpolate(f, [END - 10, END], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
   return (
-    <AbsoluteFill style={{ opacity: o, background: 'linear-gradient(180deg, #0b1f24 0%, #122e36 100%)', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ opacity: out, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <AbsoluteFill style={{ opacity: o, alignItems: 'center', justifyContent: 'center' }}>
+      <Background dim={0.45} />
+      <div style={{ position: 'relative', opacity: out, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
           <Img src={staticFile('logo.png')} style={{ width: 110, height: 110 }} />
           <div style={{ fontFamily: SANS, fontSize: 104, fontWeight: 800, letterSpacing: '-0.05em', color: '#f4f8f9' }}>Voltius</div>
