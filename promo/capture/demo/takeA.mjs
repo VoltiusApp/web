@@ -1,0 +1,78 @@
+import { ensureSession, jsAsync, keys, KEY, typeHuman } from './wd.mjs';
+import { moveTo, clickText, clickOn, waitRect, byText, tabByText, wheel, dragTo, at, idle, mark, waitFor } from './mouse.mjs';
+import { UI } from './ui.mjs';
+import { STUB } from './stub.mjs';
+
+await ensureSession();
+await jsAsync(STUB);
+await moveTo(700, 640, 200);
+await idle(1200);
+
+mark('import-open');
+await clickOn(...UI.importMenu);
+await idle(1600);
+mark('termius');
+await clickText('From Termius');
+await waitRect(byText, ['Review import']);
+await idle(900);
+await wheel(3, 640, 500);
+await idle(900);
+mark('import');
+await clickOn(...UI.importConfirm);
+await waitFor(`return ![...document.querySelectorAll('button')].some(b=>/Importing/.test(b.textContent))`, [], 60000);
+mark('imported');
+await idle(900);
+await clickOn(...UI.modalClose);
+mark('grid');
+await idle(1600);
+
+mark('connect');
+await clickText('web-01');
+await idle(2600);
+await clickOn(...UI.terminal, { fx: 0.35, fy: 0.45 });
+await idle(300);
+mark('type');
+await typeHuman('docker ps\n', { min: 70, max: 130 });
+await idle(1500);
+
+mark('panel');
+await clickOn(...UI.panelToggle);
+await idle(1400);
+mark('snippet');
+await clickText('Disk usage');
+await idle(300);
+await clickOn(...UI.snippetRun('Disk usage'));
+await idle(1600);
+mark('docker');
+await clickOn(...UI.panelTab('Docker'));
+await idle(2800);
+mark('themes');
+await clickOn(...UI.panelTab('Themes'));
+await idle(800);
+mark('light');
+await clickText('Voltius Light');
+await idle(1300);
+mark('dracula');
+await clickText('Dracula');
+await idle(1600);
+await clickOn(...UI.panelToggle);
+await idle(700);
+
+mark('palette');
+await keys([KEY.Control, 'k']);
+await idle(500);
+await typeHuman('db-pri', { min: 80, max: 140 });
+await idle(500);
+await keys([KEY.Enter]);
+mark('newtab');
+await idle(2200);
+mark('split');
+await clickOn(tabByText, ['web-01']);
+await idle(700);
+const tab = await waitRect(tabByText, ['db-primary']);
+const term = await waitRect(...UI.terminal);
+// Split drop zones are the outer quarter of the pane; the xterm canvas stops short of the minimap, so aim at its right edge.
+await dragTo([tab[0], tab[1]], at(term, 0.97, 0.45));
+mark('splitdone');
+await idle(1800);
+mark('end');

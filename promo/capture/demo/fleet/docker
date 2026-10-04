@@ -1,0 +1,31 @@
+#!/bin/sh
+C='{"ID":"3f9a1c2b7d10","Names":"acme-api","Image":"ghcr.io/acme/api:2.5.0","Status":"Up 6 days (healthy)","State":"running","Ports":"0.0.0.0:8080->8080/tcp, :::8080->8080/tcp","Project":"acme","Service":"api"}
+{"ID":"8b21e4d9a6c3","Names":"acme-web","Image":"ghcr.io/acme/web:2.5.0","Status":"Up 6 days","State":"running","Ports":"0.0.0.0:3000->3000/tcp","Project":"acme","Service":"web"}
+{"ID":"c7d03f5e1a92","Names":"acme-worker","Image":"ghcr.io/acme/api:2.5.0","Status":"Up 6 days","State":"running","Ports":"","Project":"acme","Service":"worker"}
+{"ID":"1e6b8f2c4d77","Names":"traefik","Image":"traefik:v3.1","Status":"Up 12 days","State":"running","Ports":"0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp","Project":"edge","Service":"traefik"}
+{"ID":"5a90d3b6e8f1","Names":"redis","Image":"redis:7.4-alpine","Status":"Up 12 days","State":"running","Ports":"6379/tcp","Project":"","Service":""}
+{"ID":"9d4c7a1f0b35","Names":"grafana","Image":"grafana/grafana:11.2.0","Status":"Up 3 hours","State":"running","Ports":"0.0.0.0:3001->3000/tcp","Project":"","Service":""}
+{"ID":"d28f6e3a9c04","Names":"backup-cron","Image":"alpine:3.20","Status":"Exited (0) 2 hours ago","State":"exited","Ports":"","Project":"","Service":""}'
+if [ "$*" = "ps" ]; then
+cat <<'T'
+CONTAINER ID   IMAGE                    STATUS                 PORTS                    NAMES
+3f9a1c2b7d10   ghcr.io/acme/api:2.5.0   Up 6 days (healthy)    0.0.0.0:8080->8080/tcp   acme-api
+8b21e4d9a6c3   ghcr.io/acme/web:2.5.0   Up 6 days              0.0.0.0:3000->3000/tcp   acme-web
+c7d03f5e1a92   ghcr.io/acme/api:2.5.0   Up 6 days                                       acme-worker
+1e6b8f2c4d77   traefik:v3.1             Up 12 days             0.0.0.0:443->443/tcp     traefik
+5a90d3b6e8f1   redis:7.4-alpine         Up 12 days             6379/tcp                 redis
+9d4c7a1f0b35   grafana/grafana:11.2.0   Up 3 hours             0.0.0.0:3001->3000/tcp   grafana
+T
+exit 0
+fi
+case "$1 $2" in
+  "ps "*|"ps") echo "$C" | sed 's/,"Project":"[^"]*","Service":"[^"]*"//' ;;
+  "images "*) printf '%s\n' '{"ID":"a1b2c3d4e5f6","Repository":"ghcr.io/acme/api","Tag":"2.5.0","Size":"142MB"}' '{"ID":"b2c3d4e5f6a1","Repository":"ghcr.io/acme/web","Tag":"2.5.0","Size":"88.4MB"}' '{"ID":"c3d4e5f6a1b2","Repository":"traefik","Tag":"v3.1","Size":"171MB"}' '{"ID":"d4e5f6a1b2c3","Repository":"redis","Tag":"7.4-alpine","Size":"41MB"}' '{"ID":"e5f6a1b2c3d4","Repository":"grafana/grafana","Tag":"11.2.0","Size":"468MB"}' ;;
+  "volume ls") printf '%s\n' '{"Name":"acme_pgdata","Driver":"local","Mountpoint":"/var/lib/docker/volumes/acme_pgdata/_data"}' '{"Name":"grafana-data","Driver":"local","Mountpoint":"/var/lib/docker/volumes/grafana-data/_data"}' ;;
+  "network ls") printf '%s\n' '{"ID":"4f1e2d3c4b5a","Name":"bridge","Driver":"bridge","Scope":"local"}' '{"ID":"5a4b3c2d1e0f","Name":"acme_default","Driver":"bridge","Scope":"local"}' ;;
+  "compose ls") echo '[{"Name":"acme","Status":"running(3)","ConfigFiles":"/home/deploy/acme/docker-compose.yml"},{"Name":"edge","Status":"running(1)","ConfigFiles":"/home/deploy/edge/compose.yml"}]' ;;
+  "compose -p")
+    p=$(echo "$3" | tr -d "'")
+    echo "$C" | grep "\"Project\":\"$p\"" | sed 's/"Names"/"Name"/; s/"Ports":"[^"]*",//; s/}$/,"Publishers":[]}/' ;;
+  *) exit 0 ;;
+esac
