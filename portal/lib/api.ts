@@ -50,6 +50,7 @@ export interface MeResponse {
   tier: string;
   trial_ends_at: number | null;
   email_verified: boolean;
+  email_undeliverable?: boolean;
   wrapped_user_secrets: string | null;
   handle: string;
   handle_is_custom: boolean;
