@@ -4,6 +4,7 @@ import { HANDOFF_KEYS as K, HandoffScene, TapRipple, handoffCaptions, handoffPos
 import { ramp } from "@shared/devices/motion";
 import Captions from "./Captions";
 import ScrollScene from "./ScrollScene";
+import ProTrialLink from "./ProTrialLink";
 import Still from "./Still";
 
 const CAPTIONS = handoffCaptions(K).map((c, i) => (i === 0 ? { ...c, from: -1 } : c));
@@ -14,7 +15,14 @@ export default function HandoffSection() {
     <ScrollScene
       id="handoff"
       length="320vh"
-      header={(p) => <Captions t={p * K.duration} captions={CAPTIONS} fade={0.4} />}
+      header={(p) => (
+        <>
+          <Captions t={p * K.duration} captions={CAPTIONS} fade={0.4} />
+          <p className="text-center text-xs sm:text-sm text-zinc-400">
+            Cross-device sessions come with <ProTrialLink />
+          </p>
+        </>
+      )}
       scene={(p) => {
         const t = p * K.duration;
         const synced = ramp(t, K.lidOpen - 0.4, K.lidOpen);

@@ -133,9 +133,9 @@
   {
     "id": 13,
     "date": "2026-11-05",
-    "text": "This is what your bucket sees when Voltius syncs your SSH fleet.",
+    "text": "This is all Voltius Cloud ever sees of your SSH fleet. Hosts and keys are encrypted on your device, synced in real time, and decrypted on your other devices. Pro, 14 days free, no card.",
     "media": "video",
-    "visual": "V5 ciphertext shot"
+    "visual": "V5 cloud cut: the landing's E2EE sync scene"
   },
   {
     "id": 45,
