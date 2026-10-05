@@ -13,7 +13,7 @@ export default function Captions({ t, captions, fade }: { t: number; captions: C
           <h2
             key={c.text}
             aria-hidden={opacity < 0.5}
-            className="col-start-1 row-start-1 text-3xl md:text-5xl font-bold tracking-tight text-white"
+            className="col-start-1 row-start-1 text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-white"
             style={{ opacity, transform: `translateY(${(1 - opacity) * 12}px)` }}
           >
             {c.text}

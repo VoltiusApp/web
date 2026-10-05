@@ -1,28 +1,28 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useReducedMotion } from "../../hooks/useReducedMotion";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 
-const CANVAS_W = 1920;
+type Size = { w: number; h: number };
 
-/** Scales a 1920×1080 canvas to the width it is given. */
-function Canvas({ children }: { children: ReactNode }) {
+/** Scales a fixed-size canvas to the width it is given. */
+function Canvas({ size, children }: { size: Size; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / CANVAS_W));
+    const observer = new ResizeObserver(([entry]) => setScale(entry.contentRect.width / size.w));
     observer.observe(el);
     return () => observer.disconnect();
-  }, []);
+  }, [size.w]);
 
   return (
-    <div ref={ref} className="relative aspect-video w-[min(100%,calc((100svh-16rem)*16/9))]">
+    <div ref={ref} className="relative" style={{ aspectRatio: `${size.w} / ${size.h}`, width: `min(100%, calc((100svh - 16rem) * ${size.w / size.h}))` }}>
       {scale > 0 && (
-        <div className="absolute left-0 top-0 h-[1080px] w-[1920px] origin-top-left" style={{ transform: `scale(${scale})` }}>
+        <div className="absolute left-0 top-0 origin-top-left" style={{ width: size.w, height: size.h, transform: `scale(${scale})` }}>
           {children}
         </div>
       )}
@@ -39,13 +39,15 @@ export default function ScrollScene({
   length,
   header,
   scene,
+  size = { w: 1920, h: 1080 },
 }: {
   id?: string;
   length: string;
+  size?: Size;
   header: (progress: number) => ReactNode;
   scene: (progress: number) => ReactNode;
 }) {
-  const reduced = useReducedMotion();
+  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
   const [ref, progress] = useScrollProgress<HTMLElement>();
   const p = reduced ? 1 : progress;
 
@@ -53,7 +55,7 @@ export default function ScrollScene({
     <section id={id} ref={ref} className="relative" style={{ height: reduced ? undefined : length }}>
       <div className={`${reduced ? "py-24" : "sticky top-0 h-svh pt-20"} flex flex-col items-center justify-center gap-6 overflow-hidden px-6`}>
         {header(p)}
-        <Canvas>{scene(p)}</Canvas>
+        <Canvas size={size}>{scene(p)}</Canvas>
       </div>
     </section>
   );
