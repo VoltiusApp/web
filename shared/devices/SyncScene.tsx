@@ -15,9 +15,16 @@ const STORED = [
 ];
 const ARRIVED = { key: 'vault/3f9c81d2.enc', body: CIPHER.slice(0, 40) };
 
-export const SYNC_CAPTIONS = [
+export const SYNC_STORES = {
+  cloud: { name: 'Voltius Cloud', detail: 'Real-time sync · zero-knowledge relay', caption: 'Voltius Cloud only ever sees ciphertext.' },
+  byo: { name: 'Your bucket', detail: 'S3 · R2 · GitHub Gist — storage you own', caption: 'Your bucket only ever holds ciphertext.' },
+};
+
+export type SyncStore = keyof typeof SYNC_STORES;
+
+export const syncCaptions = (store: SyncStore) => [
   { from: 0, to: 0.3, text: 'Encrypted on your laptop.' },
-  { from: 0.3, to: 0.62, text: 'Your bucket only ever holds ciphertext.' },
+  { from: 0.3, to: 0.62, text: SYNC_STORES[store].caption },
   { from: 0.62, to: 1, text: 'Decrypted on your phone.' },
 ];
 
@@ -92,10 +99,10 @@ const Record: React.FC<{ at: Point; ui: number; cipher: number; opacity: number;
   </div>
 );
 
-const Bucket: React.FC<{ at: Point; ui: number; arrived: number; mono: string }> = ({ at, ui, arrived, mono }) => (
+const Store: React.FC<{ store: SyncStore; at: Point; ui: number; arrived: number; mono: string }> = ({ store, at, ui, arrived, mono }) => (
   <div style={{ position: 'absolute', left: at.x, top: at.y, transform: `translate(-50%, -50%) scale(${ui})`, width: 520, padding: '22px 26px', borderRadius: 20, background: 'rgba(15,20,32,0.9)', border: '1px solid rgba(148,163,184,0.18)', boxShadow: '0 30px 80px rgba(0,0,0,0.5)' }}>
-    <div style={{ fontSize: 24, fontWeight: 600, color: '#f1f5f9' }}>Your bucket</div>
-    <div style={{ fontSize: 16, color: '#8c90a0', marginTop: 4, marginBottom: 16 }}>S3 · R2 · GitHub Gist — storage you own</div>
+    <div style={{ fontSize: 24, fontWeight: 600, color: '#f1f5f9' }}>{SYNC_STORES[store].name}</div>
+    <div style={{ fontSize: 16, color: '#8c90a0', marginTop: 4, marginBottom: 16 }}>{SYNC_STORES[store].detail}</div>
     {[...STORED, ...(arrived > 0 ? [ARRIVED] : [])].map((o, i) => (
       <div key={o.key} style={{ fontFamily: mono, fontSize: 15, lineHeight: '22px', padding: '10px 0', borderTop: '1px solid rgba(148,163,184,0.12)', opacity: i === STORED.length ? arrived : 1 }}>
         <div style={{ color: '#94a3b8' }}>{o.key}</div>
@@ -106,7 +113,7 @@ const Bucket: React.FC<{ at: Point; ui: number; arrived: number; mono: string }>
 );
 
 /** E2EE sync explainer on a canvas sized by `SYNC_LAYOUTS[layout]`; `p` runs 0 → 1. */
-export const SyncScene: React.FC<Screens & { p: number; mono: string; layout?: SyncLayout; accent?: string }> = ({ p, mono, layout = 'wide', accent = '#22d3ee', ...screens }) => {
+export const SyncScene: React.FC<Screens & { p: number; mono: string; store?: SyncStore; layout?: SyncLayout; accent?: string }> = ({ p, mono, store = 'cloud', layout = 'wide', accent = '#22d3ee', ...screens }) => {
   const L = SYNC_LAYOUTS[layout];
   const encrypt = ramp(p, 0.1, 0.24);
   const up = ramp(p, 0.26, 0.42);
@@ -119,7 +126,7 @@ export const SyncScene: React.FC<Screens & { p: number; mono: string; layout?: S
   return (
     <div style={{ position: 'absolute', inset: 0 }}>
       {L.devices(screens)}
-      <Bucket at={L.at.bucket} ui={L.ui} arrived={arrived} mono={mono} />
+      <Store store={store} at={L.at.bucket} ui={L.ui} arrived={arrived} mono={mono} />
       <Record at={at} ui={L.ui} cipher={first ? encrypt : 1 - decrypt} opacity={opacity} accent={accent} mono={mono} />
     </div>
   );
