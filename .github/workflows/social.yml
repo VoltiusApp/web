@@ -1,0 +1,39 @@
+name: social
+
+on:
+  schedule:
+    - cron: "0 15 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "post publishes the next ready tweet; dry-run only reports; verify checks the X keys"
+        type: choice
+        options: [dry-run, post, verify]
+        default: dry-run
+  pull_request:
+    paths: ["social/**", ".github/workflows/social.yml"]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: social
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node social/post.mjs "$MODE"
+        env:
+          MODE: ${{ github.event_name == 'pull_request' && 'check' || inputs.mode || 'post' }}
+          GITHUB_TOKEN: ${{ github.token }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
