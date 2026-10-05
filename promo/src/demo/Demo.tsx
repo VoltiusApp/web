@@ -1,7 +1,11 @@
 import React from 'react';
-import { AbsoluteFill, Easing, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Easing, Img, interpolate, staticFile, useCurrentFrame } from 'remotion';
 import { SANS, MONO } from '../theme';
-import { cursorAt, DFPS, FOOTAGE_FRAMES, frameOf, mk, SEG_STARTS, SEGS, segFrames, sourceAt, Src } from './timeline';
+import { TakeCursor, TakeFootage } from '../components/TakeFootage';
+import { Src, TL } from './timeline';
+
+const { mk, frameOf } = TL;
+const FOOTAGE_FRAMES = TL.frames;
 
 export const DW = 1600;
 export const DH = 900;
@@ -60,33 +64,6 @@ const Background: React.FC<{ dim?: number }> = ({ dim = 0 }) => (
   </AbsoluteFill>
 );
 
-const Footage: React.FC = () => (
-  <>
-    {SEGS.map((s, i) => (
-      <Sequence key={i} from={SEG_STARTS[i]} durationInFrames={segFrames(s)} layout="none">
-        <OffthreadVideo src={staticFile(`demo/${s.src}.mp4`)} trimBefore={Math.round(s.from * DFPS)} playbackRate={s.rate} muted style={{ position: 'absolute', inset: 0, width: SW, height: SH }} />
-      </Sequence>
-    ))}
-  </>
-);
-
-const Cursor: React.FC<{ frame: number }> = ({ frame }) => {
-  const { src, t } = sourceAt(Math.min(frame, FOOTAGE_FRAMES - 1));
-  const c = cursorAt(src, t);
-  const since = t - c.lastDown;
-  const ring = since >= 0 && since < 0.45 ? since / 0.45 : -1;
-  return (
-    <>
-      {ring >= 0 && (
-        <div style={{ position: 'absolute', left: c.x - 22, top: c.y - 22, width: 44, height: 44, borderRadius: '50%', border: '3px solid rgba(87,199,216,0.9)', transform: `scale(${0.3 + ring * 0.9})`, opacity: 1 - ring }} />
-      )}
-      <svg width={30} height={30} viewBox="0 0 24 24" style={{ position: 'absolute', left: c.x - 4, top: c.y - 2, transform: `scale(${c.pressed ? 0.88 : 1})`, transformOrigin: '4px 2px', filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.45))' }}>
-        <path d="M4 2 L4 19 L8.5 14.8 L11.6 21.6 L14.4 20.4 L11.4 13.7 L17.6 13.4 Z" fill="#fff" stroke="#111" strokeWidth={1.3} strokeLinejoin="round" />
-      </svg>
-    </>
-  );
-};
-
 const Stage: React.FC<{ frame: number }> = ({ frame }) => {
   const cam = camAt(frame);
   const s = cam.s;
@@ -100,8 +77,8 @@ const Stage: React.FC<{ frame: number }> = ({ frame }) => {
     <div style={{ position: 'absolute', left, top, width: SW, height: SH, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
       <div style={{ position: 'absolute', inset: 0, borderRadius: 12, boxShadow: '0 30px 80px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.08)' }} />
       <div style={{ position: 'absolute', inset: 0, borderRadius: 12, overflow: 'hidden', background: '#0b0f17' }}>
-        <Footage />
-        <Cursor frame={frame} />
+        <TakeFootage tl={TL} />
+        <TakeCursor tl={TL} frame={frame} />
       </div>
     </div>
   );

@@ -63,7 +63,8 @@ const LidShell: React.FC<{ lidW: number; lidH: number; children: React.ReactNode
     <Slab
       w={NOTCH.w}
       h={NOTCH.h * 2}
-      t={LID_T}
+      // Thinner than the lid: shared face planes z-fight into a dotted seam across the screen.
+      t={LID_T - 4}
       r={NOTCH.h - 1}
       wall={bodyWall}
       back={{ background: bodyFace }}

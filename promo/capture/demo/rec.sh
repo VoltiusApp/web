@@ -6,7 +6,7 @@ read D X < disp
 export DISPLAY=$D XAUTHORITY=$X
 : > cursor.txt; : > marks.txt
 # -copyts keeps x11grab's wall-clock pts so cursor.txt/marks.txt epochs line up with frames.
-ffmpeg -y -loglevel error -f x11grab -draw_mouse 0 -video_size 1280x800 -framerate 30 -i "$D+0,0" -copyts -c:v libx264 -preset ultrafast -qp 0 -f nut raw.nut &
+ffmpeg -y -loglevel error -f x11grab -draw_mouse 0 -video_size ${SIZE:-1280x800} -framerate 30 -i "$D+0,0" -copyts -c:v libx264 -preset ultrafast -qp 0 -f nut raw.nut &
 FF=$!
 trap 'kill -INT $FF 2>/dev/null || true' EXIT
 sleep 1.0

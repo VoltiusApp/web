@@ -3,6 +3,7 @@
 # WT = voltius worktree (platform.patch gets applied), BIN = dir with a voltius debug binary named `voltius`.
 set -euo pipefail
 HERE=$(cd "$(dirname "$0")" && pwd)
+. "$HERE/../container.sh"
 : "${WT:?voltius worktree}" "${BIN:?dir with voltius binary}"
 NET=voltius-headless_voltius-test
 ACCOUNT="http://promo-sync-server:8080 demo@voltius.app promo-demo-2026"
@@ -24,16 +25,8 @@ WEB01=$(docker inspect promo-web-01 --format '{{range .NetworkSettings.Networks}
 
 device() { # name hostname screen win
   if ! docker ps --format '{{.Names}}' | grep -qx "promo-$1"; then
-    docker rm -f "promo-$1" >/dev/null 2>&1 || true
-    docker run -d --name "promo-$1" --hostname "$2" --network $NET --security-opt seccomp=unconfined \
-      -e WEBKIT_DISABLE_COMPOSITING_MODE=1 -e VOLTIUS_KEYCHAIN_NS="promo$1" -e WD_APP=/promobin/voltius -e WD_WIN="$4" \
-      -v "$WT":/app -v "$BIN":/promobin:ro tauri-mcp \
-      bash -c "cd /app && (node node_modules/vite/bin/vite.js > /tmp/vite.log 2>&1 &) && keyctl session - xvfb-run --auto-servernum -s '-screen 0 ${3}x24' sleep infinity" >/dev/null
+    capture_container "promo-$1" "$2" "$3" "$4" $NET "$WT" "$BIN"
     docker exec -u root -w / "promo-$1" sh -c "echo '$WEB01 web-01.acme.io' >> /etc/hosts"
-    until docker exec -w / "promo-$1" sh -c 'ls -d /tmp/xvfb-run.* && grep -q "ready in" /tmp/vite.log' >/dev/null 2>&1; do sleep 1; done
-    local X; X=$(docker exec -w / "promo-$1" sh -c 'ls -d /tmp/xvfb-run.*')/Xauthority
-    docker exec -w / "promo-$1" sh -c "mkdir -p /tmp/work && echo ':99 $X' > /tmp/work/disp"
-    docker exec -d -w / "promo-$1" sh -c "DISPLAY=:99 XAUTHORITY=$X tauri-driver --port 4444 --native-port 4446 > /tmp/driver.log 2>&1"
   fi
   docker cp "$HERE/../demo/wd.mjs" "promo-$1":/tmp/work/ >/dev/null
   docker cp "$HERE/." "promo-$1":/tmp/work/ >/dev/null
