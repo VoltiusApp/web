@@ -39,6 +39,13 @@ export async function click(x, y, ms) {
   await down(); await sleep(90); await up();
 }
 
+export async function dblclick(x, y, ms) {
+  if (x != null) await moveTo(x, y, ms);
+  await sleep(120);
+  await down(); await sleep(60); await up(); await sleep(90);
+  await down(); await sleep(60); await up();
+}
+
 // Press, nudge past the app's drag threshold, glide, release.
 export async function dragTo([x1, y1], [x2, y2], ms = 1000) {
   await moveTo(x1, y1);
@@ -83,6 +90,10 @@ export async function clickOn(finder, args = [], { fx = 0.5, fy = 0.5, ms } = {}
   return r;
 }
 export const clickText = (t, o) => clickOn(byText, [t], o);
+export async function dblclickText(t) {
+  const r = await waitRect(byText, [t]);
+  await dblclick(r[0], r[1]);
+}
 export const clickCss = (css, o) => clickOn(byCss, [css], o);
 
 export async function waitFor(cond, args = [], ms = 15000) {

@@ -6,8 +6,51 @@ Remotion project for the marketing videos. Compositions (`src/Root.tsx`):
 |---|---|---|
 | `Demo` | README / landing hero demo (~40 s, 1600×900) | `src/demo/`, footage `public/demo/` |
 | `Trailer` | 30 s launch trailer | `src/Trailer.tsx`, footage `public/footage/` |
-| `ImportClip` | import-focused social clip | `src/ImportClip.tsx` |
 | `DeviceSync` | 3D laptop + phone, one session live on both (~18 s) | `src/devices/`, devices + scene in `../shared/devices/` (also used by the landing), footage `public/devices/` |
+| `ImportClip` | import from `source`: `termius`, `mobaxterm`, `putty`, `securecrt`, `zoc`, `csv`, or `supercut` (all six) | `src/social/`, takes `public/social/import-*` |
+| `FirstRun` | no account: chooser → add a host → connect | takes `cold1`, `cold2` |
+| `KillRestore` | kill -9 mid-build, relaunch, workspace and build still there | take `kill` |
+| `Broadcast` | twelve hosts, broadcast on, one `apt upgrade` everywhere | take `broadcast` (1920×1200) |
+| `ThemeSpeedrun` | the six built-in themes from the side panel | take `themes` |
+| `ResumeTransfer` | 4 GB folder upload, link drops, transfer resumes | take `resume` |
+| `SyncClip` | the landing's E2EE sync scene; `store`: `cloud` (Pro) or `byo` | `../shared/devices/SyncScene.tsx`, stills `public/sync/` |
+
+## Tweet videos
+
+`social.json` maps tweet ids from `../social/queue.json` to a composition and its props.
+
+```bash
+npm ci --cache .npm-cache          # once per fresh copy
+npm run render:all                 # renders what is missing in out/social/<id>.mp4 (--gl=angle)
+npm run render:all -- --only 1,23  # re-render some
+npm run render:all -- --force      # re-render everything
+```
+
+It prints the list in posting order (and the video tweets that have no composition yet) and writes `out/social/review.html`: each video beside its tweet text. To approve one, copy it to `social/media/<id>.mp4`, push, then label the tweet's "Approve tweet #N" issue `approved`.
+
+Clips frame the footage on the 2.5D laptop (`FirstRun`, `KillRestore`) or as a floating app window (the rest); the device and camera shots live in `src/social/FootageClip.tsx`. Cuts and captions are relative to the marks in `src/social/takes/*.json`, so a retake keeps the edit.
+
+### Retaking the tweet footage
+
+Everything runs in one capture container, `promo-social`, on its own network with a 12-host Debian fleet (`promo-s-web-01` … `promo-s-worker-02`, `deploy`/`deploy`; an older Debian release so `apt upgrade` has work to do).
+
+```bash
+cd capture/social
+WT=<voltius worktree at the release> BIN=<dir with its debug binary> ./setup.sh
+./take-import.sh termius mobaxterm putty securecrt zoc csv   # import-*
+./vault-fleet.sh && ./resume.sh rec                          # resume (≈8 min of real transfer)
+./kill.sh                                                     # kill
+./themes.sh                                                   # themes
+FLAT=1 ./vault-fleet.sh && WT=… BIN=… ./broadcast.sh          # broadcast, recreates the fleet first
+```
+
+`cold1.mjs`/`cold2.mjs` need a never-launched app: record them first on a fresh container (`./rec.sh cold1.mjs cold1`, `./rec.sh cold2.mjs cold2`, then `./pull.sh cold1 cold2`). Every take script ends with `pull.sh`, which copies the recording to `public/social/` and writes `src/social/takes/<take>.json`.
+
+- PuTTY, SecureCRT and ZOC import from real config files `sources.mjs` writes where the Linux app looks. Termius and MobaXterm can't run here: `stubs.mjs` replaces only their native read with records in their real formats; the parsers and the import UI are the app's own.
+- Competitor brand icons on the importer buttons are hidden during capture (`nologo.js`).
+- The link drop is `docker pause` on the host: a blackhole like a dead Wi-Fi link, while the name still resolves (`docker network disconnect` breaks DNS and the app gives up).
+- Never `pkill -f` a pattern that appears in your own command line; kill the app with `pkill -x voltius`.
+- Half-scale stills here: `node stills.mjs <Composition> <frame>…` (`PROPS='{"source":"putty"}'` for props). They use `--gl=swangle`; other software GL paths draw the 3D devices with the wrong faces in front.
 
 ## Retaking the README demo
 

@@ -1,0 +1,18 @@
+{
+  "51": { "composition": "ResumeTransfer" },
+  "1": { "composition": "ImportClip", "props": { "source": "termius" } },
+  "9": { "composition": "FirstRun" },
+  "24": { "composition": "KillRestore" },
+  "30": { "composition": "Broadcast" },
+  "2": { "composition": "ImportClip", "props": { "source": "putty" } },
+  "31": { "composition": "ThemeSpeedrun" },
+  "23": { "composition": "DeviceSync" },
+  "10": { "composition": "SyncClip", "props": { "store": "byo" } },
+  "6": { "composition": "ImportClip", "props": { "source": "csv" } },
+  "3": { "composition": "ImportClip", "props": { "source": "mobaxterm" } },
+  "13": { "composition": "SyncClip", "props": { "store": "cloud" } },
+  "4": { "composition": "ImportClip", "props": { "source": "securecrt" } },
+  "5": { "composition": "ImportClip", "props": { "source": "zoc" } },
+  "12": { "composition": "SyncClip", "props": { "store": "byo" } },
+  "8": { "composition": "ImportClip", "props": { "source": "supercut" } }
+}
