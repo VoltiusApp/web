@@ -1,0 +1,14 @@
+diff --git a/src/utils/platform.ts b/src/utils/platform.ts
+index 4e339445..21b9e148 100644
+--- a/src/utils/platform.ts
++++ b/src/utils/platform.ts
+@@ -14,7 +14,8 @@ let resolved: string | null = null;
+ 
+ export function getPlatform(): Promise<string> {
+   if (!cached) {
+-    cached = invoke<string>("get_platform")
++    const forced = localStorage.getItem("promo:platform");
++    cached = (forced ? Promise.resolve(forced) : invoke<string>("get_platform"))
+       .catch(() => "unknown")
+       .then((p) => {
+         resolved = p;
