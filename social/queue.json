@@ -56,7 +56,7 @@
   {
     "id": 2,
     "date": "2026-10-21",
-    "text": "Still on PuTTY? Voltius imports your saved sessions and your .ppk keys, then gives you tabs, split panes and SFTP on top.",
+    "text": "Still on PuTTY? Voltius imports your saved sessions with their proxies and tunnels, then gives you tabs, split panes and SFTP on top. Add your keys to the keychain once and every host can use them.",
     "media": "video",
     "visual": "V1 PuTTY"
   },
@@ -70,7 +70,7 @@
   {
     "id": 31,
     "date": "2026-10-23",
-    "text": "12 themes in 6 seconds. Pick yours.",
+    "text": "Six built-in themes, one click each. Or make your own in the theme editor.",
     "media": "video",
     "visual": "V9"
   },
@@ -98,7 +98,7 @@
   {
     "id": 6,
     "date": "2026-10-29",
-    "text": "300 servers in a spreadsheet? Import the CSV. Folders come from a column, not from an afternoon of copy-paste.",
+    "text": "300 servers in a spreadsheet? Import the CSV. Names, ports, users and tags come from its columns, not from an afternoon of copy-paste.",
     "media": "video",
     "visual": "V1 CSV"
   },
