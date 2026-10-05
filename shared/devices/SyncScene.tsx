@@ -5,13 +5,13 @@ import { Stage } from './Stage';
 import { ramp } from './motion';
 
 const PLAIN = ['name  web-01', 'host  web-01.acme.io', 'port  2222', 'user  deploy', 'auth  ed25519'];
-// Real AES-256-GCM output of that record, so the ciphertext on screen is the genuine article.
-const CIPHER = 'RhvttsllxWb3UpmhwuIz6GxnI/fdCjNGhF0GAjrKknprr9So5hkGGc4aSQDFuLW5gOAnqSTmfDh3JJgHY88VDoXGND/z8DLbfuaYKZ0E8z81q6HAG2xi8TJSTTD3cIc4ZAROEfDVisSm2FSz+ohC8wPm';
+// Real XChaCha20-Poly1305 output of that record in Voltius's wire format: version || nonce || ciphertext+tag.
+const CIPHER = 'AbwP64YPpkCA9a6y8hjWn2R/7CZIw8h8cn3p4upsYeJUPZvUNqYgvGvUyW7BlY3Fa74xzxZoBh5VJiEtIm/8M4qVynuHjKdZQtuA3AWyBX2jccbvYNyuPVTWNdIKAhAa2DzJAgYpGuBTkC5i2Ux+4fLkE+SWoZhFr2R4wAN+hw==';
 const COLS = 20;
 const cipherLine = (i: number) => CIPHER.slice(i * COLS, (i + 1) * COLS);
 const STORED = [
-  { key: 'vault/7527f26b.enc', body: 'bPppEp8Ia9cqjhbaNxf9BZZQgXkXs/BryL5ATeBX' },
-  { key: 'vault/4803dcfa.enc', body: '8KzKULk7faWAyRzI6fj/6b15Y3lOfyMcv6A5XlvH' },
+  { key: 'vault/7527f26b.enc', body: 'AZ6zk5iltlLvQGJieut0TJG6cDsjn3v07YtcStNh' },
+  { key: 'vault/4803dcfa.enc', body: 'AYbYGxjKQRXxDjPck88TQml8c3HoNwQnMcrpkwxN' },
 ];
 const ARRIVED = { key: 'vault/3f9c81d2.enc', body: CIPHER.slice(0, 40) };
 
@@ -82,7 +82,7 @@ const Record: React.FC<{ at: Point; ui: number; cipher: number; opacity: number;
   <div style={{ position: 'absolute', left: at.x, top: at.y, transform: `translate(-50%, -50%) scale(${ui})`, opacity, width: 330, padding: '16px 20px', borderRadius: 14, background: 'rgba(10,14,22,0.94)', border: `1px solid ${cipher > 0.5 ? 'rgba(148,163,184,0.25)' : accent}`, boxShadow: '0 20px 50px rgba(0,0,0,0.55)', fontFamily: mono, fontSize: 19, lineHeight: '28px' }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, fontFamily: 'inherit', color: cipher > 0.5 ? '#94a3b8' : accent, fontSize: 15, letterSpacing: 1 }}>
       <Lock open={1 - cipher} color={cipher > 0.5 ? '#94a3b8' : accent} />
-      {cipher > 0.5 ? 'AES-256-GCM' : 'HOST'}
+      {cipher > 0.5 ? 'XChaCha20-Poly1305' : 'HOST'}
     </div>
     {PLAIN.map((line, r) => (
       <div key={r} style={{ whiteSpace: 'pre' }}>

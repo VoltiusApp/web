@@ -4,6 +4,7 @@ import { SYNC_LAYOUTS, SyncScene, syncCaptions } from "@shared/devices/SyncScene
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import Captions from "./Captions";
 import ScrollScene from "./ScrollScene";
+import ProTrialLink from "./ProTrialLink";
 import Still from "./Still";
 
 const CAPTIONS = syncCaptions("cloud");
@@ -21,8 +22,14 @@ export default function SyncSection() {
           <Captions t={p} captions={CAPTIONS} fade={0.04} />
           <p className="max-w-xl text-center text-xs sm:text-sm text-zinc-400">
             Hosts, keys and settings are encrypted on your device before they leave it. Voltius Cloud syncs them in real time and only ever stores ciphertext.{" "}
-            <a href="#pricing" className="text-cyan-400 hover:text-cyan-300">Pro, 14 days free</a>.
-            <span className="block mt-1 text-zinc-500">Prefer your own storage? Gist, Cloudflare R2 and S3 sync stay free.</span>
+            <ProTrialLink />
+            <span className="block mt-1 text-zinc-500">
+              Prefer your own storage? Gist, Cloudflare R2 and S3 sync stay free, or{" "}
+              <a href="https://github.com/VoltiusApp/voltius-plugin-template" className="underline hover:text-zinc-300">
+                build your own sync provider
+              </a>{" "}
+              as a plugin.
+            </span>
           </p>
         </>
       )}
