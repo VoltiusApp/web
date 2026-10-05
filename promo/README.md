@@ -7,7 +7,7 @@ Remotion project for the marketing videos. Compositions (`src/Root.tsx`):
 | `Demo` | README / landing hero demo (~40 s, 1600×900) | `src/demo/`, footage `public/demo/` |
 | `Trailer` | 30 s launch trailer | `src/Trailer.tsx`, footage `public/footage/` |
 | `ImportClip` | import-focused social clip | `src/ImportClip.tsx` |
-| `DeviceSync` | 3D laptop + phone, one session live on both (~19 s) | `src/devices/`, footage `public/devices/` |
+| `DeviceSync` | 3D laptop + phone, one session live on both (~18 s) | `src/devices/`, devices + scene in `../shared/devices/` (also used by the landing), footage `public/devices/` |
 
 ## Retaking the README demo
 
