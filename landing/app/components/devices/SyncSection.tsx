@@ -25,7 +25,7 @@ export default function SyncSection() {
             <ProTrialLink />
             <span className="block mt-1 text-zinc-500">
               Prefer your own storage? Gist, Cloudflare R2 and S3 sync stay free, or{" "}
-              <a href="https://github.com/VoltiusApp/voltius-plugin-template" className="underline hover:text-zinc-300">
+              <a href="https://docs.voltius.app/plugins/sync-providers/" className="underline hover:text-zinc-300">
                 build your own sync provider
               </a>{" "}
               as a plugin.
