@@ -7,6 +7,7 @@ Remotion project for the marketing videos. Compositions (`src/Root.tsx`):
 | `Demo` | README / landing hero demo (~40 s, 1600×900) | `src/demo/`, footage `public/demo/` |
 | `Trailer` | 30 s launch trailer | `src/Trailer.tsx`, footage `public/footage/` |
 | `ImportClip` | import-focused social clip | `src/ImportClip.tsx` |
+| `DeviceSync` | 3D laptop + phone, one session live on both (~19 s) | `src/devices/`, footage `public/devices/` |
 
 ## Retaking the README demo
 
@@ -25,6 +26,21 @@ Then publish:
   ( set -a; . ~/fourretout/voltius-tofu/.env.tofu; set +a; CLOUDFLARE_ACCOUNT_ID=$TF_VAR_account_id \
     wrangler r2 object put voltius-assets/demo.mp4 --file out/demo.mp4 --content-type video/mp4 --remote )
   ```
+
+## Retaking the device-sync clip
+
+Two real Voltius instances record one persistent session at the same time: `promo-laptop` (desktop) and `promo-phone` (the mobile shell, forced with `localStorage["promo:platform"]="android"` from `capture/devices/platform.patch`, window shrunk past the 800 px minimum with xdotool). Both sign into one account on an isolated `promo-sync-server`, never prod.
+
+```bash
+WT=<voltius worktree> BIN=<dir with a voltius debug binary> ./capture/devices/setup.sh   # server, containers, account, host, phone on Hosts
+./capture/devices/take.sh      # records both, writes public/devices/*.mp4 + src/devices/take.json
+npx remotion render DeviceSync out/devices/device-sync.mp4 --gl=angle   # on the 5070 PC
+```
+
+- Cuts, camera keys and captions in `src/devices/DeviceSync.tsx` are relative to the marks in `take.json`.
+- The device name on the phone's "Live on other devices" card is the laptop container's hostname (`work-laptop`).
+- A stale card from a removed container clears when joined once (attach fails, the session is tombstoned); `phone-home.js` does that.
+- Render on the 5070 PC (`--gl=angle`, full HD: ~30 s); on this box software GL takes hours, and two tabs time out extracting video frames.
 
 ### How it works
 

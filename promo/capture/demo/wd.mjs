@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync, existsSync, appendFileSync } from 'fs';
 
 const BASE = 'http://localhost:4444';
 const SIDF = '/tmp/work/sid';
+const APP = process.env.WD_APP ?? '/tmp/work/voltius-bin';
+const [WIN_W, WIN_H] = (process.env.WD_WIN ?? '1440x900').split('x').map(Number);
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 async function http(method, path, body) {
@@ -22,12 +24,12 @@ export async function ensureSession() {
     if (r && r.value && !r.value.error) return sid;
   }
   const r = await http('POST', '/session', {
-    capabilities: { alwaysMatch: { 'tauri:options': { application: '/tmp/work/voltius-bin' } } },
+    capabilities: { alwaysMatch: { 'tauri:options': { application: APP } } },
   });
   sid = r.value.sessionId;
   writeFileSync(SIDF, sid);
   await sleep(6000);
-  await setWindow(1440, 900);
+  await setWindow(WIN_W, WIN_H);
   return sid;
 }
 

@@ -1,0 +1,26 @@
+{
+  "laptop": {
+    "src": "devices/laptop.mp4",
+    "start": 0.733,
+    "w": 1280,
+    "h": 800
+  },
+  "phone": {
+    "src": "devices/phone.mp4",
+    "start": 0.733,
+    "w": 412,
+    "h": 892
+  },
+  "tap": {
+    "at": 14.853,
+    "x": 111.25,
+    "y": 174.6875
+  },
+  "marks": {
+    "phoneType": 36.248,
+    "deployDone": 33.391,
+    "laptopEnter": 4.163,
+    "phoneEnter": 38.826,
+    "laptopType": 2.35
+  }
+}
