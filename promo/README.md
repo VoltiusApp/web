@@ -47,7 +47,6 @@ FLAT=1 ./vault-fleet.sh && WT=… BIN=… ./broadcast.sh          # broadcast, r
 `cold1.mjs`/`cold2.mjs` need a never-launched app: record them first on a fresh container (`./rec.sh cold1.mjs cold1`, `./rec.sh cold2.mjs cold2`, then `./pull.sh cold1 cold2`). Every take script ends with `pull.sh`, which copies the recording to `public/social/` and writes `src/social/takes/<take>.json`.
 
 - PuTTY, SecureCRT and ZOC import from real config files `sources.mjs` writes where the Linux app looks. Termius and MobaXterm can't run here: `stubs.mjs` replaces only their native read with records in their real formats; the parsers and the import UI are the app's own.
-- Competitor brand icons on the importer buttons are hidden during capture (`nologo.js`).
 - The link drop is `docker pause` on the host: a blackhole like a dead Wi-Fi link, while the name still resolves (`docker network disconnect` breaks DNS and the app gives up).
 - Never `pkill -f` a pattern that appears in your own command line; kill the app with `pkill -x voltius`.
 - Half-scale stills here: `node stills.mjs <Composition> <frame>…` (`PROPS='{"source":"putty"}'` for props). They use `--gl=swangle`; other software GL paths draw the 3D devices with the wrong faces in front.

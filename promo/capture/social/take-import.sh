@@ -13,7 +13,6 @@ for s in "$@"; do
   run node do.mjs sessions.js >/dev/null
   run node do.mjs clean.js >/dev/null
   run node do.mjs vault.js
-  run node do.mjs nologo.js >/dev/null
   case $s in
     termius) run node do.mjs promo-termius.js ;;
     mobaxterm) run node do.mjs promo-moba.js ;;
