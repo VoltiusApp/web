@@ -1,0 +1,356 @@
+[
+  {
+    "id": 51,
+    "date": "2026-10-07",
+    "text": "My Wi-Fi dropped halfway through a 4 GB upload. Voltius waited for the link to come back and carried on from where it stopped. A cut-off copy never replaces the real file, and a resumed one is checked end to end. New in 0.49.0.",
+    "media": "video",
+    "visual": "V13"
+  },
+  {
+    "id": 1,
+    "date": "2026-10-12",
+    "text": "Moving off Termius takes one click. Voltius reads your hosts, folders, keys and snippets straight from the installed app. No export file. No account.",
+    "media": "video",
+    "visual": "V1 Termius"
+  },
+  {
+    "id": 9,
+    "date": "2026-10-13",
+    "text": "No account required. Install, add a host, connect. Signing up is optional, and it stays optional.",
+    "media": "video",
+    "visual": "V3 cold open"
+  },
+  {
+    "id": 24,
+    "date": "2026-10-14",
+    "text": "Force-quit Voltius in the middle of a build. Reopen it. Tabs, splits, scrollback and the running build are still there.",
+    "media": "video",
+    "visual": "V3"
+  },
+  {
+    "id": 30,
+    "date": "2026-10-15",
+    "text": "Type once. Run on twelve servers.",
+    "media": "video",
+    "visual": "V7"
+  },
+  {
+    "id": 49,
+    "date": "2026-10-16",
+    "text": "What does your SSH client do that drives you nuts? I read every reply, and a lot of Voltius started as one."
+  },
+  {
+    "id": 17,
+    "date": "2026-10-19",
+    "text": "Drag a folder from one server to another. It goes host to host over SSH and never touches your laptop.",
+    "media": "video",
+    "visual": "V6"
+  },
+  {
+    "id": 35,
+    "date": "2026-10-20",
+    "text": "Let Claude Code drive your fleet. Voltius ships an MCP server: hosts, sessions, commands, files. Off by default, never leaves your machine.",
+    "media": "video",
+    "visual": "V4"
+  },
+  {
+    "id": 2,
+    "date": "2026-10-21",
+    "text": "Still on PuTTY? Voltius imports your saved sessions and your .ppk keys, then gives you tabs, split panes and SFTP on top.",
+    "media": "video",
+    "visual": "V1 PuTTY"
+  },
+  {
+    "id": 14,
+    "date": "2026-10-22",
+    "text": "Local-first means Voltius works on a plane. Sync is a bonus, never a dependency.",
+    "media": "image",
+    "visual": "screenshot: app offline, sync icon idle"
+  },
+  {
+    "id": 31,
+    "date": "2026-10-23",
+    "text": "12 themes in 6 seconds. Pick yours.",
+    "media": "video",
+    "visual": "V9"
+  },
+  {
+    "id": 23,
+    "date": "2026-10-26",
+    "text": "Close the laptop. Open your phone. Same live terminal, mid-command.",
+    "media": "video",
+    "visual": "V2 (DeviceSync render)"
+  },
+  {
+    "id": 10,
+    "date": "2026-10-27",
+    "text": "Sync your hosts end-to-end encrypted through your own private GitHub Gist. No central server. Bring your own token.",
+    "media": "video",
+    "visual": "V5"
+  },
+  {
+    "id": 40,
+    "date": "2026-10-28",
+    "text": "Proxmox LXC and Docker containers in the same sidebar as your SSH hosts. Open a shell in one click.",
+    "media": "video",
+    "visual": "V11"
+  },
+  {
+    "id": 6,
+    "date": "2026-10-29",
+    "text": "300 servers in a spreadsheet? Import the CSV. Folders come from a column, not from an afternoon of copy-paste.",
+    "media": "video",
+    "visual": "V1 CSV"
+  },
+  {
+    "id": 29,
+    "date": "2026-10-30",
+    "text": "Every host, one keystroke.",
+    "media": "video",
+    "visual": "trailer palette clip"
+  },
+  {
+    "id": 18,
+    "date": "2026-11-02",
+    "text": "Copying a huge folder used to fail on hosts with a tiny /tmp. Now Voltius streams tar over SSH, no temporary archive.",
+    "media": "video",
+    "visual": "V6 with path overlay"
+  },
+  {
+    "id": 36,
+    "date": "2026-11-03",
+    "text": "\"Check disk on every prod host and clean docker images above 80%.\" One prompt, real tabs.",
+    "media": "video",
+    "visual": "V4 cut"
+  },
+  {
+    "id": 3,
+    "date": "2026-11-04",
+    "text": "MobaXterm sessions → Voltius in one click. Same hosts, now with E2EE sync across Linux, macOS, Windows and Android.",
+    "media": "video",
+    "visual": "V1 MobaXterm"
+  },
+  {
+    "id": 13,
+    "date": "2026-11-05",
+    "text": "This is what your bucket sees when Voltius syncs your SSH fleet.",
+    "media": "video",
+    "visual": "V5 ciphertext shot"
+  },
+  {
+    "id": 45,
+    "date": "2026-11-06",
+    "text": "Share a live terminal with a teammate. Hand over control, take it back. A guest without control can't type.",
+    "media": "video",
+    "visual": "V12"
+  },
+  {
+    "id": 48,
+    "date": "2026-11-09",
+    "text": "Voltius 0.48.0: folder icons and colors, streaming folder transfers, local chmod, ZOC auto-import.",
+    "media": "video",
+    "visual": "V8",
+    "hold": "Replace with the latest release's headlines and move to its release day."
+  },
+  {
+    "id": 19,
+    "date": "2026-11-10",
+    "text": "Open a remote file in your local editor, hit save, it's back on the server. No scp round trip.",
+    "media": "video",
+    "visual": "clip: edit + save"
+  },
+  {
+    "id": 41,
+    "date": "2026-11-11",
+    "text": "Serial console with DTR, RTS and break. For the router you bricked at 2 a.m.",
+    "media": "video",
+    "visual": "V11 serial shot"
+  },
+  {
+    "id": 4,
+    "date": "2026-11-12",
+    "text": "SecureCRT import is in. Point Voltius at your config and your session tree comes across, folders included.",
+    "media": "video",
+    "visual": "V1 SecureCRT"
+  },
+  {
+    "id": 26,
+    "date": "2026-11-13",
+    "text": "On tmux 3.2+, persistent sessions feel like plain SSH: native scroll, drag-select, Ctrl+F through history, mouse apps.",
+    "media": "video",
+    "visual": "clip: Ctrl+F in scrollback"
+  },
+  {
+    "id": 11,
+    "date": "2026-11-16",
+    "text": "Prefer Cloudflare? Voltius deploys a Worker and an R2 bucket you own, from Settings. Same zero-knowledge sync.",
+    "media": "image",
+    "visual": "screenshot: Cloudflare Sync setup"
+  },
+  {
+    "id": 37,
+    "date": "2026-11-17",
+    "text": "Works with Claude Code, Claude Desktop, Cursor and VS Code. One toggle in Settings → Integrations.",
+    "media": "image",
+    "visual": "screenshot: Integrations"
+  },
+  {
+    "id": 25,
+    "date": "2026-11-18",
+    "text": "Sessions survive disconnects through tmux or screen on the host. You don't need to know tmux for this to work.",
+    "media": "video",
+    "visual": "clip: drop Wi-Fi, reconnect"
+  },
+  {
+    "id": 5,
+    "date": "2026-11-19",
+    "text": "ZOC Terminal import finds your hosts in the installed app, even if you moved its data folder somewhere custom.",
+    "media": "video",
+    "visual": "V1 ZOC"
+  },
+  {
+    "id": 32,
+    "date": "2026-11-20",
+    "text": "Save a command once as a snippet, run it on any host from the side panel. Variables ask before they run.",
+    "media": "video",
+    "visual": "clip: snippet run"
+  },
+  {
+    "id": 20,
+    "date": "2026-11-23",
+    "text": "chmod and chown from the right-click menu, on remote panes and now on local ones too.",
+    "media": "image",
+    "visual": "screenshot: Permissions dialog"
+  },
+  {
+    "id": 12,
+    "date": "2026-11-24",
+    "text": "Or any S3-compatible bucket: AWS, R2, B2, Wasabi, Hetzner, Scaleway, MinIO. Encrypted before it leaves your machine. No server to deploy.",
+    "media": "video",
+    "visual": "V5 end card"
+  },
+  {
+    "id": 42,
+    "date": "2026-11-25",
+    "text": "Live CPU, memory and disk for the host you're on, next to the terminal.",
+    "media": "image",
+    "visual": "screenshot: System Metrics"
+  },
+  {
+    "id": 46,
+    "date": "2026-11-26",
+    "text": "Share hosts in a team vault, and connect as your own identity. Your choice stays yours, the shared credential stays shared.",
+    "media": "image",
+    "visual": "screenshot: Connect as"
+  },
+  {
+    "id": 8,
+    "date": "2026-11-27",
+    "text": "I wrote importers for Termius, MobaXterm, PuTTY/KiTTY, SecureCRT, ZOC and CSV so nobody has to retype a hostname again. Which client should be next?",
+    "media": "video",
+    "visual": "V1 supercut, 6 × 2 s"
+  },
+  {
+    "id": 27,
+    "date": "2026-11-30",
+    "text": "Port forwards that survive sleep. Close the lid, open it, the tunnel is back. https://voltius.app/blog/port-forwards-that-survive-sleep"
+  },
+  {
+    "id": 38,
+    "date": "2026-12-01",
+    "text": "Ask your agent which hosts you haven't connected to in 30 days. It reads your Voltius audit log, locally.",
+    "media": "video",
+    "visual": "V4 alt prompt",
+    "hold": "Check the audit tool can answer this before posting."
+  },
+  {
+    "id": 33,
+    "date": "2026-12-02",
+    "text": "Local shells too: Bash, Zsh, Fish, PowerShell, WSL, Git Bash, CMD. One app for every terminal you open.",
+    "media": "image",
+    "visual": "screenshot: new tab menu"
+  },
+  {
+    "id": 15,
+    "date": "2026-12-03",
+    "text": "Voltius is AGPL-3.0. You can read every line of the code that holds your SSH keys.",
+    "media": "image",
+    "visual": "repo card"
+  },
+  {
+    "id": 44,
+    "date": "2026-12-04",
+    "text": "What's the oldest box you still SSH into? Mine is a Raspberry Pi 1 running Pi-hole.",
+    "media": "image",
+    "visual": "photo",
+    "hold": "Swap in your own answer and photo."
+  },
+  {
+    "id": 21,
+    "date": "2026-12-07",
+    "text": "WebDAV hosts in the file browser: Nextcloud, ownCloud, Synology, TrueNAS, rclone. Browse, upload, edit.",
+    "media": "image",
+    "visual": "screenshot: WebDAV pane"
+  },
+  {
+    "id": 7,
+    "date": "2026-12-08",
+    "text": "No lock-in, both ways. Everything exports to open JSON, encrypted if you want. Leaving Voltius should be as easy as arriving.",
+    "media": "image",
+    "visual": "screenshot: export dialog"
+  },
+  {
+    "id": 43,
+    "date": "2026-12-09",
+    "text": "See and kill processes on any connected host, without typing ps aux | grep.",
+    "media": "video",
+    "visual": "clip: process manager"
+  },
+  {
+    "id": 28,
+    "date": "2026-12-10",
+    "text": "Voltius runs on Android. Your hosts, keys and live sessions in your pocket, synced end-to-end encrypted.",
+    "media": "video",
+    "visual": "phone screen recording"
+  },
+  {
+    "id": 34,
+    "date": "2026-12-11",
+    "text": "Voltius opens a shell on OpenWrt and other busybox boxes, even the ones without base64.",
+    "media": "video",
+    "visual": "clip: router shell"
+  },
+  {
+    "id": 22,
+    "date": "2026-12-14",
+    "text": "Yes, I added FTP in 2026. Here's why. https://voltius.app/blog/why-we-added-ftp-in-2026"
+  },
+  {
+    "id": 16,
+    "date": "2026-12-15",
+    "text": "Running a team? The sync server is one container image you can host yourself.",
+    "media": "image",
+    "visual": "terminal: docker pull ghcr.io/voltiusapp/voltius-server"
+  },
+  {
+    "id": 39,
+    "date": "2026-12-16",
+    "text": "Plugins from the official registry, or point Voltius at your own repo.",
+    "media": "image",
+    "visual": "screenshot: plugin list"
+  },
+  {
+    "id": 47,
+    "date": "2026-12-17",
+    "text": "Permissions per folder and per host for teams that need them, end-to-end encrypted like everything else.",
+    "media": "image",
+    "visual": "screenshot: permissions editor"
+  },
+  {
+    "id": 50,
+    "date": "2026-12-18",
+    "text": "Everything in the free list stays free. Paid plans add teams; they never take features away.",
+    "media": "video",
+    "visual": "V10"
+  }
+]
