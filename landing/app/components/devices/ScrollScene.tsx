@@ -20,7 +20,7 @@ function Canvas({ size, children }: { size: Size; children: ReactNode }) {
   }, [size.w]);
 
   return (
-    <div ref={ref} className="relative" style={{ aspectRatio: `${size.w} / ${size.h}`, width: `min(100%, calc((100svh - 16rem) * ${size.w / size.h}))` }}>
+    <div ref={ref} className="relative" style={{ aspectRatio: `${size.w} / ${size.h}`, width: `min(100%, calc((100svh - 18rem) * ${size.w / size.h}))` }}>
       {scale > 0 && (
         <div className="absolute left-0 top-0 origin-top-left" style={{ width: size.w, height: size.h, transform: `scale(${scale})` }}>
           {children}
