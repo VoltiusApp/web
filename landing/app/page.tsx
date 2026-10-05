@@ -3,6 +3,8 @@ import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import Features from "./components/Features";
 import Showcase from "./components/Showcase";
+import HandoffSection from "./components/devices/HandoffSection";
+import SyncSection from "./components/devices/SyncSection";
 import Pricing from "./components/Pricing";
 import Download from "./components/Download";
 import Footer from "./components/Footer";
@@ -39,7 +41,9 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <HandoffSection />
         <Features />
+        <SyncSection />
         <Showcase />
         <Pricing />
         <Download />
