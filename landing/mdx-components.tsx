@@ -50,7 +50,7 @@ export const mdxComponents: MDXComponents = {
       playsInline
       preload="metadata"
       {...props}
-      className="my-10 max-w-full rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
+      className="my-10 rounded-2xl border border-white/10 bg-black shadow-2xl shadow-black/20"
     >
       {children}
     </video>

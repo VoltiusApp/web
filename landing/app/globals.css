@@ -45,9 +45,17 @@ body {
   transform: none;
 }
 
+/* App recordings are 1600 px and wider: let them break out of the text column to the page width. */
 article video {
-  max-width: 345px;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  width: min(61rem, calc(100vw - 3rem));
+  max-width: none;
+  margin-left: 50%;
+  transform: translateX(-50%);
+}
+
+/* A clip recorded small keeps its own size instead of being upscaled. */
+article video[data-native] {
+  width: auto;
+  max-width: 100%;
 }
