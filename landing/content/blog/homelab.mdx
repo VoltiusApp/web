@@ -1,0 +1,54 @@
+---
+title: "Your Homelab in One Window: Proxmox, Docker, Serial and OpenWrt"
+description: "Proxmox LXCs and Docker containers in the side panel, a shell inside any of them in one click, a router on a serial cable, and OpenWrt over SSH even without base64. All next to your SSH hosts, all over plain SSH."
+date: "2026-10-06"
+category: "Product"
+tags:
+  - "Homelab"
+  - "Proxmox"
+  - "Docker"
+  - "Serial"
+  - "OpenWrt"
+---
+
+A homelab is a pile of different consoles: the Proxmox web UI for containers, `docker exec` for services, a USB serial cable for the router you just bricked, and an SSH client for everything else.
+
+Voltius puts them in one window, and needs nothing on the hosts beyond what's already there: it drives `pct` and `docker` over the SSH connection you already have.
+
+## Proxmox LXCs and Docker in the side panel
+
+Connect to a Proxmox VE host and the Proxmox panel lists its LXC containers with their state. Start, stop and restart them, take, roll back and delete snapshots, or open a shell inside one: it lands in a new tab, through `pct exec`, without a separate SSH login per container.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/homelab-proxmox-docker.mp4" type="video/mp4" />
+</video>
+
+On a Docker host, the Docker panel does the same for containers: list them, follow their logs, open a shell inside one in a tab, and click a published port to open it. Stacks have their own view, and each sub-tab has a filter for when the list gets long.
+
+A failed Proxmox command reports the failure. Snapshot operations that Proxmox refuses come back as errors instead of a quiet success, so you never roll back to a snapshot that was never taken.
+
+Both panels are built-in plugins. They can be turned off, and an AI agent connected through [the Voltius MCP server](/blog/mcp-server) can use the same container actions.
+
+## A router on a serial cable
+
+Serial ports are connections too. Pick the port and the baud rate, and the console opens in a tab like any other host.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/homelab-serial-console.mp4" type="video/mp4" />
+</video>
+
+The status bar carries what you reach for when a device misbehaves: DTR and RTS toggles and a break signal. A console can hand its port back to another program without losing the tab, and snippets paste and run in serial sessions too.
+
+Serial needs a desktop: the Android app leaves it out.
+
+## OpenWrt over SSH, without base64
+
+Voltius sends the small setup script that opens its shells as an exec payload. That payload used to be piped through `base64 -d`, and OpenWrt's busybox has no base64, so the shell opened and closed again immediately.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/homelab-openwrt-ssh.mp4" type="video/mp4" />
+</video>
+
+Payloads now go out as an octal-escaped `printf` piped into `sh`, which needs nothing but `printf` and `sh` and passes unchanged through bash, zsh, fish, csh and busybox ash. OpenWrt's login chain runs as on a normal login, so the banner, prompt and aliases are there, and [persistent sessions](/blog/persistent-sessions) work on its dropbear server.
+
+Routers are hosts too.

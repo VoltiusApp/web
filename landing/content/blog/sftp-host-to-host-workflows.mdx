@@ -16,8 +16,8 @@ Developers and system administrators rarely use terminals in isolation. They ins
 
 Voltius aims to keep more of that work in one place.
 
-<video poster="/changelog/sftp-host-to-host-poster.jpg">
-  <source src="/changelog/sftp-host-to-host-demo.mp4" type="video/mp4" />
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/sftp-host-to-host-stream.mp4" type="video/mp4" />
 </video>
 
 ## Local to host
@@ -36,13 +36,11 @@ Instead of downloading a file from one server and uploading it again to another,
 
 The goal is not to replace every specialized file transfer tool. The goal is to make common infrastructure transfers feel natural from inside the SSH client you already have open.
 
-![Two-pane SFTP view transferring files between remote hosts](/changelog/sftp-two-pane-transfer.jpg)
-
 ## Tar acceleration for directories and batches
 
 Directory transfers can become slow when every file is copied as a separate SFTP operation.
 
-Voltius includes SFTP tar acceleration for those cases. When enabled, directory and multi-item transfers can be packed into a temporary `.tar.gz`, moved as a single archive, then extracted on the destination side.
+Voltius includes SFTP tar acceleration for those cases. When enabled, directory and multi-item transfers are packed into a single compressed tar stream over SSH and unpacked on the destination as they arrive, with no temporary archive on either side. Between two hosts, the stream runs through Voltius without touching your laptop's disk.
 
 That reduces per-file overhead and is especially useful for projects with many small files, nested folders, or remote-to-remote transfers.
 

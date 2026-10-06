@@ -1,0 +1,62 @@
+---
+title: "Share a Live Terminal, Hand Over the Keyboard"
+description: "A shared terminal in Voltius is read-only for guests by default and hands control over one request at a time. Here's how inviting, watching, requesting and revoking work, and which invites are end-to-end encrypted."
+date: "2026-10-06"
+category: "Product"
+tags:
+  - "Teams"
+  - "Collaboration"
+  - "Security"
+  - "SSH"
+---
+
+Pairing on a production box usually means a screen share at the wrong resolution, or a second person SSHing in with credentials they shouldn't have. A shared terminal does neither: your teammate sees your live session in their own Voltius, at their own font size, and can't type until you say so.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/shared-terminal-control.mp4" type="video/mp4" />
+</video>
+
+## Inviting
+
+Open any terminal and press **Share** in the title bar. The menu has three ways in:
+
+- **People** finds teammates as you type, and anyone else by their @handle or full email address. The invite *is* the request: they get a notification with Join, Decline and Block permanently, and joining is one tap.
+- **Link** gives you an invite link to send yourself.
+- **Team vault** shares with the members of a team vault, optionally only some of its roles.
+
+The guest cap is visible while you invite, and withdrawing a pending invite frees its seat right away. People you invited recently are remembered across your devices, inside your encrypted sync data rather than on the server.
+
+It works for whatever the tab is running: an SSH session, a local shell or a serial console.
+
+## Watching is the default
+
+A guest joins as a watcher. They get the scrollback from before they joined, then the live stream, and a **Request Control** button.
+
+Input from a guest without control goes nowhere. That is enforced twice: the relay only forwards keystrokes from whoever holds control, and the host's own app drops input from anyone else as well.
+
+## Handing over control
+
+When a guest asks, the host's bar under the terminal shows **Control requested** with **Grant** and **Deny**. Grant it, and the guest types into your session while you both watch. Their bar shows **You have control**. When you're done, **Revoke** takes it back.
+
+If you're on another tab when the request comes in, it arrives as a notification with the same Grant and Deny, so a request is never missed just because the terminal wasn't on screen.
+
+## What the server can see
+
+Every shared session gets a fresh 256-bit key. Output and input are sealed with XChaCha20-Poly1305 on the sending device and opened on the receiving one, and the relay server only ever moves ciphertext, including the history it keeps so late joiners can catch up.
+
+How a guest gets that key decides who could read the session:
+
+- **People** and **Team vault** invites are end to end. The key is wrapped separately for each invited person's public key, so only their devices can unwrap it. The server can't read the session.
+- An **invite link** works for whoever holds it, so the server keeps that session's key and hands it to anyone who opens the link. The stream is still encrypted on the wire, but the server could read a link session.
+
+For anything sensitive, invite people by handle or through a team vault.
+
+## Plans
+
+Sharing is part of the paid plans, sized by how many sessions you can share at once and how many guests each can have:
+
+- **Pro**: 1 shared session, 1 guest
+- **Teams**: 5 shared sessions, 10 guests each
+- **Business**: 20 shared sessions, 50 guests each
+
+See [the pricing section](/#pricing) for the details.
