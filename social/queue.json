@@ -255,9 +255,7 @@
   {
     "id": 38,
     "date": "2026-12-01",
-    "text": "Ask your agent which hosts you haven't connected to in 30 days. It reads your Voltius audit log, locally.",
-    "media": "video",
-    "visual": "V4 alt prompt"
+    "text": "Ask your agent which hosts you haven't connected to in 30 days. It reads your Voltius audit log, locally."
   },
   {
     "id": 33,
