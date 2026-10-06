@@ -1,0 +1,43 @@
+---
+title: "SFTP Transfers That Survive a Dropped Link"
+description: "Voltius 0.49.0 makes SFTP uploads, downloads and remote-to-remote copies wait for a lost connection and pick up where they stopped. A cut-off copy never replaces the real file, and a resumed file is checked end to end before it lands."
+date: "2026-10-06"
+category: "Engineering"
+version: "0.49.0"
+tags:
+  - "SFTP"
+  - "File transfer"
+  - "Reliability"
+---
+
+My Wi-Fi dropped halfway through a 4 GB upload. Before 0.49.0, that meant starting over, and the half-written file on the server looked just like a finished one until something tried to read it.
+
+Now the transfer waits for the link, picks up from the last byte that landed, and only then puts the file in place.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/sftp-resume-dropped-link.mp4" type="video/mp4" />
+</video>
+
+## What survives
+
+Uploads, downloads and remote-to-remote copies, for both single files and whole folders.
+
+When the connection goes away, the transfer does not fail. The queue shows **Waiting for connection…**, and the transfer waits up to 5 minutes for the session to come back. When it does, the transfer continues from where it stopped, and the queue marks where it resumed.
+
+Retrying a transfer by hand after a reconnect resumes it too. Before, a retry after the session came back failed with "session not found".
+
+## Never a half file in the real place
+
+A transfer never writes to the destination name directly. It writes to a `.part` file next to it, named after a fingerprint of the source: its path, size and modification time.
+
+When the link comes back, Voltius only resumes into a `.part` whose fingerprint still matches. If the source changed in the meantime, the old `.part` is swept and that file starts over, rather than gluing two different files together.
+
+When the last byte lands, the file is checked before it is swapped in: its size always, and a SHA-256 of the whole file when the transfer resumed at least once. Only then does the `.part` replace the real file. A cut-off copy never does.
+
+## The SFTP side reconnects too
+
+A standalone SFTP tab reconnects into the same session it had, so the transfers queued against it keep their place instead of being orphaned by a new connection.
+
+Folders keep their fast path as well: [folder transfers stream tar over SSH](/blog/sftp-tar-acceleration), and a host that the first tar check could not reach is asked again rather than being marked as tar-less for the rest of the connection.
+
+Like the rest of Voltius, [the transfer engine is open source](https://github.com/VoltiusApp/voltius).

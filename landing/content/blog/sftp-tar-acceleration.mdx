@@ -1,6 +1,6 @@
 ---
 title: "How Voltius Speeds Up SFTP with Tar Acceleration"
-description: "A technical look at how Voltius batches directory, multi-file, and host-to-host SFTP transfers through temporary tar.gz archives."
+description: "A technical look at how Voltius batches directory, multi-file, and host-to-host SFTP transfers into one compressed tar stream over SSH, with no temporary archive on either end."
 date: "2026-06-01"
 category: "Engineering"
 tags:
@@ -34,23 +34,19 @@ For directories and multiple selected items, however, the app can take a differe
 
 ## The tar path
 
-When tar acceleration is enabled, Voltius can turn a directory or batch selection into a temporary `.tar.gz` archive, transfer that archive, and extract it on the destination side.
+When tar acceleration is enabled, Voltius turns a directory or batch selection into a single gzip-compressed tar **stream** and unpacks it on the other side as it arrives. Nothing is written to a temporary archive on either end.
 
-For a local-to-remote directory upload, the flow is:
+The remote ends run `tar` in an SSH exec channel, reading from or writing to the channel directly. The local end doesn't need a `tar` binary at all: Voltius packs and unpacks in-process.
 
-- Create a temporary archive locally.
-- Upload that single archive over SFTP.
-- Extract it on the remote host with `tar`.
-- Remove the temporary archive.
+For a local-to-remote directory upload, Voltius packs the folder in-process and streams it into `tar -xzf -` on the host. For a remote-to-local download, `tar -czf -` on the host streams the folder out and Voltius unpacks it locally.
 
-For a remote-to-local directory download, the flow is reversed:
+For host-to-host transfers, the stream runs from `tar` on the source host, through Voltius's memory, into `tar` on the destination. Nothing lands on your laptop, and nothing is staged on either host.
 
-- Create a temporary archive on the remote host.
-- Download that archive over SFTP.
-- Extract it locally.
-- Remove the temporary archive from both sides.
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/sftp-host-to-host-stream.mp4" type="video/mp4" />
+</video>
 
-For host-to-host transfers, Voltius can archive on the source host, transfer the archive between the two SFTP sessions, then extract on the destination host.
+Earlier versions built a temporary `.tar.gz` on one side, moved it and then extracted it. That needed free space for the whole archive in `/tmp`, so a large folder failed on a host with a small `/tmp`. Since 0.48.0, a tar transfer never needs more space than a file-by-file copy.
 
 
 ## Why this is faster
@@ -67,7 +63,9 @@ The feature is controlled by the `SFTP Tar Acceleration` setting and is enabled 
 
 Voltius uses the tar path for directory transfers and multi-item batch transfers when it is available. Single-file transfers continue to use the direct SFTP path.
 
-Before taking the tar path, Voltius checks that `tar` is actually present on every host the transfer touches: the local machine when it does the archiving, and the remote endpoints for remote and host-to-host transfers. If any of them is missing `tar`, that transfer automatically falls back to plain recursive SFTP. The files still arrive; only the speed differs. The check is cached per host, so it does not add a round trip to every transfer.
+Before taking the tar path, Voltius checks each remote host the transfer touches with a round trip that has to come back byte for byte: a binary-clean `tar -xzf - -O`. A host without `tar`, or whose channel mangles binary data, gets a plain recursive SFTP copy instead, and the transfer queue shows a **File by file** badge with the reason. The files still arrive; only the speed differs.
+
+The answer is cached per connection, so it does not add a round trip to every transfer. A check that got no answer at all (a refused channel, a timeout, a reconnect) is not cached as a "no": the host is asked again, so one bad moment doesn't leave the rest of the connection copying file by file.
 
 The implementation supports:
 
@@ -79,13 +77,13 @@ The implementation supports:
 
 Container-backed file operations use the same idea: stream tar data into or out of the container so directory transfers do not degrade into one operation per file.
 
+Folder transfers also survive a dropped connection: they wait for the session to come back and continue. See [SFTP Transfers That Survive a Dropped Link](/blog/resumable-sftp-transfers).
+
 ## The tradeoffs
 
-Tar acceleration depends on `tar` being available where the archive is created or extracted. Voltius detects this for you: if a host involved in the transfer does not have `tar`, that transfer quietly falls back to recursive SFTP instead of failing. You do not have to know in advance which hosts have `tar`.
+Tar acceleration depends on `tar` being available on the remote hosts. Voltius detects this for you: if a host involved in the transfer does not have `tar`, that transfer falls back to recursive SFTP instead of failing, and says so. You do not have to know in advance which hosts have `tar`.
 
-It also uses temporary archive files for regular SFTP host transfers. Voltius cleans those up after the transfer, but the remote host still needs enough temporary space for the archive while the transfer is running.
-
-That is why this remains a setting. On a host where temporary space is tight, or when you simply want predictable per-file behavior, you can turn it off and always use recursive SFTP.
+It is still a setting. When you want predictable per-file behavior, you can turn it off and always use recursive SFTP.
 
 ## Why it fits Voltius
 

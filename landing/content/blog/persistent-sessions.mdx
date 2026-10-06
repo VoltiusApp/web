@@ -1,0 +1,61 @@
+---
+title: "Sessions That Outlive the App, the Network and the Laptop Lid"
+description: "Voltius runs every SSH session inside tmux or screen on the host by default. Kill the app, lose the Wi-Fi or close the lid: the build keeps running, and the tab comes back to it. On tmux 3.2+, it even scrolls and searches like a plain terminal."
+date: "2026-10-06"
+category: "Engineering"
+tags:
+  - "SSH"
+  - "tmux"
+  - "Persistent sessions"
+  - "Reliability"
+---
+
+The worst moment in a terminal is the one where the connection drops during a long command. The command dies with the SSH session, and so does its output.
+
+In Voltius that doesn't happen, because the command was never running in the SSH session to begin with.
+
+## The shell lives on the host
+
+By default, every SSH tab runs its shell inside tmux on the host, or screen where there is no tmux. The SSH connection is only a window onto that session. When the window closes for any reason, the session and everything running in it carry on.
+
+This is the default, not a setting you have to find. A connection can turn it off, and it works on dropbear servers too, so OpenWrt routers get it as well.
+
+Your own tmux keeps working inside it. Voltius's wrapper keeps its socket and its prefix key to itself, so `tmux ls` lists your sessions, and `tmux attach` nests as you'd expect.
+
+## Kill the app, reopen it
+
+Voltius restores the whole workspace when it starts: tabs, splits, scrollback, and the processes running in them.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/persistent-kill-restore.mp4" type="video/mp4" />
+</video>
+
+Here a build is running when the app is force-quit. Reopen it, and the splits come back, the scrollback is there, and the build is still going, because it never stopped.
+
+## Lose the network, keep the session
+
+When the link drops, the tab shows that it's disconnected and reconnects as soon as the network is back, including tabs that were restored while offline. It keeps trying through a long outage instead of giving up.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/persistent-reconnect.mp4" type="video/mp4" />
+</video>
+
+Typing `exit` is different: that ends the shell on purpose, so Voltius doesn't reconnect it.
+
+## Scrollback that behaves like a normal terminal
+
+Running inside tmux used to cost you the terminal's own scrollback: the mouse wheel scrolled tmux's copy mode, selection stopped at the edge of the screen, and search couldn't see history.
+
+On tmux 3.2 and newer, Voltius attaches in tmux's control mode instead. The terminal receives the pane's raw stream, so everything works as it does in a plain SSH session: native scrollback, drag selection that auto-scrolls past the viewport, Ctrl+F over the whole history, the mouse wheel, and mouse-driven apps.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/persistent-tmux-scrollback.mp4" type="video/mp4" />
+</video>
+
+Large bursts of output no longer get dropped on the way, either: the SSH stream now has flow control, so a command that floods the screen slows down to the terminal's pace instead of losing lines.
+
+Older tmux versions keep the classic attach, with tmux's copy mode painted in your theme's selection colour.
+
+## On another device
+
+With sync on, a live session isn't tied to the machine that opened it. Open the same terminal on a second device and both stay live, mirrored in real time. That's covered in [One Live Terminal on All Your Devices](/blog/cross-device-session-pickup).

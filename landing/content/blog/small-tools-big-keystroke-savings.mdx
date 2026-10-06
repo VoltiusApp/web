@@ -1,0 +1,63 @@
+---
+title: "Four Small Tools That Save the Most Keystrokes"
+description: "The command palette, broadcast input, the process manager and one-click themes: the parts of Voltius that don't need a launch post, and that you end up using every day."
+date: "2026-10-06"
+category: "Guide"
+tags:
+  - "Productivity"
+  - "Command palette"
+  - "Broadcast"
+  - "Processes"
+  - "Themes"
+---
+
+Some features get a launch post. These four never did, and they're the ones I use the most.
+
+## Every host, one keystroke: the command palette
+
+Press **Ctrl+K** anywhere. The palette searches hosts, active connections, team sessions, local shells, keys and snippets at once, with your recent ones first. Type part of a name, press Enter, and you're connected.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/tools-command-palette.mp4" type="video/mp4" />
+</video>
+
+A prefix narrows the search:
+
+- `join>` live sessions you can join
+- `>` snippets
+- `m>` the plugin and theme marketplace
+- `@` settings
+
+A snippet run from the palette lands in the tab you're focused on.
+
+## Type once, run on twelve: broadcast
+
+Put several sessions in one split tab and turn on **broadcast** for that pane group. Everything you type goes to every pane at once.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/tools-broadcast.mp4" type="video/mp4" />
+</video>
+
+It's the right tool for the interactive things: an `apt upgrade` that asks questions, a `top` you want to watch on twelve hosts side by side. For a script you want to run and get a report on, [snippet sequences](/blog/run-scripts-across-every-server) fan out across hosts and tell you which ones failed.
+
+A tab that's broadcasting can't be shared, so a guest never sees keystrokes meant for twelve servers.
+
+## Find it, kill it: the process manager
+
+The **Processes** panel lists what's running on the host of the current tab, with its CPU and memory, sorted by what's eating the most. Filter by name, then kill the culprit with a confirmation, without typing `ps aux | grep`.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/tools-process-manager.mp4" type="video/mp4" />
+</video>
+
+It's a built-in plugin, so it works on any connected host without installing anything there, and an agent connected through [the MCP server](/blog/mcp-server) can use it too.
+
+## One click, pick yours: themes
+
+Voltius ships six themes: Voltius, Voltius Light, Dracula, Nord, Monokai and Tokyo Night. Switching is one click and applies everywhere at once, the terminal included.
+
+<video autoPlay loop muted playsInline>
+  <source src="https://pub-8ed71dde1bad496f9df2b3f5a84b69df.r2.dev/blog/tools-theme-speedrun.mp4" type="video/mp4" />
+</video>
+
+Pick a light theme and a dark one, and Voltius can switch between them by itself: with your system, on a schedule, or at sunset where you are. The theme editor builds your own, and more themes come from the marketplace.
