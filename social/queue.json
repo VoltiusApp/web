@@ -257,8 +257,7 @@
     "date": "2026-12-01",
     "text": "Ask your agent which hosts you haven't connected to in 30 days. It reads your Voltius audit log, locally.",
     "media": "video",
-    "visual": "V4 alt prompt",
-    "hold": "Check the audit tool can answer this before posting."
+    "visual": "V4 alt prompt"
   },
   {
     "id": 33,
@@ -277,10 +276,7 @@
   {
     "id": 44,
     "date": "2026-12-04",
-    "text": "What's the oldest box you still SSH into? Mine is a Raspberry Pi 1 running Pi-hole.",
-    "media": "image",
-    "visual": "photo",
-    "hold": "Swap in your own answer and photo."
+    "text": "What's the oldest box you still SSH into?"
   },
   {
     "id": 21,
