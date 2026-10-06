@@ -1,0 +1,20 @@
+#!/bin/sh
+# The Proxmox CLI surface Voltius uses, answered by containers named ct-<vmid> on their own dind daemon.
+DK="/opt/homelab/docker-cli -H tcp://dind-pve:2375"
+cmd=$1; shift
+case "$cmd" in
+  list)
+    printf '%-10s %-10s %-12s %-20s\n' VMID Status Lock Name
+    for c in $($DK ps -a --filter name=^ct- --format '{{.Names}}' | sort); do
+      st=$($DK inspect -f '{{.State.Status}}' "$c"); [ "$st" = running ] || st=stopped
+      printf '%-10s %-10s %-12s %-20s\n' "${c#ct-}" "$st" '' "$($DK inspect -f '{{.Config.Hostname}}' "$c")"
+    done ;;
+  start) exec $DK start "ct-$1" >/dev/null ;;
+  stop|shutdown) exec $DK stop -t 2 "ct-$1" >/dev/null ;;
+  reboot) exec $DK restart -t 2 "ct-$1" >/dev/null ;;
+  listsnapshot) echo '`-> current                                     You are here!' ;;
+  exec)
+    id=$1; shift; [ "$1" = -- ] && shift
+    if [ -t 0 ]; then exec $DK exec -it "ct-$id" "$@"; else exec $DK exec -i "ct-$id" "$@"; fi ;;
+  *) echo "pct: unsupported command '$cmd'" >&2; exit 2 ;;
+esac

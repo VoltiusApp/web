@@ -1,0 +1,28 @@
+import { ensureSession, keys, KEY, typeHuman } from './wd.mjs';
+import { moveTo, waitRect, click, dblclick, clickOn, tabByText, byCss, idle, mark } from './mouse.mjs';
+import { UI, RIGHT } from './ui.mjs';
+
+const END = '\uE010';
+await ensureSession();
+await moveTo(900, 560, 200);
+await idle(1500);
+mark('open');
+const f = await waitRect(...UI.file('config.yml', RIGHT));
+await dblclick(f[0], f[1], 700);
+await idle(2200);
+mark('editor');
+await click(300, 335, 600);
+await idle(300);
+await keys([KEY.Control, END]);
+await typeHuman('rate_limit: 200\n', { min: 60, max: 110 });
+await idle(900);
+mark('save');
+await keys([KEY.Control, 's']);
+await idle(1800);
+mark('check');
+await clickOn(tabByText, ['web-01']);
+await idle(900);
+await clickOn(byCss, ['.xterm-screen'], { fx: 0.5, fy: 0.8 });
+await typeHuman('tail -n 3 app/config.yml\n', { min: 55, max: 100 });
+await idle(2600);
+mark('end');

@@ -1,7 +1,7 @@
 import React from 'react';
 import { asTake, cutters, timeline, type Seg, type Take, type Timeline } from '../components/take';
 import { accented, type CaptionCue } from '../components/Caption';
-import { type CamKey, clipFrames, FootageClip, shots } from './FootageClip';
+import { type CamKey, clipFrames, drift, FootageClip, hold, shots } from './FootageClip';
 import termius from './takes/import-termius.json';
 import mobaxterm from './takes/import-mobaxterm.json';
 import putty from './takes/import-putty.json';
@@ -52,12 +52,10 @@ function single(source: (typeof SOURCES)[number]) {
   const c = COPY[source];
   const cams: CamKey[] = [
     [0, WIDE],
-    [at('menu', -0.2), MENU],
-    [at('source', 0.6), MENU],
-    [at('review', -0.1), DIALOG],
-    [at('imported', 0.2), DIALOG],
+    ...hold(at('menu', -0.2), at('source', 0.6), MENU),
+    ...hold(at('review', -0.1), at('imported', 0.2), DIALOG),
     [at('grid', 0.3), GRID],
-    [tl.frames, { ...GRID, s: GRID.s * 1.04 }],
+    [tl.frames, drift(GRID, 1.04)],
   ];
   const cues: CaptionCue[] = [
     { from: 4, to: at('source', 0.1), text: c.hook },
@@ -75,7 +73,7 @@ function supercut() {
   const starts = SOURCES.map((s) => tl.at(s, 'review', -0.3));
   const cues: CaptionCue[] = SOURCES.map((s, i) => ({ from: starts[i], to: starts[i + 1] ?? tl.at('csv', 'grid', -0.2), text: accented('From', `${COPY[s].name}.`) }));
   cues.push({ from: tl.at('csv', 'grid', -0.2), to: tl.frames, text: accented('Which client', 'is next?') });
-  return { tl, cams: [[0, DIALOG], [tl.frames, { ...DIALOG, s: DIALOG.s * 1.06 }]] as CamKey[], cues };
+  return { tl, cams: [[0, DIALOG], [tl.frames, drift(DIALOG, 1.06)]] as CamKey[], cues };
 }
 
 const CLIPS = Object.fromEntries([...SOURCES.map((s) => [s, single(s)]), ['supercut', supercut()]]) as Record<ImportSource, { tl: Timeline; cams: CamKey[]; cues: CaptionCue[] }>;

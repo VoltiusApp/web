@@ -2,13 +2,13 @@ import React from 'react';
 import { Img, staticFile, useCurrentFrame } from 'remotion';
 import { accented } from '../components/Caption';
 import { MONO, sec } from '../theme';
-import { ClipFrame, END_FRAMES } from './FootageClip';
+import { ClipFrame, clipFrames } from './FootageClip';
 import { SyncScene, syncCaptions, type SyncStore } from '../../../shared/devices/SyncScene';
 import { PLANS, trialCardLabel, trialLabel } from '../../../shared/plans';
 
 const SCENE = sec(10);
 const HOLD = sec(0.8);
-export const SYNC_CLIP_FRAMES = SCENE + HOLD + END_FRAMES - 12;
+export const SYNC_CLIP_FRAMES = clipFrames({ frames: SCENE + HOLD });
 
 const pro = PLANS.find((p) => p.id === 'pro')!;
 const COPY: Record<SyncStore, { headline: string; footer: string }> = {

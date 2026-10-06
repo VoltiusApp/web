@@ -1,0 +1,14 @@
+#!/bin/sh
+# The one pvesh call Voltius makes, `pvesh get /nodes/<node>/lxc --output-format json`, from the containers pct uses.
+DK="/opt/homelab/docker-cli -H tcp://dind-pve:2375"
+case "$1 $2" in "get /nodes/"*/lxc) ;; *) echo "pvesh: unsupported call '$*'" >&2; exit 2 ;; esac
+mem=$($DK stats --no-stream --format '{{.Name}} {{.MemUsage}}' | awk '{v=$2; u=v; gsub(/[0-9.]/, "", u); sub(/[A-Za-z]+$/, "", v); m = u == "GiB" ? 1073741824 : u == "MiB" ? 1048576 : u == "KiB" ? 1024 : 1; printf "%s %d\n", $1, v * m}')
+sep=; printf '['
+for c in $($DK ps -a --filter name=^ct- --format '{{.Names}}' | sort); do
+  if [ "$($DK inspect -f '{{.State.Status}}' "$c")" = running ]; then
+    st=running; m=$(echo "$mem" | awk -v c="$c" '$1 == c {print $2}'); pid=",\"pid\":$($DK inspect -f '{{.State.Pid}}' "$c")"
+  else st=stopped; m=0; pid=; fi
+  printf '%s{"vmid":%s,"name":"%s","status":"%s","mem":%s,"type":"lxc"%s}' "$sep" "${c#ct-}" "$($DK inspect -f '{{.Config.Hostname}}' "$c")" "$st" "${m:-0}" "$pid"
+  sep=,
+done
+echo ']'

@@ -1,7 +1,7 @@
 import React from 'react';
 import { asTake, cutters, timeline } from '../components/take';
 import { accented } from '../components/Caption';
-import { clipFrames, FootageClip, shots } from './FootageClip';
+import { clipFrames, drift, FootageClip, hold, shots } from './FootageClip';
 import kill from './takes/kill.json';
 
 const { WIDE, focus } = shots('laptop');
@@ -26,11 +26,9 @@ export const KillRestore: React.FC = () => (
     tl={TL}
     cams={[
       [0, BUILD],
-      [at('kill', -1.2), WIDE],
-      [at('window', 0), WIDE],
-      [at('restored', 1.2), WIDE],
+      ...hold(at('kill', -1.2), at('restored', 1.2), WIDE),
       [at('restored', 3.2), BUILD],
-      [TL.frames, { ...BUILD, s: BUILD.s * 1.03 }],
+      [TL.frames, drift(BUILD)],
     ]}
     cues={[
       { from: 4, to: at('kill', -0.4), text: 'A build is running.' },

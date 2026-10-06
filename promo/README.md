@@ -28,7 +28,7 @@ npm run render:all -- --force      # re-render everything
 
 It prints the list in posting order (and the video tweets that have no composition yet) and writes `out/social/review.html`: each video beside its tweet text. To approve one, copy it to `social/media/<id>.mp4`, push, then label the tweet's "Approve tweet #N" issue `approved`.
 
-Clips frame the footage on the 2.5D laptop (`FirstRun`, `KillRestore`) or as a floating app window (the rest); the device and camera shots live in `src/social/FootageClip.tsx`. Cuts and captions are relative to the marks in `src/social/takes/*.json`, so a retake keeps the edit.
+Clips frame the footage on the 2.5D laptop (`FirstRun`, `KillRestore`), a phone (`PhoneClip`), two windows side by side (`PairClip`) or a floating app window (the rest; the simple ones are data in `src/social/Clips.tsx`, the `Clip` composition with an `id` prop); the device and camera shots live in `src/social/FootageClip.tsx`. Cuts and captions are relative to the marks in `src/social/takes/*.json`, so a retake keeps the edit.
 
 ### Retaking the tweet footage
 
@@ -42,13 +42,24 @@ WT=<voltius worktree at the release> BIN=<dir with its debug binary> ./setup.sh
 ./kill.sh                                                     # kill
 ./themes.sh                                                   # themes
 FLAT=1 ./vault-fleet.sh && WT=… BIN=… ./broadcast.sh          # broadcast, recreates the fleet first
+for t in palette hosttohost snippet scrollback reconnect edit processes; do ./$t.sh; done   # one take each
+./homelab.sh && for t in homelab-take serial router; do ./$t.sh; done   # V11: Proxmox, Docker, serial, OpenWrt
+./claude.sh in && ./mcp.sh && ./claude.sh out                     # V4: real Claude Code over MCP
+./phone.sh && ./pair.sh                                           # second instances, see below
 ```
+
+The capture binary must be built with its built-in plugins (`node scripts/build-plugins.mjs` in the worktree before `cargo build`), or the Proxmox, Docker and Processes panels are missing.
 
 `cold1.mjs`/`cold2.mjs` need a never-launched app: record them first on a fresh container (`./rec.sh cold1.mjs cold1`, `./rec.sh cold2.mjs cold2`, then `./pull.sh cold1 cold2`). Every take script ends with `pull.sh`, which copies the recording to `public/social/` and writes `src/social/takes/<take>.json`.
 
 - PuTTY, SecureCRT and ZOC import from real config files `sources.mjs` writes where the Linux app looks. Termius and MobaXterm can't run here: `stubs.mjs` replaces only their native read with records in their real formats; the parsers and the import UI are the app's own.
 - The link drop is `docker pause` on the host: a blackhole like a dead Wi-Fi link, while the name still resolves (`docker network disconnect` breaks DNS and the app gives up).
 - Never `pkill -f` a pattern that appears in your own command line; kill the app with `pkill -x voltius`.
+- `homelab.sh` adds `docker-01` (real Docker in a dind container), `pve-01` (`pct` answered by real containers on a second dind; `homelab/pct` implements only the commands Proxmox VE documents), and an OpenWrt 23.05 router reachable over SSH and on an emulated serial cable at `/dev/ttyUSB0` (`serial-router.py`). `homelab-vault.js` puts them in the vault.
+- The runaway process (#43, V4) is a CPU-capped copy of bash named `report-worker` on api-02 (`runaway` in `lib.sh`).
+- `claude.sh in` copies this machine's Claude Code binary and login into the container (never into the repo); `claude.sh out` removes the login. Claude runs with only the Voltius MCP server (`ENABLE_CLAUDEAI_MCP_SERVERS=false`) and `mcp__voltius` pre-allowed.
+- `phone.sh` drives `promo-phone` (the mobile shell from the device-sync capture) on the fleet network. `pair.sh` records `promo-laptop` (demo@voltius.app, host) and `promo-social` signed in as sam@voltius.app, both on the isolated `promo-sync-server`; takes carry their first frame's wall clock (`start`) so `PairClip` can sync them.
+- `#38` (audit log prompt) is not mapped: the audit tool answers it, but this container only has a day of history.
 - Half-scale stills here: `node stills.mjs <Composition> <frame>…` (`PROPS='{"source":"putty"}'` for props). They use `--gl=swangle`; other software GL paths draw the 3D devices with the wrong faces in front.
 
 ## Retaking the README demo

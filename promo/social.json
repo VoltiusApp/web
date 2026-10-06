@@ -14,5 +14,21 @@
   "4": { "composition": "ImportClip", "props": { "source": "securecrt" } },
   "5": { "composition": "ImportClip", "props": { "source": "zoc" } },
   "12": { "composition": "SyncClip", "props": { "store": "byo" } },
-  "8": { "composition": "ImportClip", "props": { "source": "supercut" } }
+  "8": { "composition": "ImportClip", "props": { "source": "supercut" } },
+  "17": { "composition": "HostToHost", "props": { "route": false } },
+  "35": { "composition": "Clip", "props": { "id": "mcp" } },
+  "40": { "composition": "Clip", "props": { "id": "homelab" } },
+  "29": { "composition": "Clip", "props": { "id": "palette" } },
+  "18": { "composition": "HostToHost", "props": { "route": true } },
+  "36": { "composition": "Clip", "props": { "id": "mcp-prompt" } },
+  "45": { "composition": "PairClip" },
+  "19": { "composition": "Clip", "props": { "id": "edit" } },
+  "41": { "composition": "Clip", "props": { "id": "serial" } },
+  "26": { "composition": "Clip", "props": { "id": "scrollback" } },
+  "25": { "composition": "Clip", "props": { "id": "reconnect" } },
+  "32": { "composition": "Clip", "props": { "id": "snippet" } },
+  "43": { "composition": "Clip", "props": { "id": "processes" } },
+  "28": { "composition": "PhoneClip" },
+  "34": { "composition": "Clip", "props": { "id": "router" } },
+  "50": { "composition": "FreeList" }
 }
