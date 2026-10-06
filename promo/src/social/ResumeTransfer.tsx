@@ -1,7 +1,7 @@
 import React from 'react';
 import { asTake, cutters, timeline } from '../components/take';
 import { accented } from '../components/Caption';
-import { clipFrames, FootageClip, shots } from './FootageClip';
+import { clipFrames, drift, FootageClip, hold, shots } from './FootageClip';
 import resume from './takes/resume.json';
 
 const { WIDE, focus } = shots('window');
@@ -19,7 +19,7 @@ const TL = timeline(TAKES, [
   seg('a', ['done', 0], ['end', -0.6]),
 ]);
 const at = (m: string, d = 0) => TL.at('a', m, d);
-const QUEUE = focus(1105, 770, 2.0, { dy: 90 });
+const QUEUE = focus(1105, 770, 2.0, { dx: 150, dy: 330 });
 
 export const RESUME_TRANSFER_FRAMES = clipFrames(TL);
 
@@ -31,11 +31,10 @@ export const ResumeTransfer: React.FC = () => (
       [0, WIDE],
       [at('drag', 0.2), focus(640, 400, 0.88)],
       [at('dropped', 0.6), focus(950, 560, 1.0, { dx: -60 })],
-      [at('queue2', -0.4), QUEUE],
-      [at('resumed', 1.4), QUEUE],
+      ...hold(at('queue2', -0.4), at('resumed', 1.4), QUEUE),
       [at('done', -0.2), focus(950, 560, 1.0, { dx: -60 })],
       [at('done', 0.6), QUEUE],
-      [TL.frames, { ...QUEUE, s: QUEUE.s * 1.03 }],
+      [TL.frames, drift(QUEUE)],
     ]}
     cues={[
       { from: 4, to: at('cut', -0.1), text: accented('4 GB to web-01.') },

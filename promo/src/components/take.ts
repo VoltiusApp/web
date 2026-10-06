@@ -2,7 +2,8 @@ import { FPS } from '../theme';
 
 // [seconds since recording start, 'm' | 'd' | 'u', x, y] in recorded pixels.
 export type Sample = [number, string, number, number];
-export type Take = { src: string; w: number; h: number; marks: Record<string, number>; cursor: Sample[] };
+// start: the first frame's wall clock, so takes recorded side by side can be synced.
+export type Take = { src: string; w: number; h: number; start?: number; marks: Record<string, number>; cursor: Sample[] };
 // JSON imports widen the cursor tuples; pull.sh writes exactly this shape.
 export const asTake = (json: { src: string; w: number; h: number; marks: object; cursor: unknown[] }) => json as unknown as Take;
 export type Seg = { take: string; from: number; to: number; rate: number };

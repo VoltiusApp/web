@@ -42,7 +42,7 @@
   {
     "id": 17,
     "date": "2026-10-19",
-    "text": "Drag a folder from one server to another. It goes host to host over SSH and never touches your laptop.",
+    "text": "Drag a folder from one server to another. It streams across as tar over SSH, straight through Voltius: nothing saved on your laptop, no temp archive on either host.",
     "media": "video",
     "visual": "V6"
   },
@@ -119,7 +119,7 @@
   {
     "id": 36,
     "date": "2026-11-03",
-    "text": "\"Check disk on every prod host and clean docker images above 80%.\" One prompt, real tabs.",
+    "text": "\"Which prod host has a runaway process? Open a tab on it.\" One prompt, real tabs.",
     "media": "video",
     "visual": "V4 cut"
   },
@@ -147,15 +147,12 @@
   {
     "id": 48,
     "date": "2026-11-09",
-    "text": "Voltius 0.48.0: folder icons and colors, streaming folder transfers, local chmod, ZOC auto-import.",
-    "media": "video",
-    "visual": "V8",
-    "hold": "Replace with the latest release's headlines and move to its release day."
+    "text": "Recently in Voltius: icons and colors for your folders, whole folders sent over SSH as one compressed stream, chmod on local files right from the SFTP pane, and ZOC hosts imported without hunting for the config file."
   },
   {
     "id": 19,
     "date": "2026-11-10",
-    "text": "Open a remote file in your local editor, hit save, it's back on the server. No scp round trip.",
+    "text": "Double-click a file on the server, edit it right in Voltius, Ctrl+S, and it's saved on the server. No scp round trip.",
     "media": "video",
     "visual": "clip: edit + save"
   },
@@ -349,7 +346,7 @@
   {
     "id": 50,
     "date": "2026-12-18",
-    "text": "Everything in the free list stays free. Paid plans add teams; they never take features away.",
+    "text": "Everything in the free list stays free. Paid plans add Voltius Cloud and teams; they never take features away.",
     "media": "video",
     "visual": "V10"
   }

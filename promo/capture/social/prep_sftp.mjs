@@ -2,7 +2,7 @@ import { ensureSession, sleep, shot, js, jsAsync, typeHuman, mouseAt, clickRow }
 import { moveTo, pos, rectOf } from './mouse.mjs';
 import { UI, LEFT, RIGHT } from './ui.mjs';
 
-// Off-camera: SFTP tab with the local dataset on the left and web-01's home on the right.
+// Off camera: SFTP tab with each side on a host and folder. node prep_sftp.mjs <left host> <left dirs,…> <right host> <right dirs,…>
 await ensureSession();
 const back = { ...pos };
 const tap = async ([finder, args]) => {
@@ -27,10 +27,12 @@ async function open(side, dirs) {
 
 await jsAsync(`const { useUIStore } = await import('/src/stores/uiStore.ts'); useUIStore.getState().setSftpPanelOpen(false); await new Promise((r) => setTimeout(r, 300)); useUIStore.getState().setSftpPanelOpen(true);`);
 await sleep(2500);
-await pick(LEFT, 'Local Machine');
-await open(LEFT, ['datasets']);
-await pick(RIGHT, 'web-01');
-await open(RIGHT, []);
+const [lh, ld = '', rh, rd = ''] = process.argv.slice(2);
+const dirs = (s) => s.split(',').filter(Boolean);
+await pick(LEFT, lh);
+await open(LEFT, dirs(ld));
+await pick(RIGHT, rh);
+await open(RIGHT, dirs(rd));
 await js(`window.getSelection().removeAllRanges(); return 1`);
 await shot('/tmp/work/sftp_prep.png');
 await sleep(1500);

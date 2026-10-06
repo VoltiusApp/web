@@ -1,7 +1,7 @@
 import React from 'react';
 import { asTake, cutters, timeline } from '../components/take';
 import { accented } from '../components/Caption';
-import { clipFrames, FootageClip, shots } from './FootageClip';
+import { clipFrames, drift, FootageClip, hold, shots } from './FootageClip';
 import broadcast from './takes/broadcast.json';
 
 const { WIDE, focus } = shots('window');
@@ -30,10 +30,9 @@ export const Broadcast: React.FC = () => (
     cams={[
       [0, WIDE],
       [at('connect', 0), ALL],
-      [at('broadcast', 0.2), PANES],
-      [at('enter', 0.4), PANES],
+      ...hold(at('broadcast', 0.2), at('enter', 0.4), PANES),
       [at('enter', 2.8), ALL],
-      [TL.frames, { ...ALL, s: ALL.s * 1.03 }],
+      [TL.frames, drift(ALL)],
     ]}
     cues={[
       { from: 4, to: at('grid', 0), text: 'Twelve servers.' },

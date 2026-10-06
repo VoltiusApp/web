@@ -21,4 +21,8 @@ export const UI = {
   hostPicker: (side) => [byCss, ['input[placeholder="Filter hosts..."]', ...side]],
   hostChip: (side) => [`var a=arguments[0], b=arguments[1]; return [...document.querySelectorAll('button')].find(e=>{var r=e.getBoundingClientRect(); return r.width>0&&r.top>70&&r.top<120&&r.left>=a&&r.left<b;});`, side],
   file: (name, side) => [byText, [name, ...side]],
+  // The smallest element holding both the row's name and a button with this title (Proxmox, Docker panels).
+  rowButton: (name, title) => [`var rows=[...document.querySelectorAll('*')].filter(e=>e.textContent.includes(arguments[0])&&e.querySelector('button[title="'+arguments[1]+'"]'));
+    rows.sort((a,b)=>a.getBoundingClientRect().height-b.getBoundingClientRect().height);
+    return rows[0]&&rows[0].querySelector('button[title="'+arguments[1]+'"]');`, [name, title]],
 };

@@ -39,6 +39,12 @@ export async function click(x, y, ms) {
   await down(); await sleep(90); await up();
 }
 
+export async function rclick(x, y, ms) {
+  if (x != null) await moveTo(x, y, ms);
+  await sleep(120);
+  xdo('click', 3); log('d', pos.x, pos.y); log('u', pos.x, pos.y);
+}
+
 export async function dblclick(x, y, ms) {
   if (x != null) await moveTo(x, y, ms);
   await sleep(120);

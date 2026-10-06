@@ -1,0 +1,25 @@
+import { ensureSession, typeHuman } from './wd.mjs';
+import { moveTo, clickOn, byText, byCss, idle, mark } from './mouse.mjs';
+import { UI } from './ui.mjs';
+
+await ensureSession();
+await moveTo(700, 420, 200);
+await idle(1600);
+mark('run');
+await clickOn(...UI.rowButton('Package changes', 'Insert & execute'));
+await idle(1200);
+mark('ask');
+await clickOn(byCss, ['button[aria-haspopup="listbox"]']);
+await idle(900);
+await clickOn(`return [...document.querySelectorAll('button')].filter((b) => b.textContent.trim() === 'upgrade').pop();`);
+await idle(500);
+await clickOn(byCss, ['input[type="number"]']);
+await idle(300);
+await typeHuman('8', { min: 70, max: 120 });
+await idle(900);
+mark('execute');
+await clickOn(byText, ['Execute']);
+await idle(2600);
+mark('output');
+await idle(1500);
+mark('end');

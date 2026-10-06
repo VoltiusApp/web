@@ -21,7 +21,7 @@ done
 capture_container $APP work-laptop 1920x1200 1280x800 $NET "$WT" "$BIN"
 docker cp "$HERE/../demo/wd.mjs" $APP:/tmp/work/ >/dev/null
 docker cp "$HERE/../demo/mouse.mjs" $APP:/tmp/work/ >/dev/null
-docker cp "$HERE/../demo/rec.sh" $APP:/tmp/work/ >/dev/null
+for f in rec.sh ui.mjs; do docker cp "$HERE/../demo/$f" $APP:/tmp/work/ >/dev/null; done
 for f in boot.mjs do.mjs type.mjs recstart.sh recstop.sh; do docker cp "$HERE/../devices/$f" $APP:/tmp/work/ >/dev/null; done
 docker cp "$HERE/." $APP:/tmp/work/ >/dev/null
 echo "setup ok: $(docker exec -w / $APP cat /tmp/work/disp)"

@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /opt/homelab/docker-cli -H tcp://dind:2375 "$@"

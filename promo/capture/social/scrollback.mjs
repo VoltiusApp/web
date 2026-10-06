@@ -1,0 +1,26 @@
+import { ensureSession, keys, KEY, typeHuman } from './wd.mjs';
+import { moveTo, clickOn, byCss, dragTo, wheel, idle, mark } from './mouse.mjs';
+
+await ensureSession();
+await clickOn(byCss, ['.xterm-screen'], { fx: 0.5, fy: 0.8 });
+await idle(1200);
+mark('type');
+await typeHuman('apt list --installed 2>/dev/null\n', { min: 50, max: 100 });
+await idle(1800);
+mark('scroll');
+await wheel(-18, 640, 420);
+await idle(1200);
+mark('select');
+await dragTo([40, 330], [420, 330], 700);
+await idle(1400);
+mark('find');
+await keys([KEY.Control, 'f']);
+await idle(700);
+await typeHuman('openssh', { min: 80, max: 130 });
+await idle(1200);
+mark('next');
+await keys([KEY.Enter]);
+await idle(1100);
+await keys([KEY.Enter]);
+await idle(2000);
+mark('end');

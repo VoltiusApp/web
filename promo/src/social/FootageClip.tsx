@@ -49,7 +49,11 @@ const END_FADE = 12;
 
 export type CamKey = [number, Cam];
 
-export const clipFrames = (tl: Timeline) => tl.frames + END_FRAMES - END_FADE;
+export const drift = (c: Cam, k = 1.03): Cam => ({ ...c, s: c.s * k });
+// keyframes() glides between every pair of keys: a shot only holds between two keys with the same camera.
+export const hold = (from: number, to: number, cam: Cam): CamKey[] => [[from, cam], [to, cam]];
+
+export const clipFrames = (tl: { frames: number }) => tl.frames + END_FRAMES - END_FADE;
 
 /** Background, captions, footer, then the end card over the last END_FADE frames of a `frames`-long scene. */
 export const ClipFrame: React.FC<{ frames: number; cues: CaptionCue[]; headline?: string; footer?: string; children: React.ReactNode }> = ({ frames, cues, headline, footer, children }) => {
@@ -74,7 +78,8 @@ export const ClipFrame: React.FC<{ frames: number; cues: CaptionCue[]; headline?
   );
 };
 
-const Screen: React.FC<{ tl: Timeline; frame: number; width: number }> = ({ tl, frame, width }) => {
+/** A timeline's footage and pointer, scaled to `width`. */
+export const Screen: React.FC<{ tl: Timeline; frame: number; width: number }> = ({ tl, frame, width }) => {
   const take = tl.takes[tl.segs[0].take];
   return (
     <div style={{ position: 'absolute', left: 0, top: 0, width: take.w, height: take.h, transform: `scale(${width / take.w})`, transformOrigin: '0 0' }}>
@@ -92,7 +97,7 @@ const AppWindow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 /** Recorded footage on a laptop or as a floating app window, with a camera moving between shots. */
-export const FootageClip: React.FC<{ device: Device; tl: Timeline; cams: CamKey[]; cues: CaptionCue[]; headline?: string; footer?: string }> = ({ device, tl, cams, ...chrome }) => {
+export const FootageClip: React.FC<{ device: Device; tl: Timeline; cams: CamKey[]; cues: CaptionCue[]; headline?: string; footer?: string; overlay?: React.ReactNode }> = ({ device, tl, cams, overlay, ...chrome }) => {
   const frame = useCurrentFrame();
   return (
     <ClipFrame frames={tl.frames} {...chrome}>
@@ -105,6 +110,7 @@ export const FootageClip: React.FC<{ device: Device; tl: Timeline; cams: CamKey[
           </AppWindow>
         )}
       </Stage>
+      {overlay}
     </ClipFrame>
   );
 };
