@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy — Voltius",
 };
 
-const EFFECTIVE_DATE = "April 23, 2026";
+const EFFECTIVE_DATE = "October 6, 2026";
 const CONTACT_EMAIL = "contact@voltius.app";
 
 export default function PrivacyPage() {
@@ -60,7 +60,32 @@ export default function PrivacyPage() {
             </ul>
           </Section>
 
-          <Section title="3. Legal basis and purpose (GDPR)">
+          <Section title="3. What the Voltius application connects to">
+            <p>On its own, without an account, the application connects to:</p>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              <li>
+                <strong className="text-white">Update checks:</strong> at startup and every 4 hours,
+                it asks updater.voltius.app whether a newer version exists, sending its version,
+                operating system and processor architecture. Your IP address is visible to the service,
+                as with any connection. These checks cannot be turned off; automatic downloads can.
+              </li>
+              <li>
+                <strong className="text-white">Release notes:</strong> after an update, it downloads
+                the changelog from GitHub to show what is new.
+              </li>
+              <li>
+                <strong className="text-white">Marketplace:</strong> when you open the plugin or
+                snippet marketplace, it downloads the catalogue from GitHub.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Signing in connects it to our sync server. Optional plugins such as Gist sync connect to
+              the services you configure them with. Connections you open to your own hosts (SSH, SFTP,
+              serial and so on) go directly from your device to those hosts.
+            </p>
+          </Section>
+
+          <Section title="4. Legal basis and purpose (GDPR)">
             <div className="overflow-x-auto mt-2">
               <table className="w-full text-sm border-collapse">
                 <thead>
@@ -75,12 +100,13 @@ export default function PrivacyPage() {
                   <Row p="Payment processing" d="Email, Lemon Squeezy customer ID" b="Contract performance" />
                   <Row p="Security / abuse prevention" d="IP, logs" b="Legitimate interest" />
                   <Row p="Transactional emails" d="Email" b="Contract performance" />
+                  <Row p="Update checks" d="IP, app version, OS, architecture" b="Legitimate interest" />
                 </tbody>
               </table>
             </div>
           </Section>
 
-          <Section title="4. Data retention">
+          <Section title="5. Data retention">
             <ul className="list-disc pl-6 space-y-1">
               <li>Account data: until account deletion, plus 30 days for billing dispute purposes.</li>
               <li>Encrypted vault: deleted within 30 days of account deletion.</li>
@@ -89,7 +115,7 @@ export default function PrivacyPage() {
             </ul>
           </Section>
 
-          <Section title="5. Data sharing">
+          <Section title="6. Data sharing">
             <p>We do not sell your data. We share it only with:</p>
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li>
@@ -102,10 +128,22 @@ export default function PrivacyPage() {
                 </strong>{" "}
                 — server infrastructure.
               </li>
+              <li>
+                <strong className="text-white">Cloudflare</strong> — network routing to our servers,
+                the update service, and backup storage (USA; Data Privacy Framework / SCCs apply).
+              </li>
+              <li>
+                <strong className="text-white">Resend</strong> — transactional email delivery (USA;
+                Data Privacy Framework / SCCs apply).
+              </li>
+              <li>
+                <strong className="text-white">GitHub</strong> — hosts application downloads, release
+                notes and marketplace catalogues (USA; Data Privacy Framework / SCCs apply).
+              </li>
             </ul>
           </Section>
 
-          <Section title="6. Your rights (GDPR)">
+          <Section title="7. Your rights (GDPR)">
             <p>As a data subject you have the right to:</p>
             <ul className="list-disc pl-6 mt-2 space-y-1">
               <li><strong className="text-white">Access</strong> the data we hold about you.</li>
@@ -133,7 +171,7 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="7. Security">
+          <Section title="8. Security">
             <p>
               Vault data is end-to-end encrypted with a key derived from your master password, which
               is never transmitted. All data in transit is protected by TLS. Our servers never have
@@ -141,7 +179,7 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="8. Cookies">
+          <Section title="9. Cookies">
             <p>
               The voltius.app website does not use tracking or advertising cookies. The account portal
               uses session cookies strictly necessary for authentication. No consent banner is required
@@ -149,13 +187,13 @@ export default function PrivacyPage() {
             </p>
           </Section>
 
-          <Section title="9. Changes">
+          <Section title="10. Changes">
             <p>
               We will notify you of material changes by email at least 14 days in advance.
             </p>
           </Section>
 
-          <Section title="10. Contact">
+          <Section title="11. Contact">
             <p>
               Data-protection questions:{" "}
               <a href={`mailto:${CONTACT_EMAIL}`} className="text-cyan-400 hover:underline">
