@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Posts the next due tweet from queue.json to X. Modes: check | dry-run | post | verify.
+// Posts the next due tweet from queue.json to X, then opens an issue to post it on LinkedIn by hand.
+// Modes: check | dry-run | post | verify.
 import { createHash, createHmac, randomBytes } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -10,7 +11,9 @@ const QUEUE = JSON.parse(readFileSync(join(DIR, 'queue.json'), 'utf8'));
 const LEAD_DAYS = 5;
 const CHUNK = 4 * 1024 * 1024;
 const TYPES = { mp4: 'video/mp4', mov: 'video/quicktime', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif' };
-const LABEL = { approval: 'social-approval', approved: 'approved', log: 'social-log' };
+const LABEL = { approval: 'social-approval', approved: 'approved', log: 'social-log', linkedin: 'social-linkedin' };
+const LINKEDIN_COMPOSER = 'https://www.linkedin.com/company/146696476/admin/page-posts/published/?share=true';
+const LINKEDIN_MAX = 3000;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const today = process.env.SOCIAL_TODAY ?? new Date().toISOString().slice(0, 10);
 const daysUntil = (date) => Math.round((Date.parse(date) - Date.parse(today)) / 86400000);
@@ -40,6 +43,8 @@ function check() {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(e.date) || Number.isNaN(Date.parse(e.date))) errors.push(`#${e.id}: bad date ${e.date}`);
     if (xLength(e.text) > 280) errors.push(`#${e.id}: ${xLength(e.text)} > 280 characters`);
     if (e.media && !['video', 'image'].includes(e.media)) errors.push(`#${e.id}: media must be video or image`);
+    if (e.linkedin !== undefined && e.linkedin !== false && typeof e.linkedin !== 'string') errors.push(`#${e.id}: linkedin must be text or false`);
+    if (typeof e.linkedin === 'string' && e.linkedin.length > LINKEDIN_MAX) errors.push(`#${e.id}: linkedin text ${e.linkedin.length} > ${LINKEDIN_MAX} characters`);
   }
   if (errors.length) throw new Error(errors.join('\n'));
   console.log(`queue ok: ${QUEUE.length} tweets, longest ${Math.max(...QUEUE.map((e) => xLength(e.text)))} characters`);
@@ -103,12 +108,13 @@ async function upload(file) {
 
 async function ensureLabels() {
   const have = new Set((await gh('GET', '/labels?per_page=100')).map((l) => l.name));
-  const want = { [LABEL.approval]: 'a855f7', [LABEL.approved]: '22c55e', [LABEL.log]: '64748b' };
+  const want = { [LABEL.approval]: 'a855f7', [LABEL.approved]: '22c55e', [LABEL.log]: '64748b', [LABEL.linkedin]: '0a66c2' };
   for (const [name, color] of Object.entries(want)) if (!have.has(name)) await gh('POST', '/labels', { name, color });
 }
 
 const STATE_RE = /<!-- state:(.*?) -->/s;
 const MARK_RE = /<!-- social:(\d+) sha:(\w+) -->/;
+const LINKEDIN_RE = /<!-- linkedin:(\d+) -->/;
 
 async function loadGitHub() {
   const issues = async (label) => {
@@ -126,8 +132,27 @@ async function loadGitHub() {
     const m = issue.body?.match(MARK_RE);
     if (m) approvals.set(Number(m[1]), { issue, sha: m[2], approved: issue.labels.some((l) => l.name === LABEL.approved) });
   }
-  return { log, state: { posted: {}, skipped: {}, needs: [], ...state }, approvals };
+  const linkedin = new Map();
+  for (const issue of await issues(LABEL.linkedin)) {
+    const m = issue.body?.match(LINKEDIN_RE);
+    if (m) linkedin.set(Number(m[1]), issue);
+  }
+  return { log, state: { posted: {}, skipped: {}, needs: [], ...state }, approvals, linkedin };
 }
+
+const linkedinBody = (e, file) => `Posted on X: https://x.com/i/status/${e.tweet}
+
+1. Open the [Voltius page composer](${LINKEDIN_COMPOSER}).
+2. Paste the text below${file ? ` and attach [${file.rel}](https://github.com/${REPO}/raw/main/${file.rel})` : ''}.
+3. Post, then close this issue.
+
+\`\`\`text
+${e.linkedin ?? e.text}
+\`\`\`
+
+To skip it on LinkedIn, close it as not planned.
+
+<!-- linkedin:${e.id} -->`;
 
 const approvalBody = (e, file) => `**${e.date}** · ${e.visual}
 
@@ -153,15 +178,21 @@ function statusOf(e, file, approval, state) {
   return daysUntil(e.date) > 0 ? 'scheduled' : 'ready';
 }
 
-function logBody(rows, state) {
+function linkedinStatus(issue) {
+  if (!issue) return '';
+  if (issue.state === 'open') return `[to post](${issue.html_url})`;
+  return `[${issue.state_reason === 'not_planned' ? 'skipped' : 'posted'}](${issue.html_url})`;
+}
+
+function logBody(rows, state, linkedin) {
   const table = rows.map(({ e, status }) => {
     const done = state.posted[e.id];
-    return `| ${e.date} | #${e.id} | ${done ? `[posted](https://x.com/i/status/${done.tweet})` : status} | ${e.text.slice(0, 60).replace(/\|/g, '/')}… |`;
+    return `| ${e.date} | #${e.id} | ${done ? `[posted](https://x.com/i/status/${done.tweet})` : status} | ${linkedinStatus(linkedin.get(e.id))} | ${e.text.slice(0, 60).replace(/\|/g, '/')}… |`;
   });
   return `Updated by the \`social\` workflow at each run. One tweet posts per weekday from 15:17 UTC: the oldest due one that is ready. Media goes in \`social/media/<id>.mp4\` (or .png/.jpg/.gif); videos need the \`${LABEL.approved}\` label on their approval issue.
 
-| Date | Tweet | Status | Text |
-| --- | --- | --- | --- |
+| Date | Tweet | Status | LinkedIn | Text |
+| --- | --- | --- | --- | --- |
 ${table.join('\n')}
 
 <!-- state:${JSON.stringify(state)} -->`;
@@ -169,7 +200,9 @@ ${table.join('\n')}
 
 async function run(write) {
   if (write) await ensureLabels();
-  const { log, state, approvals } = await loadGitHub();
+  const { log, state, approvals, linkedin } = await loadGitHub();
+  // Only tweets posted from here on get a LinkedIn issue, so switching this on does not backfill the past.
+  state.linkedinSince ??= new Date().toISOString();
   const rows = [];
   for (const e of [...QUEUE].sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)) {
     const file = mediaFile(e.id);
@@ -212,11 +245,21 @@ async function run(write) {
     }
   }
 
+  // LinkedIn has no posting API without partner approval, so each posted tweet becomes an issue to post by hand.
+  const toLinkedin = rows.filter((r) => state.posted[r.e.id]?.at >= state.linkedinSince && r.e.linkedin !== false && !linkedin.has(r.e.id));
+  if (toLinkedin.length) console.log(`linkedin issue for ${toLinkedin.map((r) => `#${r.e.id}`).join(', ')}`);
+  if (write) {
+    for (const r of toLinkedin) {
+      const body = linkedinBody({ ...r.e, tweet: state.posted[r.e.id].tweet }, r.file);
+      linkedin.set(r.e.id, await gh('POST', '/issues', { title: `Post to LinkedIn: #${r.e.id} (${r.e.date})`, body, labels: [LABEL.linkedin] }));
+    }
+  }
+
   if (!write) return;
   const needs = rows.filter((r) => r.status.startsWith('needs') && daysUntil(r.e.date) <= LEAD_DAYS).map((r) => r.e.id);
   const fresh = needs.filter((id) => !state.needs.includes(id));
   state.needs = needs;
-  const body = logBody(rows, state);
+  const body = logBody(rows, state, linkedin);
   const logIssue = log ?? (await gh('POST', '/issues', { title: 'Social posting log', body, labels: [LABEL.log] }));
   if (log) await gh('PATCH', `/issues/${log.number}`, { body });
   if (fresh.length) {

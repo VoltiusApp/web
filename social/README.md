@@ -8,6 +8,11 @@
 - A tweet whose date passed while it waited posts on the next run, before that day's own tweet.
 - `hold` in `queue.json` keeps a tweet back until the field is removed.
 
+**LinkedIn is posted by hand.** LinkedIn only lets approved partners post through its API, so each time a tweet goes out the workflow opens an issue "Post to LinkedIn: #N" with the text ready to copy, a download link for the media and a link to the [Voltius page](https://www.linkedin.com/company/voltiusapp) composer. Post it, then close the issue; close it as not planned to skip it. The log issue shows each tweet's LinkedIn status.
+
+- A `linkedin` field in `queue.json` replaces the tweet text on LinkedIn (up to 3,000 characters), so a post can say more than 280 characters allow.
+- `"linkedin": false` keeps a tweet off LinkedIn.
+
 Run it by hand from Actions → social → Run workflow: `verify` checks the X keys, `dry-run` reports what would happen, `post` posts now. Locally: `node social/post.mjs check` validates the queue.
 
 Secrets (repository settings → Secrets and variables → Actions): `X_API_KEY`, `X_API_SECRET` (the app's consumer keys) and `X_ACCESS_TOKEN`, `X_ACCESS_SECRET` (your account's access token, generated after setting the app to "Read and write").
