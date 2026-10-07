@@ -158,7 +158,7 @@ function logBody(rows, state) {
     const done = state.posted[e.id];
     return `| ${e.date} | #${e.id} | ${done ? `[posted](https://x.com/i/status/${done.tweet})` : status} | ${e.text.slice(0, 60).replace(/\|/g, '/')}… |`;
   });
-  return `Updated by the \`social\` workflow at each run. One tweet posts per weekday at 15:00 UTC: the oldest due one that is ready. Media goes in \`social/media/<id>.mp4\` (or .png/.jpg/.gif); videos need the \`${LABEL.approved}\` label on their approval issue.
+  return `Updated by the \`social\` workflow at each run. One tweet posts per weekday from 15:17 UTC: the oldest due one that is ready. Media goes in \`social/media/<id>.mp4\` (or .png/.jpg/.gif); videos need the \`${LABEL.approved}\` label on their approval issue.
 
 | Date | Tweet | Status | Text |
 | --- | --- | --- | --- |
@@ -191,7 +191,12 @@ async function run(write) {
     rows.push({ e, file, approval, status });
   }
 
-  const next = rows.find((r) => r.status === 'ready');
+  // The schedule fires several times a day because GitHub delays or drops cron runs; only the first one that finds a tweet posts.
+  // A manual `post` run always posts.
+  const postedToday = Object.values(state.posted).some((p) => p.at.slice(0, 10) === today);
+  const scheduled = process.env.GITHUB_EVENT_NAME === 'schedule';
+  const next = scheduled && postedToday ? undefined : rows.find((r) => r.status === 'ready');
+  if (scheduled && postedToday) console.log('already posted today');
   console.log(rows.filter((r) => r.status !== 'posted' && daysUntil(r.e.date) <= LEAD_DAYS).map((r) => `#${r.e.id} ${r.e.date} ${r.status}`).join('\n') || 'nothing due');
   console.log(next ? `next: #${next.e.id} "${next.e.text.slice(0, 70)}…"${next.file ? ` + ${next.file.rel}` : ''}` : 'nothing to post');
 

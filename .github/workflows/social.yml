@@ -2,7 +2,9 @@ name: social
 
 on:
   schedule:
-    - cron: "0 15 * * 1-5"
+    # Three tries a day: GitHub runs cron late or not at all under load, and :00 is the busiest minute.
+    # post.mjs posts at most one tweet per day from the schedule.
+    - cron: "17 15,18,21 * * 1-5"
   workflow_dispatch:
     inputs:
       mode:
