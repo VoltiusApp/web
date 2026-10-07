@@ -1,6 +1,6 @@
 ---
 title: "Share a Live Terminal, Hand Over the Keyboard"
-description: "A shared terminal in Voltius is read-only for guests by default and hands control over one request at a time. Here's how inviting, watching, requesting and revoking work, and which invites are end-to-end encrypted."
+description: "A shared terminal in Voltius is read-only for guests by default and hands control over one request at a time. Here's how inviting, watching, requesting and revoking work, and why the server can't read any of them."
 date: "2026-10-06"
 category: "Product"
 tags:
@@ -44,12 +44,14 @@ If you're on another tab when the request comes in, it arrives as a notification
 
 Every shared session gets a fresh 256-bit key. Output and input are sealed with XChaCha20-Poly1305 on the sending device and opened on the receiving one, and the relay server only ever moves ciphertext, including the history it keeps so late joiners can catch up.
 
-How a guest gets that key decides who could read the session:
+The key never reaches the server either. It is wrapped separately for each guest's public key, so only that guest's devices can unwrap it:
 
-- **People** and **Team vault** invites are end to end. The key is wrapped separately for each invited person's public key, so only their devices can unwrap it. The server can't read the session.
-- An **invite link** works for whoever holds it, so the server keeps that session's key and hands it to anyone who opens the link. The stream is still encrypted on the wire, but the server could read a link session.
+- **People** and **Team vault** invites wrap the key for each invited person when you send the invite.
+- An **invite link** only lets a guest in. Once they join, your Voltius wraps the key for them, and their bar reads **Waiting for the host…** for the moment that takes. The link itself never carries the key.
 
-For anything sensitive, invite people by handle or through a team vault.
+Anyone holding the link can still join, so send it only to people you would share the session with. What the link no longer does is let the server read the session.
+
+Link sessions hosted from Voltius 0.49.1 or earlier still keep their key on the server. Update to the latest version to make them end to end.
 
 ## Plans
 
