@@ -107,6 +107,7 @@ export const PLANS: Plan[] = [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
       "Custom roles, per-member & per-object permissions",
+      "Team lock policy — maximum auto-lock, required vault lock",
       "Commercial license",
       "Priority support",
       "Custom contracts",
