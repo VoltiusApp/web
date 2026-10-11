@@ -68,11 +68,13 @@ export interface MeResponse {
   two_factor_enabled?: boolean;
 }
 
-export type TwoFactorProof = { code: string } | { recoveryCode: string };
+export type TwoFactorProof = { code: string } | { recoveryCode: string } | { passkeyCode: string };
 
-function proofBody(proof?: TwoFactorProof | null): { code?: string; recovery_code?: string } {
+function proofBody(proof?: TwoFactorProof | null): { code?: string; recovery_code?: string; passkey_code?: string } {
   if (!proof) return {};
-  return "code" in proof ? { code: proof.code.trim() } : { recovery_code: proof.recoveryCode.trim() };
+  if ("code" in proof) return { code: proof.code.trim() };
+  if ("recoveryCode" in proof) return { recovery_code: proof.recoveryCode.trim() };
+  return { passkey_code: proof.passkeyCode };
 }
 
 const TWO_FACTOR_MESSAGES: Record<string, string> = {
@@ -90,8 +92,31 @@ export function twoFactorMessage(err: unknown): string | null {
 
 export interface TwoFactorChallenge {
   pending_token: string;
-  /** "totp" and/or "recovery". */
+  /** Any of "totp", "passkey" and "recovery". */
   methods: string[];
+}
+
+export type PasskeyPurpose = "sign_in" | "step_up" | "register";
+
+export interface PasskeyHandle {
+  handle: string;
+}
+
+export interface PasskeyCeremony {
+  purpose: PasskeyPurpose;
+  email: string;
+  options: { publicKey: Record<string, unknown> };
+}
+
+/** The code stays in the page that asked for it, or travels to the app in `redirect`. */
+export interface PasskeyResult {
+  code?: string;
+  redirect?: string;
+}
+
+export interface Factors {
+  totp: boolean;
+  passkeys: { id: string; name: string }[];
 }
 
 export type LoginResult = { session: AuthResponse } | { challenge: TwoFactorChallenge };
@@ -196,6 +221,40 @@ export function loginSecondFactor(pendingToken: string, proof: TwoFactorProof): 
     method: "POST",
     body: JSON.stringify({ pending_token: pendingToken, ...proofBody(proof) }),
   });
+}
+
+const INLINE = { return_to: { kind: "inline" } };
+
+export function passkeySignInHandle(pendingToken: string): Promise<PasskeyHandle> {
+  return request<PasskeyHandle>("/v1/auth/login/2fa/passkey", {
+    method: "POST",
+    body: JSON.stringify({ pending_token: pendingToken, ...INLINE }),
+  });
+}
+
+export function passkeyStepUpHandle(token: string): Promise<PasskeyHandle> {
+  return request<PasskeyHandle>("/v1/auth/2fa/passkeys/step-up", { method: "POST", body: JSON.stringify(INLINE) }, token);
+}
+
+export function beginPasskey(handle: string): Promise<PasskeyCeremony> {
+  return request<PasskeyCeremony>("/v1/auth/passkey/begin", { method: "POST", body: JSON.stringify({ handle }) });
+}
+
+export function finishPasskey(handle: string, response: unknown): Promise<PasskeyResult> {
+  return request<PasskeyResult>("/v1/auth/passkey/finish", {
+    method: "POST",
+    body: JSON.stringify({ handle, response }),
+  });
+}
+
+/** What the account can confirm a change with. A server that predates passkeys only knows codes. */
+export async function getFactorMethods(token: string): Promise<string[]> {
+  try {
+    const factors = await request<Factors>("/v1/auth/2fa", {}, token);
+    return [...(factors.totp ? ["totp"] : []), ...(factors.passkeys.length ? ["passkey"] : []), "recovery"];
+  } catch {
+    return ["totp", "recovery"];
+  }
 }
 
 export function verifyEmail(token: string): Promise<{ email: string; user_id: string }> {
