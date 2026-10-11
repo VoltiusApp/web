@@ -8,6 +8,16 @@ export class ApiError extends Error {
     super(message);
     this.name = "ApiError";
   }
+
+  /** The `{"error": CODE, ...}` body the server sends with a refusal it wants told apart. */
+  get body(): Record<string, unknown> | null {
+    try {
+      const parsed: unknown = JSON.parse(this.message);
+      return parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 async function request<T>(
@@ -55,7 +65,36 @@ export interface MeResponse {
   handle: string;
   handle_is_custom: boolean;
   handle_managed?: boolean;
+  two_factor_enabled?: boolean;
 }
+
+export type TwoFactorProof = { code: string } | { recoveryCode: string };
+
+function proofBody(proof?: TwoFactorProof | null): { code?: string; recovery_code?: string } {
+  if (!proof) return {};
+  return "code" in proof ? { code: proof.code.trim() } : { recovery_code: proof.recoveryCode.trim() };
+}
+
+const TWO_FACTOR_MESSAGES: Record<string, string> = {
+  TWO_FACTOR_REQUIRED: "Enter the code from your authenticator app.",
+  TWO_FACTOR_INVALID: "Wrong code. Try the next one your app shows.",
+  TWO_FACTOR_LOCKED: "Too many wrong codes. Try again in 15 minutes.",
+  TWO_FACTOR_UNAVAILABLE: "This server cannot check authenticator codes right now. Use a recovery code.",
+};
+
+/** What to tell the user when a refusal is about the second factor, else null. */
+export function twoFactorMessage(err: unknown): string | null {
+  const code = err instanceof ApiError ? err.body?.error : null;
+  return typeof code === "string" ? (TWO_FACTOR_MESSAGES[code] ?? null) : null;
+}
+
+export interface TwoFactorChallenge {
+  pending_token: string;
+  /** "totp" and/or "recovery". */
+  methods: string[];
+}
+
+export type LoginResult = { session: AuthResponse } | { challenge: TwoFactorChallenge };
 
 export interface CheckoutResponse {
   checkout_url: string;
@@ -115,6 +154,7 @@ export function updatePassword(
   newAuthKey: string,
   newWrappedUserSecrets: string,
   token: string,
+  proof?: TwoFactorProof | null,
 ): Promise<AuthResponse> {
   return request<AuthResponse>(
     "/v1/auth/password",
@@ -124,16 +164,37 @@ export function updatePassword(
         old_auth_key: oldAuthKey,
         new_auth_key: newAuthKey,
         new_wrapped_user_secrets: newWrappedUserSecrets,
+        ...proofBody(proof),
       }),
     },
     token,
   );
 }
 
-export function login(authKey: string, accountId: string): Promise<AuthResponse> {
-  return request<AuthResponse>("/v1/auth/login", {
+/** A session, or the challenge an account with two-factor sign-in answers the password with. */
+export async function login(authKey: string, accountId: string): Promise<LoginResult> {
+  try {
+    const session = await request<AuthResponse>("/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ auth_key: authKey, account_id: accountId }),
+    });
+    return { session };
+  } catch (err) {
+    const body = err instanceof ApiError && err.status === 428 ? err.body : null;
+    if (body?.error !== "TWO_FACTOR_REQUIRED" || typeof body.pending_token !== "string") throw err;
+    return {
+      challenge: {
+        pending_token: body.pending_token,
+        methods: Array.isArray(body.methods) ? body.methods.filter((m): m is string => typeof m === "string") : ["totp"],
+      },
+    };
+  }
+}
+
+export function loginSecondFactor(pendingToken: string, proof: TwoFactorProof): Promise<AuthResponse> {
+  return request<AuthResponse>("/v1/auth/login/2fa", {
     method: "POST",
-    body: JSON.stringify({ auth_key: authKey, account_id: accountId }),
+    body: JSON.stringify({ pending_token: pendingToken, ...proofBody(proof) }),
   });
 }
 
