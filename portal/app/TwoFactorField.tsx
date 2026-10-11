@@ -1,6 +1,7 @@
 "use client";
 
 import type { TwoFactorProof } from "../lib/api";
+import { passkeysSupported } from "../lib/passkey";
 
 export interface TwoFactorEntry {
   recovery: boolean;
@@ -16,6 +17,32 @@ export function entryProof(entry: TwoFactorEntry): TwoFactorProof | null {
 }
 
 const ALL_METHODS = ["totp", "recovery"];
+
+export function twoFactorPrompt(methods: string[]): string {
+  const typed = methods.includes("totp")
+    ? "a code from your authenticator app or a recovery code"
+    : "one of your recovery codes";
+  return methods.includes("passkey") && passkeysSupported() ? `Use your passkey, or enter ${typed}.` : `Enter ${typed}.`;
+}
+
+/** The alternative to typing a code, for an account with a passkey in a browser that can use one. */
+export function PasskeyButton({ methods, onClick, disabled }: {
+  methods: string[];
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  if (!methods.includes("passkey") || !passkeysSupported()) return null;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="w-full py-2.5 rounded-xl border border-[#1e1e2e] hover:border-cyan-500/50 disabled:opacity-50 text-sm font-medium text-white transition-colors"
+    >
+      Use a passkey
+    </button>
+  );
+}
 
 export function TwoFactorField({ entry, onChange, methods = ALL_METHODS, autoFocus }: {
   entry: TwoFactorEntry;

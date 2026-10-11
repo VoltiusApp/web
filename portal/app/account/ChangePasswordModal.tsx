@@ -2,8 +2,13 @@
 
 import { useState, type FormEvent } from "react";
 import { deriveAuthKey, deriveKek, wrapUserSecrets, base64ToBytes, bytesToBase64, unwrapUserSecretsDek, unwrapUserSecretsX25519 } from "../../lib/crypto";
-import { getMe, updatePassword, twoFactorMessage, ApiError } from "../../lib/api";
-import { EMPTY_TWO_FACTOR_ENTRY, TwoFactorField, entryProof, type TwoFactorEntry } from "../TwoFactorField";
+import {
+  getFactorMethods, getMe, passkeyStepUpHandle, updatePassword, twoFactorMessage, ApiError, type TwoFactorProof,
+} from "../../lib/api";
+import { inlinePasskeyCode } from "../../lib/passkey";
+import {
+  EMPTY_TWO_FACTOR_ENTRY, PasskeyButton, TwoFactorField, entryProof, twoFactorPrompt, type TwoFactorEntry,
+} from "../TwoFactorField";
 
 interface Props {
   accountId: string;
@@ -19,11 +24,15 @@ export default function ChangePasswordModal({ accountId, token, onClose, onSucce
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-  const [needsCode, setNeedsCode] = useState(false);
+  const [methods, setMethods] = useState<string[] | null>(null);
   const [twoFactor, setTwoFactor] = useState<TwoFactorEntry>(EMPTY_TWO_FACTOR_ENTRY);
 
-  async function handleSubmit(e: FormEvent) {
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    return change(async () => entryProof(twoFactor));
+  }
+
+  async function change(prove: () => Promise<TwoFactorProof | null>) {
     if (!currentPassword) { setError("Current password required"); return; }
     if (newPassword.length < 8) { setError("New password must be at least 8 characters"); return; }
     if (newPassword === currentPassword) { setError("New password must differ from current"); return; }
@@ -38,10 +47,11 @@ export default function ChangePasswordModal({ accountId, token, onClose, onSucce
         setLoading(false);
         return;
       }
-      const proof = entryProof(twoFactor);
+      const proof = await prove();
       if (me.two_factor_enabled && !proof) {
-        setNeedsCode(true);
-        setError("Enter a code from your authenticator app to confirm the change.");
+        const offered = await getFactorMethods(token);
+        setMethods(offered);
+        setError(twoFactorPrompt(offered));
         setLoading(false);
         return;
       }
@@ -68,7 +78,7 @@ export default function ChangePasswordModal({ accountId, token, onClose, onSucce
     } catch (err) {
       const refusal = twoFactorMessage(err);
       if (refusal) {
-        setNeedsCode(true);
+        setMethods((offered) => offered ?? ["totp", "recovery"]);
         setError(refusal);
         setTwoFactor((entry) => ({ ...entry, value: "" }));
       } else if (err instanceof ApiError && err.status === 401) {
@@ -99,7 +109,16 @@ export default function ChangePasswordModal({ accountId, token, onClose, onSucce
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#1e1e2e] text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-colors" />
             <input type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#1e1e2e] text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-colors" />
-            {needsCode && <TwoFactorField entry={twoFactor} onChange={setTwoFactor} autoFocus />}
+            {methods && (
+              <>
+                <PasskeyButton
+                  methods={methods}
+                  disabled={loading}
+                  onClick={() => change(async () => ({ passkeyCode: await inlinePasskeyCode(() => passkeyStepUpHandle(token)) }))}
+                />
+                <TwoFactorField entry={twoFactor} onChange={setTwoFactor} methods={methods} autoFocus />
+              </>
+            )}
             {error && <p className="text-sm text-red-400">{error}</p>}
             <div className="flex gap-2 mt-1">
               <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-400 hover:text-white text-sm transition-colors">Cancel</button>
