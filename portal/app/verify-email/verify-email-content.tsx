@@ -5,12 +5,13 @@ import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { ApiError, resendVerificationEmail, verifyEmail } from "../../lib/api";
 
-type VerifyState = "pending" | "inflight" | "success" | "expired" | "invalid" | "error";
+type VerifyState = "pending" | "success" | "expired" | "invalid" | "error";
 
 export default function VerifyEmailContent() {
   const params = useSearchParams();
   const token = params.get("token") ?? "";
-  const [state, setState] = useState<VerifyState>(token ? "pending" : "invalid");
+  const [fetched, setFetched] = useState<VerifyState>("pending");
+  const state: VerifyState = token ? fetched : "invalid";
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [message, setMessage] = useState("");
@@ -22,22 +23,17 @@ export default function VerifyEmailContent() {
   const hasSession = typeof window !== "undefined" && Boolean(sessionStorage.getItem("access_token"));
 
   useEffect(() => {
-    if (!token) {
-      setState("invalid");
-      return;
-    }
-
-    setState("inflight");
+    if (!token) return;
     verifyEmail(token)
       .then((result) => {
         setEmail(result.email);
         setUserId(result.user_id ?? "");
-        setState("success");
+        setFetched("success");
       })
       .catch((err) => {
-        if (err instanceof ApiError && err.status === 410) setState("expired");
-        else if (err instanceof ApiError && err.status === 400) setState("invalid");
-        else setState("error");
+        if (err instanceof ApiError && err.status === 410) setFetched("expired");
+        else if (err instanceof ApiError && err.status === 400) setFetched("invalid");
+        else setFetched("error");
       });
   }, [token]);
 
@@ -79,7 +75,7 @@ export default function VerifyEmailContent() {
       </a>
 
       <div className="w-full max-w-sm bg-[#0f0f1a] border border-[#1e1e2e] rounded-2xl p-8 text-center space-y-6">
-        {(state === "pending" || state === "inflight") && (
+        {state === "pending" && (
           <p className="text-sm text-zinc-500 animate-pulse">Verifying email...</p>
         )}
 

@@ -38,7 +38,6 @@ export default function AccountPage() {
   const [showTrialModal, setShowTrialModal] = useState(false);
   const [teamsSeats, setTeamsSeats] = useState(3);
   const [hasLsSubscription, setHasLsSubscription] = useState(false);
-  const [seats, setSeats] = useState<number | null>(null);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
   const [renewsAt, setRenewsAt] = useState<number | null>(null);
@@ -69,6 +68,7 @@ export default function AccountPage() {
     const storedToken = sessionStorage.getItem("access_token");
     const effectiveToken = urlToken ?? storedToken;
     if (!effectiveToken) { router.replace("/signin"); return; }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage only exists after the static prerender
     setToken(effectiveToken);
 
     const init = async () => {
@@ -171,7 +171,6 @@ export default function AccountPage() {
 
   function applySubscription(sub: Awaited<ReturnType<typeof getSubscription>>) {
     setHasLsSubscription(sub.has_ls_subscription);
-    setSeats(sub.seats);
     if (sub.seats !== null) setTeamsSeats(sub.seats);
     setTier(sub.tier);
     setSubscriptionStatus(sub.status);
@@ -572,7 +571,11 @@ function PlanCard({
   // Mirrors teamsSeats so the field can hold a transient value while typing,
   // but still follows the +/- buttons, which change it from outside.
   const [seatDraft, setSeatDraft] = useState(String(teamsSeats));
-  useEffect(() => setSeatDraft(String(teamsSeats)), [teamsSeats]);
+  const [draftFor, setDraftFor] = useState(teamsSeats);
+  if (draftFor !== teamsSeats) {
+    setDraftFor(teamsSeats);
+    setSeatDraft(String(teamsSeats));
+  }
   const seats = isPerSeat ? teamsSeats : undefined;
   const unitPrice = billingPeriod === "annual" ? plan.annualPrice : plan.monthlyPrice;
   const displayPrice = isPerSeat ? unitPrice * teamsSeats : unitPrice;
