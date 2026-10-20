@@ -50,6 +50,7 @@ export default function PasskeyPage() {
       return;
     }
     if (!passkeysSupported()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- the browser check only exists after the static prerender
       setPhase({ kind: "stopped", message: "This browser cannot use passkeys. Go back to Voltius and use a code instead." });
       return;
     }
