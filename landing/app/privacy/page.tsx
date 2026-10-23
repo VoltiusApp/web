@@ -169,6 +169,13 @@ export default function PrivacyPage() {
               </a>{" "}
               (French data-protection authority).
             </p>
+            <p className="mt-3">
+              To delete your account and its data, see{" "}
+              <Link href="/delete-account" className="text-cyan-400 hover:underline">
+                Delete your account
+              </Link>
+              .
+            </p>
           </Section>
 
           <Section title="8. Security">

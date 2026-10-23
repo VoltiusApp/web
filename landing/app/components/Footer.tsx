@@ -59,6 +59,9 @@ export default function Footer() {
           <Link href="/legal" className="hover:text-zinc-300 transition-colors">
             Legal
           </Link>
+          <Link href="/delete-account" className="hover:text-zinc-300 transition-colors">
+            Delete account
+          </Link>
           <a
             href="https://voltius.instatus.com/"
             target="_blank"
