@@ -154,12 +154,10 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
                     Recommended — Homebrew (auto-updating)
                   </p>
                   <CopyCommand command="brew install --cask voltiusapp/voltius/voltius" />
-                  <p className="text-[11px] text-zinc-500 mt-2.5 mb-1.5 px-1">
-                    Gatekeeper warns on first launch — Control-click Voltius in
-                    Applications and choose Open. If macOS calls it
-                    “damaged”, strip the quarantine metadata:
+                  <p className="text-[11px] text-zinc-500 mt-2.5 px-1">
+                    Signed and notarized by Apple. After updating from an older
+                    version, macOS asks once for access to the keychain.
                   </p>
-                  <CopyCommand command="xattr -dr com.apple.quarantine /Applications/Voltius.app" />
                 </div>
               )}
               {p.platform === "android" && (
