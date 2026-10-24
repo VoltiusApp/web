@@ -75,6 +75,14 @@
     "visual": "V9"
   },
   {
+    "id": 52,
+    "date": "2026-10-24",
+    "text": "Voltius is coming to Google Play. The closed test has started with people from the Android waitlist, and the public release follows in a few weeks. Same app as on desktop, same encrypted vault. Can't wait? The APK is on GitHub and updates through Obtainium.",
+    "media": "image",
+    "visual": "Play Store feature graphic A",
+    "linkedin": "Voltius is coming to Google Play.\n\nThe closed test has started, with people who signed up for the Android waitlist on voltius.app. Google asks new developers to run a 14-day test before a public release, so Voltius should be on the Play Store for everyone in a few weeks.\n\nThe Android app is the same Voltius as on Windows, macOS and Linux: your hosts, keys and snippets sync between devices with end-to-end encryption, and everything works without an account. On the phone you get a terminal built for touch, SFTP, snippets, port forwarding and a biometric lock.\n\nCan't wait? The APK is already on GitHub and updates automatically through Obtainium.\n\nThank you to everyone on the waitlist."
+  },
+  {
     "id": 23,
     "date": "2026-10-26",
     "text": "Close the laptop. Open your phone. Same live terminal, mid-command.",
