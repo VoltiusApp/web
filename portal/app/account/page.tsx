@@ -443,7 +443,7 @@ export default function AccountPage() {
                 <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Current plan</p>
                 <p className="text-2xl font-bold text-white">{PLAN_LABELS[displayTier] ?? displayTier}</p>
                 {onTrial && (
-                  <p className="text-xs text-zinc-500 mt-1">Trial active — upgrade before it ends to keep sync.</p>
+                  <p className="text-xs text-zinc-500 mt-1">Trial active — upgrade before it ends to keep cloud sync and your encrypted backup. Devices on the same network keep syncing for free.</p>
                 )}
               </div>
               <a
@@ -808,7 +808,7 @@ function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
       >
         <p className="text-xl font-bold text-white mb-1">Your trial has ended</p>
         <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
-          Hope the 14 days were useful. Upgrade to keep real-time sync and cloud features.
+          Hope the 14 days were useful. Upgrade to keep Voltius Cloud: sync between devices that are never online together, and an encrypted backup of your vault. Devices on the same network keep syncing directly for free.
         </p>
 
         <button

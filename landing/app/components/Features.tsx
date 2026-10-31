@@ -8,7 +8,7 @@ const features = [
   {
     icon: "lucide:hard-drive",
     title: "Local-first forever",
-    desc: "No account required. Works fully offline. Your data lives on your machine, not our servers.",
+    desc: "No account required. Works fully offline. Your data lives on your machines, not our servers.",
   },
   {
     icon: "lucide:arrow-up-down",
@@ -28,12 +28,12 @@ const features = [
   {
     icon: "lucide:cloud",
     title: "Cross-platform sync",
-    desc: "Sync your connections, credentials, and settings across all your devices with end-to-end encryption.",
+    desc: "Sync your connections, credentials, and settings across all your devices with end-to-end encryption. Devices on the same Wi-Fi or tailnet also sync directly, for free.",
   },
   {
     icon: "lucide:folder-open",
     title: "SFTP with drag & drop",
-    desc: "Transfer files between local, remote, or host-to-host with a native drag & drop interface.",
+    desc: "Transfer files between local, remote, or host-to-host with a native drag & drop interface, or between your own devices.",
   },
   {
     icon: "lucide:monitor-smartphone",

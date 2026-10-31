@@ -14,7 +14,7 @@ function planPriceSentence(plan: Plan): string {
   return `${priceLabel(plan.annualPrice)}${rate} (billed annually) or ${priceLabel(plan.monthlyPrice)}${rate} (billed monthly)${seats}.`;
 }
 
-const EFFECTIVE_DATE = "April 23, 2026";
+const EFFECTIVE_DATE = "October 31, 2026";
 const CONTACT_EMAIL = "contact@voltius.app";
 
 export default function TermsPage() {
@@ -41,8 +41,9 @@ export default function TermsPage() {
           <Section title="2. Description of service">
             <p>
               Voltius is a local-first SSH client that optionally synchronises encrypted vault data
-              across your devices via a cloud backend. The core application is open-source under the
-              AGPLv3 licence. A paid subscription unlocks additional cloud-sync and premium features.
+              across your devices via a cloud backend or directly between your devices. The core
+              application is open-source under the AGPLv3 licence. A paid subscription unlocks
+              additional cloud-sync and premium features.
             </p>
           </Section>
 

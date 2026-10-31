@@ -24,7 +24,11 @@ export default function SyncSection() {
             Hosts, keys and settings are encrypted on your device before they leave it. Voltius Cloud syncs them in real time and only ever stores ciphertext.{" "}
             <ProTrialLink />
             <span className="block mt-1 text-zinc-500">
-              Prefer your own storage? Gist, Cloudflare R2 and S3 sync stay free, or{" "}
+              On the same Wi-Fi or tailnet, your devices also{" "}
+              <a href="https://docs.voltius.app/sync/local-network/" className="underline hover:text-zinc-300">
+                sync directly
+              </a>
+              , free. Prefer your own storage? Gist, Cloudflare R2 and S3 sync stay free, or{" "}
               <a href="https://docs.voltius.app/plugins/sync-providers/" className="underline hover:text-zinc-300">
                 build your own sync provider
               </a>{" "}
