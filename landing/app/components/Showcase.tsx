@@ -22,7 +22,7 @@ const shots = [
   {
     src: "/screenshots/sftp-dual-pane.png",
     title: "Dual-pane SFTP",
-    desc: "Move files between local, remote, or host-to-host with native drag & drop.",
+    desc: "Move files between local, remote, or host-to-host with native drag & drop. Your own computers show up too, under My devices.",
   },
   {
     src: "/screenshots/teams-roles.png",

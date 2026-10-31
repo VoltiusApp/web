@@ -1,12 +1,13 @@
 ---
 title: "Local-First SSH with End-to-End Encrypted Sync"
-description: "How Voltius handles local encrypted vaults, free encrypted Gist sync, and paid cloud sync without making an account mandatory."
+description: "How Voltius handles local encrypted vaults, Voltius Cloud sync, and the free alternatives (local network sync, Gist, Cloudflare R2 and S3) without making an account mandatory."
 date: "2026-06-02"
 category: "Engineering"
 tags:
   - "E2EE"
-  - "Gist Sync"
   - "Cloud Sync"
+  - "Local Network Sync"
+  - "Gist Sync"
   - "Security"
 ---
 
@@ -48,37 +49,51 @@ When sync is enabled, Voltius sends encrypted data.
 
 The sync server should not need to know what hosts you connect to, what usernames you use, what keys you store, or how your folders are organized. It should move encrypted state between devices, not become a readable database of your infrastructure.
 
-Voltius currently has two sync paths with different tradeoffs: encrypted Gist sync and paid Voltius cloud sync.
+Voltius has several sync paths with different tradeoffs. Voltius Cloud is the hosted one. Local network sync, Gist, Cloudflare R2 and S3 are free alternatives.
 
 For one-off backups or migrations instead of continuous sync, see [Import and Export Your SSH Workspace in Voltius](/blog/import-export-ssh-workspace).
 
-## Free encrypted Gist sync
+## Voltius Cloud sync
 
-The Gist plugin is the bring-your-own-cloud path.
+Voltius Cloud is the hosted path.
 
-You provide a GitHub token, Voltius writes encrypted state to a private Gist, and your other devices can pull from the same encrypted source. GitHub stores the ciphertext, but it does not receive the plaintext vault data.
+It is designed for smoother multi-device sync, lower-friction setup, and paid features around Pro, Teams, and Business workflows. Instead of managing your own storage, you sign in with a Voltius account and let the app use the hosted sync service.
 
-This is useful if you want sync without paying for hosted infrastructure, or if you prefer to keep the remote storage account under your control.
-
-The tradeoff is that Gist sync is intentionally simple. It is a good fit for personal workflows and devices you control, but it is not meant to behave like a low-latency collaborative backend.
-
-## Paid cloud sync
-
-Voltius cloud sync is the hosted path.
-
-It is designed for smoother multi-device sync, lower-friction setup, and paid features around Pro, Teams, and Business workflows. Instead of managing your own GitHub token and Gist, you sign in with a Voltius account and let the app use the hosted sync service.
+Your devices stay in sync even when they are never online at the same time: a change made on the laptop on Monday reaches the phone whenever it next opens. The server also keeps an encrypted copy of your vault, so a new or replaced device starts from it.
 
 The security goal stays the same: data leaving the device is encrypted before it reaches the sync backend.
 
-Paid cloud sync is the right fit when you want a more integrated experience, faster update propagation, team-oriented features, or support for business workflows that do not belong in a personal Gist.
+Voltius Cloud is the right fit when you want a more integrated experience, faster update propagation, an encrypted backup, team-oriented features, or support for business workflows that do not belong in a personal storage account.
 
-## Gist sync vs cloud sync
+## Free: local network sync
 
-Gist sync is free, user-owned, and plugin-driven. It is best when you want encrypted personal sync and do not mind bringing your own GitHub token.
+Devices signed into the same Voltius account, free accounts included, sync directly with each other when they can reach each other. Devices without an account do the same after a one-time pairing with a 6-digit code. It is on by default.
 
-Cloud sync is hosted, integrated, and product-supported. It is best when you want convenience, real-time behavior, and a path toward Pro or team features.
+That means the same Wi-Fi or LAN, or Tailscale and other VPNs. No Voltius server sits in the path. Devices find each other over mDNS under a random name that changes every 15 minutes, and only devices that prove they hold your vault key get any data.
 
-Both are built around the same expectation: sync should not require the server to read your vault.
+The tradeoff is that both devices have to be online at the same time, and nothing is kept anywhere else, so it is not a backup. See [Local network sync](https://docs.voltius.app/sync/local-network/) in the docs.
+
+## Free: bring your own storage
+
+Three plugins let you sync through storage you own:
+
+- **Gist sync** writes encrypted state to a private GitHub Gist with a token you provide.
+- **Cloudflare sync** deploys a small Worker and an R2 bucket on your Cloudflare account.
+- **S3 sync** talks to any S3-compatible bucket: AWS S3, Backblaze B2, Wasabi, MinIO and others.
+
+In each case the provider stores ciphertext and never receives the plaintext vault data. This is useful if you want sync without paying for hosted infrastructure, or if you prefer to keep the remote storage account under your control.
+
+The tradeoff is that these paths are intentionally simple. They are a good fit for personal workflows and devices you control, but they are not meant to behave like a low-latency collaborative backend.
+
+## Which one to pick
+
+Voltius Cloud is hosted, integrated, and product-supported. It is best when you want devices that are never online together to stay in step, an encrypted backup, and a path toward Pro or team features.
+
+Local network sync is free and needs no setup. It is best when your devices share a network or a tailnet.
+
+Gist, Cloudflare and S3 sync are free, user-owned, and plugin-driven. They are best when you want encrypted personal sync through storage you already pay for or control.
+
+They run side by side, and all of them are built around the same expectation: sync should not require anyone in the middle to read your vault.
 
 ## Why this matters for SSH tools
 

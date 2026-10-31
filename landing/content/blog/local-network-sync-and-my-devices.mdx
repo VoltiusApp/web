@@ -1,0 +1,76 @@
+---
+title: "Your Devices Now Sync and Share Files Directly"
+description: "Voltius 0.65.0 adds local network sync and My devices. Devices on the same Wi-Fi, LAN or tailnet sync your vault and open each other's files directly, encrypted and free, with no Voltius server in the path."
+date: "2026-11-02"
+category: "Product"
+version: "0.65.0"
+draft: true
+tags:
+  - "Sync"
+  - "Local Network Sync"
+  - "SFTP"
+  - "Privacy"
+---
+
+Voltius Cloud keeps your hosts, keys and snippets in step across your devices, wherever they are. Starting with 0.65.0, your devices also talk to each other directly when they can reach each other.
+
+Two things come out of that: local network sync, and My devices in the SFTP picker. Both are free on every plan.
+
+## Local network sync
+
+If your laptop and your phone are on the same Wi-Fi, they now sync with each other directly. No Voltius server sits in the path, and it keeps working when the internet is down.
+
+It syncs your personal vault: hosts, folders, tags, identities, SSH keys, snippets, port-forwarding rules and synced preferences. Team vaults are not included. They live on the Voltius server, so there is nothing on the device to hand over.
+
+It is on by default. If your devices are signed into the same Voltius account, free accounts included, there is nothing to set up. The first time, macOS and Windows ask whether Voltius may use the local network. Accept once and the rest is automatic.
+
+## Pairing without an account
+
+Voltius works without an account, and that stays true. Devices without one pair once instead.
+
+Open **Pair a device** on both, from the sync menu or **Settings → Sync**. Both screens show the same 6-digit code. You compare them, you don't type anything. If they match, confirm on both and the first sync starts.
+
+A device can only be paired while that sheet is open. Outside it, a device without an account doesn't show itself to other Voltius installs at all.
+
+## Tailscale and other VPNs
+
+Devices find each other over mDNS, which stays on the local network. Tailscale and most VPNs don't carry it, so Voltius has two other ways in:
+
+- On a computer, it reads the list of online devices from the Tailscale app running on it, and tries each one. Two desktops on the same tailnet find each other without ever sharing a network.
+- Every device remembers the addresses it reached your other devices on, and keeps trying them. Once two devices have met, any VPN that still reaches one of those addresses works.
+
+There is no internet path without a VPN. Voltius doesn't punch through routers and doesn't relay through a server.
+
+## What the network sees
+
+Each device announces on the local network that a Voltius is there. The announcement carries a random name that changes every 15 minutes, and nothing else: no device name, no account, no stable identifier.
+
+When two devices meet, they prove they hold the same vault key without sending it. A device that can't prove it gets the handshake and nothing more. Someone else's Voltius on a café network never sees your data, and you never see theirs. Each device also remembers the other's key, so a device that suddenly changes identity is refused until you pair it again.
+
+The data then travels inside an encrypted channel, and it is still encrypted with your vault key, exactly as it is for cloud sync.
+
+## My devices
+
+The same link carries files. Your own computers now show up in the SFTP host picker, under **My devices**. Pick one and browse its shared folders like any other host: drag files across, rename, delete, edit, resume a broken transfer.
+
+I wanted this for the boring cases. A file is on the desktop and I'm on the laptop, or on my phone. No cable, no cloud drive, no emailing it to myself.
+
+File access is off by default. A computer serves nothing until you turn it on in **Settings → Devices** and choose which folders to share, read-only if you like. The first time another device opens your files, Voltius asks you to approve it.
+
+My devices needs a free Voltius account, signed in on both devices. Linux, macOS and Windows can browse and be browsed. Android can browse your computers, but it can't be browsed.
+
+## What Voltius Cloud still adds
+
+Direct sync only works when both devices are online at the same time. A laptop you only open at home and a phone you only use at work never meet, so they never sync. Nothing is kept anywhere else either, so it is not a backup.
+
+That is what Voltius Cloud is for. Your devices stay in sync even when they are never online together, and the server keeps an encrypted copy of your vault for a new or replaced device to start from. Pro comes with a 14-day trial, no card.
+
+The two run side by side. A change that arrives by both routes is merged once.
+
+## Android
+
+On Android, local network sync runs while the app is open. Opening it finds nearby devices and syncs straight away.
+
+## The details
+
+The docs cover the rest: [Local network sync](https://docs.voltius.app/sync/local-network/), [Pair devices without an account](https://docs.voltius.app/sync/local-network-pairing/) and [My devices](https://docs.voltius.app/connections/sftp/#my-devices).
