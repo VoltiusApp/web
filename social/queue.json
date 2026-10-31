@@ -123,7 +123,6 @@
     "text": "Your laptop and phone on the same Wi-Fi now sync directly. No server in between. Signed in, it just works. No account? Pair them once with a 6-digit code. Tailscale works too. Voltius Cloud covers the rest: devices that are never online together, and an encrypted backup.",
     "media": "image",
     "visual": "screenshot: title-bar sync menu, Local network section reading \"Live with 2 devices\", with the phone next to it",
-    "hold": "Post after the v0.65 release",
     "linkedin": "Voltius devices now sync directly with each other.\n\nIf your laptop and your phone are on the same Wi-Fi, they keep your hosts, keys, snippets and settings in step without any server in between. It also works over Tailscale and other VPNs, and it keeps working when the internet is down.\n\nIt is free on every plan and on by default. Devices signed into the same Voltius account, free accounts included, find each other on their own. Without an account, you pair two devices once by comparing a 6-digit code on both screens.\n\nOn the network, a device only announces a random name that changes every 15 minutes. Two devices exchange data only after proving they hold the same vault key, and the data stays end-to-end encrypted.\n\nDirect sync needs both devices online at the same time, and it keeps no copy anywhere else. Voltius Cloud covers that: devices that are never online together stay in sync, and your vault has an encrypted backup.\n\nDetails: https://docs.voltius.app/sync/local-network/"
   },
   {
@@ -139,7 +138,6 @@
     "text": "Your own computers now show up in the SFTP picker. Pull a file off your desktop from your laptop or your phone, over Wi-Fi or Tailscale. Encrypted, free, and nothing goes through our servers. File access stays off until you turn it on.",
     "media": "image",
     "visual": "screenshot: SFTP host picker open on the My devices section, a computer row reading \"Same Wi-Fi\", or a pane browsing that computer's shared folder",
-    "hold": "Post after the v0.65 release",
     "linkedin": "Your own computers now show up in the Voltius SFTP picker, under My devices.\n\nPick one and browse its shared folders like any other host: drag files across, rename, edit, resume a broken transfer. A file on the desktop is one drag away from the laptop or the phone. No cable, no cloud drive, no emailing it to yourself.\n\nThe devices connect directly, on the same Wi-Fi or LAN or over Tailscale. The connection is encrypted and nothing goes through our servers.\n\nFile access is off by default. A computer shares nothing until you turn it on and choose which folders to share, read-only if you like, and the first time another device opens it you approve it on the spot.\n\nIt is free, with a free Voltius account on both devices. Linux, macOS and Windows can browse and be browsed; Android can browse your computers.\n\nDetails: https://docs.voltius.app/connections/sftp/#my-devices"
   },
   {
