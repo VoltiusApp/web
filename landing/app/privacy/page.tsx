@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy — Voltius",
 };
 
-const EFFECTIVE_DATE = "October 6, 2026";
+const EFFECTIVE_DATE = "October 31, 2026";
 const CONTACT_EMAIL = "contact@voltius.app";
 
 export default function PrivacyPage() {
@@ -76,6 +76,16 @@ export default function PrivacyPage() {
               <li>
                 <strong className="text-white">Marketplace:</strong> when you open the plugin or
                 snippet marketplace, it downloads the catalogue from GitHub.
+              </li>
+              <li>
+                <strong className="text-white">Your other devices:</strong> once you sign in, or pair
+                devices with a 6-digit code, it announces itself on the local network over mDNS under a
+                random name that changes every 15 minutes, and connects directly to your other Voltius
+                devices on the same network, over Tailscale, or at addresses it reached them on before.
+                On a computer, it reads the list of online devices from the Tailscale app running on it.
+                These connections are encrypted, only devices that prove they hold your vault key take
+                part, and no Voltius server is in the path. Another device can open files on a computer
+                only after file access is turned on in that computer&apos;s settings.
               </li>
             </ul>
             <p className="mt-2">
