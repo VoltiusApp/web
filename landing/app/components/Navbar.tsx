@@ -9,6 +9,7 @@ import { X_URL } from "../lib/site";
 
 const links = [
   { label: "Features", href: "/#features" },
+  { label: "Teams", href: "/#teams" },
   { label: "Demo", href: "/#demo" },
   { label: "Pricing", href: "/#pricing" },
   { label: "Blog", href: "/blog" },
