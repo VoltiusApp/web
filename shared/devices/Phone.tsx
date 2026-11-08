@@ -24,7 +24,7 @@ export const Phone: React.FC<{
   const h = screenH + BEZEL * 2;
   return (
     <div style={{ ...flat, left: '50%', top: '50%', transform: `translate3d(${x}px, ${y}px, ${z}px)` }}>
-      <div style={{ ...flat, left: -w / 2 - 30, top: -60, width: w + 60, height: 200, transformOrigin: '50% 60px', transform: 'rotateX(90deg)', borderRadius: '50%', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, transparent 70%)', filter: 'blur(18px)' }} />
+      <div style={{ ...flat, left: -w / 2 - 30, top: -60, width: w + 60, height: 200, transformOrigin: '50% 60px', transform: 'rotateX(90deg)', borderRadius: '50%', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 40%, transparent 75%)' }} />
       <div style={{ ...flat, left: -w / 2, top: -h, width: w, height: h, transformOrigin: '50% 100%', transform: `rotateY(${tilt.y}deg) rotateX(${tilt.x}deg)` }}>
         <div style={{ position: 'absolute', inset: 0, borderRadius: R, background: '#07080a', boxShadow: 'inset 0 0 0 2px #3a3f48, 0 0 0 4px #23262c, 0 0 0 5px #4a4f58' }}>
           <div style={{ position: 'absolute', left: BEZEL, top: BEZEL, width: screenW, height: screenH, overflow: 'hidden', borderRadius: R - BEZEL, background: '#000' }}>
