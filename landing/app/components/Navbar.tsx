@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { GITHUB_API_REPO_URL, GITHUB_REPO_URL } from "../lib/github";
 import { X_URL } from "../lib/site";
+import { useLowPower } from "../hooks/useLowPower";
 
 const links = [
   { label: "Features", href: "/#features" },
@@ -24,6 +25,7 @@ function formatStars(n: number): string {
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [stars, setStars] = useState<number | null>(null);
+  const lowPower = useLowPower();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -41,10 +43,14 @@ export default function Navbar() {
   return (
     <header className="fixed top-0 inset-x-0 z-50 px-4 pt-3 transition-all duration-300">
       <nav
-        className={`mx-auto max-w-6xl h-16 px-6 flex items-center justify-between rounded-2xl border transition-all duration-300 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.14)] ${
-          scrolled
-            ? "bg-white/6 border-white/12"
-            : "bg-transparent border-transparent shadow-none"
+        className={`mx-auto max-w-6xl h-16 px-6 flex items-center justify-between rounded-2xl border transition-all duration-300 shadow-[0_14px_40px_rgba(0,0,0,0.18),inset_0_1px_0_rgba(255,255,255,0.14)] ${
+          lowPower ? "" : "backdrop-blur-2xl backdrop-saturate-150"
+        } ${
+          !scrolled
+            ? "bg-transparent border-transparent shadow-none"
+            : lowPower
+              ? "bg-surface border-white/12"
+              : "bg-white/6 border-white/12"
         }`}
       >
         <Link href="/" className="flex items-center gap-2 font-semibold text-white text-sm">

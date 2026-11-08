@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { SlabCornerSteps } from "@shared/devices/Slab";
+import { useLowPower } from "../../hooks/useLowPower";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { useScrollProgress } from "../../hooks/useScrollProgress";
 
@@ -32,7 +34,7 @@ function Canvas({ size, children }: { size: Size; children: ReactNode }) {
 
 /**
  * Pins a scene while the visitor scrolls through `length`, feeding it progress 0 → 1.
- * With reduced motion it renders the end state once, unpinned.
+ * With reduced motion or software rendering it renders the end state once, unpinned.
  */
 export default function ScrollScene({
   id,
@@ -47,7 +49,9 @@ export default function ScrollScene({
   header: (progress: number) => ReactNode;
   scene: (progress: number) => ReactNode;
 }) {
-  const reduced = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const lowPower = useLowPower();
+  const reduced = reducedMotion || lowPower;
   const [ref, progress] = useScrollProgress<HTMLElement>();
   const p = reduced ? 1 : progress;
 
@@ -55,7 +59,9 @@ export default function ScrollScene({
     <section id={id} ref={ref} className="relative" style={{ height: reduced ? undefined : length }}>
       <div className={`${reduced ? "py-24" : "sticky top-0 h-svh pt-20"} flex flex-col items-center justify-center gap-6 overflow-hidden px-6`}>
         {header(p)}
-        <Canvas size={size}>{scene(p)}</Canvas>
+        <Canvas size={size}>
+          {lowPower ? <SlabCornerSteps.Provider value={1}>{scene(p)}</SlabCornerSteps.Provider> : scene(p)}
+        </Canvas>
       </div>
     </section>
   );

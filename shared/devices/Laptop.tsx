@@ -38,7 +38,7 @@ const Keyboard: React.FC = () => (
 
 const Base = memo(({ lidW, deckD }: { lidW: number; deckD: number }) => (
   <>
-    <div style={{ ...flat, left: -lidW / 2 - 60, top: -40, width: lidW + 120, height: deckD + 120, transformOrigin: '50% 40px', transform: 'rotateX(90deg) translateZ(-1px)', borderRadius: 140, background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 72%)', filter: 'blur(26px)' }} />
+    <div style={{ ...flat, left: -lidW / 2 - 60, top: -40, width: lidW + 120, height: deckD + 120, transformOrigin: '50% 40px', transform: 'rotateX(90deg) translateZ(-1px)', borderRadius: 140, background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 45%, rgba(0,0,0,0.1) 62%, transparent 76%)' }} />
     <Slab
       w={lidW}
       h={deckD}
