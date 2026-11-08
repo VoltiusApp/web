@@ -59,3 +59,8 @@ article video[data-native] {
   width: auto;
   max-width: 100%;
 }
+
+@keyframes teams-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
