@@ -152,3 +152,16 @@ test("no new route produces a paste-able code", () => {
   expect(readFragment("#plugin-install?id=docker")?.code).toBeNull();
   expect(readFragment("#snippet-install?id=docker-cleanup")?.code).toBeNull();
 });
+
+const ENROLL_TOKEN = `vte1.${btoa("https://voltius.acme.com/api").replace(/=+$/, "")}.${"0123456789abcdef".repeat(2)}.${"A".repeat(43)}`;
+
+test("an enroll fragment forwards a well-formed token and rejects a malformed one", () => {
+  expect(readFragment(`#enroll?t=${ENROLL_TOKEN}`)?.url).toBe(`voltius://enroll?t=${ENROLL_TOKEN}`);
+  expect(readFragment(`#enroll?t=${ENROLL_TOKEN}`)?.code).toBeNull();
+  expect(readFragment("#enroll")).toBeNull();
+  expect(readFragment("#enroll?t=nonsense")).toBeNull();
+  expect(readFragment(`#enroll?t=${ENROLL_TOKEN}x`)).toBeNull();
+  expect(readFragment(`#enroll?t=${ENROLL_TOKEN.replace("vte1", "vte2")}`)).toBeNull();
+  const ftp = `vte1.${btoa("ftp://voltius.acme.com").replace(/=+$/, "")}.${"0123456789abcdef".repeat(2)}.${"A".repeat(43)}`;
+  expect(readFragment(`#enroll?t=${ftp}`)).toBeNull();
+});
