@@ -36,6 +36,27 @@ const PLUGIN_ID_MAX_LENGTH = 64;
 const MAX_SOURCE_ID = 100;
 const MAX_CATALOG_ID = 100;
 
+// Mirrors `parseEnrollmentToken` in voltius (src/services/enrollment/enrollmentToken.ts).
+const ENROLL_ID_RE = /^[0-9a-f]{32}$/;
+const ENROLL_SECRET_RE = /^[A-Za-z0-9_-]{43}$/;
+
+function isEnrollmentToken(token: string): boolean {
+  const parts = token.trim().split(".");
+  if (parts.length !== 4 || parts[0] !== "vte1") return false;
+  const [, encodedUrl, id, secret] = parts;
+  if (!ENROLL_ID_RE.test(id) || !ENROLL_SECRET_RE.test(secret) || !/^[A-Za-z0-9_-]+$/.test(encodedUrl)) {
+    return false;
+  }
+  try {
+    const padded = encodedUrl.replace(/-/g, "+").replace(/_/g, "/");
+    const bytes = Uint8Array.from(atob(padded), (c) => c.charCodeAt(0));
+    const { protocol } = new URL(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+    return protocol === "https:" || protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 const ROUTE_VALIDATORS: Record<string, (params: URLSearchParams) => boolean> = {
   join: (params) => isSessionId(params.get("s") ?? "") && !!params.get("t"),
   verified: (params) => isSessionId(params.get("u") ?? ""),
@@ -44,6 +65,7 @@ const ROUTE_VALIDATORS: Record<string, (params: URLSearchParams) => boolean> = {
   notification: (params) => (params.get("n") ?? "").length <= MAX_ENTRY_ID,
   settings: (params) => SETTINGS_SECTIONS.has(params.get("section") ?? ""),
   billing: () => true,
+  enroll: (params) => isEnrollmentToken(params.get("t") ?? ""),
   invite: (params) => HANDLE_RE.test((params.get("h") ?? "").replace(/^@/, "").toLowerCase()),
   // The source is a catalogue *id* the client resolves against its own configured
   // sources, never a URL — so only its length is checked here.
