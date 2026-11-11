@@ -51,7 +51,7 @@ export const PLANS: Plan[] = [
       "Plugin system",
       "Command line (voltius-cli) for scripted setup",
       "Machine policy for Ansible rollouts",
-      "Mobile managed configuration (MDM)",
+      "Managed configuration (MDM)",
       "Custom themes",
       "Local terminal",
       "Persistent sessions & workspace restore",
