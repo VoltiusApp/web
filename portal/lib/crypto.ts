@@ -47,6 +47,7 @@ export async function randomBytes(n: number): Promise<Uint8Array> {
   return mod.random_bytes(n) as Uint8Array;
 }
 
+/** The two X25519 halves come from one WebCrypto key pair, so teammates can wrap keys to this account. */
 export async function generateUserSecrets(): Promise<{
   dek: Uint8Array;
   x25519Private: Uint8Array;
@@ -54,8 +55,10 @@ export async function generateUserSecrets(): Promise<{
 }> {
   const mod = await getCrypto();
   const dek = mod.random_bytes(32) as Uint8Array;
-  const x25519Private = mod.random_bytes(32) as Uint8Array;
-  const x25519PublicB64 = mod.generate_user_secrets_public_key() as string;
+  const pair = (await crypto.subtle.generateKey({ name: "X25519" }, true, ["deriveBits"])) as CryptoKeyPair;
+  const pkcs8 = new Uint8Array(await crypto.subtle.exportKey("pkcs8", pair.privateKey));
+  const x25519Private = pkcs8.slice(pkcs8.length - 32);
+  const x25519PublicB64 = bytesToBase64(new Uint8Array(await crypto.subtle.exportKey("raw", pair.publicKey)));
   return { dek, x25519Private, x25519PublicB64 };
 }
 
