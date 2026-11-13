@@ -1,4 +1,16 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://api.voltius.app";
+import { BUILD_TIME_API_URL, trimApiUrl } from "./apiUrl";
+import { INVITATION_NOT_FOUND, INVITATION_WITHDRAWN, REGISTRATION_CLOSED } from "./messages";
+
+let apiBasePromise: Promise<string> | null = null;
+
+/** The API this portal talks to, set at runtime by the server that serves it (`VOLTIUS_API_URL`). */
+export function apiBase(): Promise<string> {
+  apiBasePromise ??= fetch("/runtime-config", { cache: "no-store" })
+    .then((res): Promise<{ apiUrl?: string }> => (res.ok ? res.json() : Promise.resolve({})))
+    .then((config) => trimApiUrl(config.apiUrl || BUILD_TIME_API_URL))
+    .catch(() => BUILD_TIME_API_URL);
+  return apiBasePromise;
+}
 
 export class ApiError extends Error {
   constructor(
@@ -31,7 +43,7 @@ async function request<T>(
   };
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(`${await apiBase()}${path}`, { ...options, headers });
   if (!res.ok) {
     const text = await res.text().catch(() => res.statusText);
     throw new ApiError(res.status, text || `HTTP ${res.status}`);
@@ -51,6 +63,21 @@ export interface AuthResponse {
   tier: string;
   trial_ends_at: number | null;
   wrapped_user_secrets?: string | null;
+}
+
+export interface RegisterResponse extends AuthResponse {
+  withdrawn_invitations?: { team_name: string }[];
+}
+
+export interface ServerMeta {
+  self_hosted: boolean;
+  billing_enabled: boolean;
+  registration_enabled: boolean;
+  team_invites_enabled: boolean;
+}
+
+export function getMeta(): Promise<ServerMeta> {
+  return request<ServerMeta>("/v1/meta");
 }
 
 export interface MeResponse {
@@ -135,23 +162,45 @@ export function getChallenge(email: string): Promise<ChallengeResponse> {
   );
 }
 
-export function register(
-  email: string,
-  authKey: string,
-  accountId: string,
-  wrappedUserSecrets?: string,
-  x25519Public?: string,
-): Promise<AuthResponse> {
-  return request<AuthResponse>("/v1/auth/register", {
+export interface NewAccount {
+  email: string;
+  authKey: string;
+  accountId: string;
+  wrappedUserSecrets: string;
+  publicKey: string;
+  /** An emailed invitation's token, which lets its addressee register on a server with registration closed. */
+  invitation?: string;
+}
+
+export function register(account: NewAccount): Promise<RegisterResponse> {
+  return request<RegisterResponse>("/v1/auth/register", {
     method: "POST",
     body: JSON.stringify({
-      email,
-      auth_key: authKey,
-      account_id: accountId,
-      ...(wrappedUserSecrets && { wrapped_user_secrets: wrappedUserSecrets }),
-      ...(x25519Public && { public_key: x25519Public }),
+      email: account.email,
+      auth_key: account.authKey,
+      account_id: account.accountId,
+      wrapped_user_secrets: account.wrappedUserSecrets,
+      public_key: account.publicKey,
+      ...(account.invitation && { invitation: account.invitation }),
     }),
   });
+}
+
+const REGISTER_MESSAGES: Record<string, string> = {
+  REGISTRATION_DISABLED: REGISTRATION_CLOSED,
+  INVITATION_NOT_FOUND,
+  INVITATION_EMAIL_MISMATCH: "This invitation was sent to a different email address.",
+  INVITATION_WITHDRAWN,
+};
+
+export function registerErrorMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    const code = err.body?.error;
+    if (typeof code === "string" && REGISTER_MESSAGES[code]) return REGISTER_MESSAGES[code];
+    if (err.status === 409) return "An account with this email already exists. Sign in instead.";
+    if (err.status === 429) return "Too many attempts. Try again later.";
+  }
+  return err instanceof Error ? err.message : "Signup failed.";
 }
 
 export function getMe(token: string): Promise<MeResponse> {
@@ -306,7 +355,9 @@ export interface SubscriptionInfo {
 
 export interface InvitationDetails {
   team_name: string;
-  inviter_email: string;
+  /** Absent on servers that predate invitation sign-up. */
+  email?: string;
+  inviter_display_name: string;
   role: string;
   expires_at: number;
 }
