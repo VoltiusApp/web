@@ -1,20 +1,32 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
-import AuthShell, { PRIMARY_BUTTON } from "../AuthShell";
+import { useState, useEffect, useRef, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import AuthShell, { Field, LINK, PRIMARY_BUTTON } from "../AuthShell";
 import { deriveAuthKey } from "../../lib/crypto";
 import {
   ApiError, getChallenge, login, loginSecondFactor, passkeySignInHandle, twoFactorMessage,
   type AuthResponse, type TwoFactorChallenge,
 } from "../../lib/api";
 import { inlinePasskeyCode } from "../../lib/passkey";
+import { useServerMeta } from "../../lib/serverMeta";
+import { safeReturnPath, storeSession } from "../../lib/session";
 import {
   EMPTY_TWO_FACTOR_ENTRY, PasskeyButton, TwoFactorField, entryProof, twoFactorPrompt, type TwoFactorEntry,
 } from "../TwoFactorField";
 
 export default function SigninPage() {
+  return (
+    <Suspense>
+      <SigninContent />
+    </Suspense>
+  );
+}
+
+function SigninContent() {
   const router = useRouter();
+  const returnTo = safeReturnPath(useSearchParams().get("return"));
+  const meta = useServerMeta();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,12 +38,8 @@ export default function SigninPage() {
   useEffect(() => { emailRef.current?.focus(); }, []);
 
   function enter(auth: AuthResponse) {
-    sessionStorage.setItem("access_token", auth.jwt_token);
-    sessionStorage.setItem("refresh_token", auth.refresh_token);
-    sessionStorage.setItem("tier", auth.tier);
-    if (auth.trial_ends_at) sessionStorage.setItem("trial_ends_at", String(auth.trial_ends_at));
-
-    router.push("/account");
+    storeSession(auth);
+    router.push(returnTo ?? "/account");
   }
 
   function backToPassword(message = "") {
@@ -89,12 +97,18 @@ export default function SigninPage() {
   return (
     <AuthShell
       below={
-        <p className="mt-5 text-center text-sm text-zinc-500">
-          No account?{" "}
-          <a href="/signup" className="text-cyan-400 hover:text-cyan-300 transition-colors">
-            Create one
-          </a>
-        </p>
+        meta === undefined ? null : meta?.registration_enabled === false ? (
+          <p className="mt-5 text-center text-sm text-zinc-500">
+            New accounts on this server are by invitation only.
+          </p>
+        ) : (
+          <p className="mt-5 text-center text-sm text-zinc-500">
+            No account?{" "}
+            <a href={returnTo ? `/signup?return=${encodeURIComponent(returnTo)}` : "/signup"} className={LINK}>
+              Create one
+            </a>
+          </p>
+        )
       }
     >
       <h1 className="text-xl font-bold text-white mb-1">{challenge ? "Two-factor authentication" : "Welcome back"}</h1>
@@ -145,32 +159,5 @@ export default function SigninPage() {
       </form>
       )}
     </AuthShell>
-  );
-}
-
-function Field({
-  label, type, value, onChange, inputRef, required, hint,
-}: {
-  label: string;
-  type: string;
-  value: string;
-  onChange: (v: string) => void;
-  inputRef?: React.RefObject<HTMLInputElement | null>;
-  required?: boolean;
-  hint?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className="text-sm text-zinc-300">{label}</label>
-      <input
-        ref={inputRef}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        className="w-full px-3.5 py-2.5 rounded-xl bg-[#0a0a0f] border border-[#1e1e2e] text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-colors"
-      />
-      {hint && <p className="text-xs text-zinc-600">{hint}</p>}
-    </div>
   );
 }

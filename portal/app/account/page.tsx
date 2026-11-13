@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { PLANS, PER_SEAT_PLAN_IDS, MIN_SEATS, planOrder, trialLabel } from "@shared/plans";
 import Image from "next/image";
-import { ApiError, getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
+import { ApiError, apiBase, getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import ChangeHandleModal from "./ChangeHandleModal";
+import { useServerMeta } from "../../lib/serverMeta";
+import { clearAccountNotice, peekAccountNotice } from "../../lib/session";
 
 const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
@@ -55,6 +57,10 @@ export default function AccountPage() {
   const [showChangeHandle, setShowChangeHandle] = useState(false);
   const [handleManaged, setHandleManaged] = useState(false);
   const [handleCopied, setHandleCopied] = useState(false);
+  const [notice] = useState(peekAccountNotice);
+  const [serverHost, setServerHost] = useState("");
+  const meta = useServerMeta();
+  const billingEnabled = meta?.billing_enabled !== false;
 
   useEffect(() => {
     // Ingest ?token= from desktop app handoff (Bug 7)
@@ -70,6 +76,9 @@ export default function AccountPage() {
     if (!effectiveToken) { router.replace("/signin"); return; }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage only exists after the static prerender
     setToken(effectiveToken);
+
+    clearAccountNotice();
+    void apiBase().then((url) => setServerHost(new URL(url).host)).catch(() => {});
 
     const init = async () => {
       const refreshToken = sessionStorage.getItem("refresh_token");
@@ -260,7 +269,7 @@ export default function AccountPage() {
     router.replace("/signin");
   }
 
-  if (!tier) return null;
+  if (!tier || meta === undefined) return null;
 
   // Trial users have tier="pro" + trial_ends_at set but no LS subscription yet
   const storedTrialEndsAt = typeof window !== "undefined"
@@ -274,7 +283,7 @@ export default function AccountPage() {
 
   return (
     <>
-      {showTrialModal && (
+      {showTrialModal && billingEnabled && (
         <TrialExpiredModal
           onUpgrade={(plan) => { setShowTrialModal(false); handleUpgrade(plan); }}
           onDismiss={() => setShowTrialModal(false)}
@@ -296,6 +305,9 @@ export default function AccountPage() {
             <a href="https://voltius.app" className="flex items-center gap-2 text-white font-semibold text-sm">
               <Image src="/logo.png" alt="Voltius" width={24} height={24} />
               Voltius
+              {meta?.self_hosted && (
+                <span className="ml-1 font-mono text-[11px] font-normal px-2 py-0.5 rounded-full border border-zinc-700 text-zinc-400">self-hosted</span>
+              )}
             </a>
             <button
               onClick={handleSignOut}
@@ -348,6 +360,11 @@ export default function AccountPage() {
       )}
 
       <main className="max-w-5xl mx-auto px-6 py-12">
+          {notice && (
+            <div className={`mb-6 rounded-2xl border p-4 text-sm ${notice.tone === "success" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-100" : "border-amber-400/30 bg-amber-400/10 text-amber-100"}`}>
+              {notice.text}
+            </div>
+          )}
           {emailVerified === false && (
             <div className="mb-6 rounded-2xl border border-amber-400/30 bg-amber-400/10 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <p className="text-sm text-amber-100">
@@ -437,12 +454,17 @@ export default function AccountPage() {
 
           {/* Current plan */}
           <div className="mb-10">
-            <p className="font-mono text-xs text-cyan-400 mb-3">— your plan</p>
+            <p className="font-mono text-xs text-cyan-400 mb-3">{billingEnabled ? "— your plan" : "— your server"}</p>
             <div className="rounded-2xl border border-[#1e1e2e] bg-[#111118] p-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Current plan</p>
                 <p className="text-2xl font-bold text-white">{PLAN_LABELS[displayTier] ?? displayTier}</p>
-                {onTrial && (
+                {!billingEnabled && (
+                  <p className="text-xs text-zinc-500 mt-1">
+                    Self-hosted server{serverHost && <> · <span className="font-mono text-zinc-400">{serverHost}</span></>}. Every feature is included; billing does not apply here.
+                  </p>
+                )}
+                {onTrial && billingEnabled && (
                   <p className="text-xs text-zinc-500 mt-1">Trial active — upgrade before it ends to keep cloud sync and your encrypted backup. Devices on the same network keep syncing for free.</p>
                 )}
               </div>
@@ -455,7 +477,7 @@ export default function AccountPage() {
             </div>
           </div>
 
-          {/* Plans */}
+          {billingEnabled && (
           <div>
             <div className="flex items-center justify-between mb-5">
               <p className="font-mono text-xs text-zinc-500">— plans</p>
@@ -509,8 +531,9 @@ export default function AccountPage() {
                 />
               ))}
             </div>
-            {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
           </div>
+          )}
+          {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
         </main>
       </div>
     </>

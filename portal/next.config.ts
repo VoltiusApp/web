@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 import path from "node:path";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  outputFileTracingRoot: path.join(__dirname, ".."),
   transpilePackages: ["@voltius/crypto-wasm"],
   // See landing/next.config.ts: the shared plan catalogue sits outside this app.
   turbopack: {
