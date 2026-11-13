@@ -7,7 +7,7 @@ import { ApiError, acceptInvitation, type InvitationDetails } from "../../../lib
 import { inviterLabel, roleLabel, useInvitation } from "../../../lib/invitation";
 import { useServerMeta } from "../../../lib/serverMeta";
 import { setAccountNotice } from "../../../lib/session";
-import { INVITATION_NOT_FOUND, INVITATION_WITHDRAWN, joinedNotice } from "../../../lib/messages";
+import { INVITATION_NOT_FOUND, INVITATION_ON_OWN_SERVER, INVITATION_WITHDRAWN, joinedNotice } from "../../../lib/messages";
 
 const SECONDARY_BUTTON =
   "block w-full py-3 rounded-xl border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white text-sm font-semibold text-center transition-colors";
@@ -44,6 +44,7 @@ export default function InvitePage() {
       <AuthShell>
         <h1 className="text-xl font-bold text-white mb-2">Invitation not found</h1>
         <p className="text-sm text-zinc-400 leading-relaxed">{INVITATION_NOT_FOUND}</p>
+        <p className="mt-3 text-sm text-zinc-500 leading-relaxed">{INVITATION_ON_OWN_SERVER}</p>
         <a href="/signin" className={`mt-6 ${SECONDARY_BUTTON}`}>Go to sign in</a>
       </AuthShell>
     );
