@@ -32,11 +32,10 @@ test("Business never undercuts Teams at the shared seat floor", () => {
   }
 });
 
-test("only the Pro trial is free of a credit card", () => {
-  // Pro's trial is granted server-side at registration; every other trial runs
-  // through LemonSqueezy, which takes a card.
+test("no trial takes a credit card", () => {
+  // Trials are server-granted and activated by the user; none goes through a card.
   for (const plan of PLANS.filter((p) => p.trial)) {
-    expect(plan.trial!.creditCardRequired).toBe(plan.id !== "pro");
+    expect(plan.trial!.creditCardRequired).toBe(false);
   }
 });
 
