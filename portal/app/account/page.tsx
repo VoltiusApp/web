@@ -176,8 +176,10 @@ export default function AccountPage() {
       if (code === "EMAIL_NOT_VERIFIED") {
         setError(`Verify your email to start a trial — we sent a link to ${accountEmail || "your email"}.`);
       } else if (code === "TRIAL_UNAVAILABLE") {
-        setError("This trial is no longer available on your account.");
+        // No trial left for this account: fall back to the plan's regular action.
         setReloadKey((k) => k + 1);
+        if (hasLsSubscription) void handleManage();
+        else void handleUpgrade(plan, plan === "teams" ? teamsSeats : undefined);
       } else {
         setError(err instanceof Error ? err.message : "Failed to start the trial.");
       }

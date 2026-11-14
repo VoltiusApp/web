@@ -343,10 +343,10 @@ export interface Promos {
   pro_trial_available: boolean;
   teams_trial_available: boolean;
   email_verified: boolean;
-  seen: string[];
-  plan_ended: boolean;
-  team_ended: boolean;
-  payment_issue: boolean;
+  seen: { promo: string; source: string; occurrence: number | null; at: number }[];
+  plan_ended: { kind: "pro_trial" | "teams_trial" | "subscription"; at: number } | null;
+  team_ended: { team_id: string; team_name: string; at: number } | null;
+  payment_issue: { status: "past_due" | "unpaid"; renews_at: number | null } | null;
 }
 
 export function getPromos(token: string): Promise<Promos> {
