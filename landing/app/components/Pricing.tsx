@@ -8,7 +8,7 @@ import { PLANS, priceLabel, trialLabel, trialCardLabel, type PlanId } from "@sha
 const PRESENTATION: Record<PlanId, { highlight: boolean; cta: string; ctaHref: string }> = {
   free: { highlight: false, cta: "Download", ctaHref: "#download" },
   pro: { highlight: true, cta: "Start free trial", ctaHref: "https://app.voltius.app/signup?plan=pro" },
-  teams: { highlight: false, cta: "Get Teams", ctaHref: "https://app.voltius.app/signup?plan=teams" },
+  teams: { highlight: false, cta: "Start free trial", ctaHref: "https://app.voltius.app/signup?plan=teams" },
   business: { highlight: false, cta: "Get Business", ctaHref: "https://app.voltius.app/signup?plan=business" },
 };
 

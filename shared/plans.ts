@@ -10,7 +10,7 @@ export type PlanId = "free" | "pro" | "teams" | "business";
 
 export interface PlanTrial {
   days: number;
-  /** LemonSqueezy trials take a card; the Pro trial is granted at registration and does not. */
+  /** Trials are server-granted and activated by the user; none takes a card. */
   creditCardRequired: boolean;
 }
 
@@ -89,7 +89,7 @@ export const PLANS: Plan[] = [
     period: "/ user / month",
     savings: "Save 17% with annual billing",
     desc: "Shared vaults, live terminals, and access control for teams (3-user minimum).",
-    trial: { days: 14, creditCardRequired: true },
+    trial: { days: 14, creditCardRequired: false },
     perSeat: true,
     features: [
       "Everything in Pro",

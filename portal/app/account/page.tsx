@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { PLANS, PER_SEAT_PLAN_IDS, MIN_SEATS, planOrder, trialLabel } from "@shared/plans";
+import { PLANS, PER_SEAT_PLAN_IDS, MIN_SEATS, planOrder, trialLabel, trialCardLabel } from "@shared/plans";
 import Image from "next/image";
-import { ApiError, apiBase, getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
+import { ApiError, apiBase, activateTrial, getPromos, type Promos, getCheckoutUrl, getPortalUrl, updateSeats, refreshJwt, getSubscription, cancelSubscription, resumeSubscription, resendVerificationEmail } from "../../lib/api";
 import EditEmailModal from "./EditEmailModal";
 import ChangePasswordModal from "./ChangePasswordModal";
 import ChangeHandleModal from "./ChangeHandleModal";
 import { useServerMeta } from "../../lib/serverMeta";
 import { clearAccountNotice, peekAccountNotice } from "../../lib/session";
 
-const TRIAL_EXPIRED_MODAL_KEY = "voltius_trial_expired_shown";
 const DOWNLOAD_URL = "https://voltius.app#download";
 
 const PLAN_LABELS: Record<string, string> = {
@@ -20,12 +19,12 @@ const PLAN_LABELS: Record<string, string> = {
   teams: "Teams",
   business: "Business",
   pro_trial: "Pro (Trial)",
+  teams_trial: "Teams (Trial)",
 };
 
 const allPlans = PLANS.map((plan) => ({
   ...plan,
-  trial: plan.trial ? trialLabel(plan.trial) : null,
-  noCreditCard: plan.trial ? !plan.trial.creditCardRequired : false,
+  trial: plan.trial ? `${trialLabel(plan.trial)} · ${trialCardLabel(plan.trial)}` : null,
 }));
 
 export default function AccountPage() {
@@ -37,7 +36,10 @@ export default function AccountPage() {
   const [portalLoading, setPortalLoading] = useState(false);
   const [seatsLoading, setSeatsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showTrialModal, setShowTrialModal] = useState(false);
+  const [promos, setPromos] = useState<Promos | null>(null);
+  const [trialLoading, setTrialLoading] = useState<"pro" | "teams" | null>(null);
+  const [highlightPlan, setHighlightPlan] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [teamsSeats, setTeamsSeats] = useState(3);
   const [hasLsSubscription, setHasLsSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
@@ -66,6 +68,9 @@ export default function AccountPage() {
     // Ingest ?token= from desktop app handoff (Bug 7)
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get("token");
+    const planParam = params.get("plan");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the query string only exists after the static prerender
+    setHighlightPlan(planParam === "pro" || planParam === "teams" ? planParam : null);
     if (urlToken) {
       sessionStorage.setItem("access_token", urlToken);
       window.history.replaceState({}, "", "/account");
@@ -74,7 +79,6 @@ export default function AccountPage() {
     const storedToken = sessionStorage.getItem("access_token");
     const effectiveToken = urlToken ?? storedToken;
     if (!effectiveToken) { router.replace("/signin"); return; }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- sessionStorage only exists after the static prerender
     setToken(effectiveToken);
 
     clearAccountNotice();
@@ -133,22 +137,17 @@ export default function AccountPage() {
         setHandleManaged(!!me.handle_managed);
       } catch { /* non-critical */ }
 
-      // Trial expired modal. The server clears trial_ends_at once a trial
-      // lapses, claim included, so trial_used is the only signal that survives.
-      const finalTier = sessionStorage.getItem("tier") ?? "free";
-      const trialEndsAt = sessionStorage.getItem("trial_ends_at");
-      const trialExpired =
-        payload.trial_used === true &&
-        finalTier === "free" &&
-        (!trialEndsAt || Date.now() / 1000 > Number(trialEndsAt));
-      if (trialExpired && !localStorage.getItem(TRIAL_EXPIRED_MODAL_KEY)) {
-        setShowTrialModal(true);
-        localStorage.setItem(TRIAL_EXPIRED_MODAL_KEY, "1");
+      // Which trials may still be started. Self-hosted servers answer 503:
+      // no promos then, so no trial buttons and plain upgrades.
+      try {
+        setPromos(await getPromos(activeToken));
+      } catch {
+        setPromos(null);
       }
     };
 
     init();
-  }, [router]);
+  }, [router, reloadKey]);
 
   async function handleUpgrade(plan: string, seats?: number) {
     if (!token) return;
@@ -161,6 +160,31 @@ export default function AccountPage() {
       setError(err instanceof Error ? err.message : "Failed to open checkout.");
     } finally {
       setCheckoutLoading(false);
+    }
+  }
+
+  async function handleStartTrial(plan: "pro" | "teams") {
+    if (!token) return;
+    setTrialLoading(plan);
+    setError("");
+    try {
+      await activateTrial(plan, token);
+      // The effect refreshes the JWT, then reloads subscription, profile and promos.
+      setReloadKey((k) => k + 1);
+    } catch (err) {
+      const code = err instanceof ApiError ? err.body?.error : null;
+      if (code === "EMAIL_NOT_VERIFIED") {
+        setError(`Verify your email to start a trial — we sent a link to ${accountEmail || "your email"}.`);
+      } else if (code === "TRIAL_UNAVAILABLE") {
+        // No trial left for this account: fall back to the plan's regular action.
+        setReloadKey((k) => k + 1);
+        if (hasLsSubscription) void handleManage();
+        else void handleUpgrade(plan, plan === "teams" ? teamsSeats : undefined);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to start the trial.");
+      }
+    } finally {
+      setTrialLoading(null);
     }
   }
 
@@ -274,23 +298,15 @@ export default function AccountPage() {
   // Trial users have tier="pro" + trial_ends_at set but no LS subscription yet
   const storedTrialEndsAt = typeof window !== "undefined"
     ? sessionStorage.getItem("trial_ends_at") : null;
-  const onTrial = tier === "pro"
+  const onTrial = (tier === "pro" || tier === "teams")
     && storedTrialEndsAt !== null
     && Date.now() / 1000 < Number(storedTrialEndsAt)
     && !hasLsSubscription;
-  const displayTier = onTrial ? "pro_trial" : tier;
-  const activePlanId = displayTier === "pro_trial" ? "pro" : (displayTier ?? "free");
+  const displayTier = onTrial ? `${tier}_trial` : tier;
+  const activePlanId = onTrial ? tier : (displayTier ?? "free");
 
   return (
     <>
-      {showTrialModal && billingEnabled && (
-        <TrialExpiredModal
-          onUpgrade={(plan) => { setShowTrialModal(false); handleUpgrade(plan); }}
-          onDismiss={() => setShowTrialModal(false)}
-          loading={checkoutLoading}
-        />
-      )}
-
       <div className="relative min-h-screen overflow-hidden">
         {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 -z-10">
@@ -520,6 +536,14 @@ export default function AccountPage() {
                   teamsSeats={teamsSeats}
                   onChangeTeamsSeats={setTeamsSeats}
                   onUpgrade={handleUpgrade}
+                  trialAvailable={
+                    plan.id === "pro" ? promos?.pro_trial_available === true
+                    : plan.id === "teams" ? promos?.teams_trial_available === true
+                    : false
+                  }
+                  trialLoading={trialLoading === plan.id}
+                  highlighted={highlightPlan === plan.id}
+                  onStartTrial={handleStartTrial}
                   onManage={handleManage}
                   onUpdateSeats={handleUpdateSeats}
                   subscriptionActionLoading={subscriptionActionLoading}
@@ -543,7 +567,6 @@ export default function AccountPage() {
 type JwtPayload = {
   tier?: string;
   trial_ends_at?: number | null;
-  trial_used?: boolean;
   email_verified?: boolean;
   email?: string;
 };
@@ -566,6 +589,7 @@ function PlanCard({
   plan, billingPeriod, activePlanId, onTrial, hasLsSubscription,
   subscriptionStatus, subscriptionCancelled, renewsAt, endsAt,
   teamsSeats, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
+  trialAvailable, trialLoading, highlighted, onStartTrial,
   subscriptionActionLoading, onCancelSubscription, onResumeSubscription,
   checkoutLoading, portalLoading, seatsLoading,
 }: {
@@ -581,6 +605,10 @@ function PlanCard({
   teamsSeats: number;
   onChangeTeamsSeats: (n: number) => void;
   onUpgrade: (plan: string, seats?: number) => void;
+  trialAvailable: boolean;
+  trialLoading: boolean;
+  highlighted: boolean;
+  onStartTrial: (plan: "pro" | "teams") => void;
   onManage: () => void;
   onUpdateSeats: (seats: number) => void;
   subscriptionActionLoading: "cancel" | "resume" | null;
@@ -611,13 +639,20 @@ function PlanCard({
   const isActive = plan.id === activePlanId;
   const isUpgrade = planOrder(plan.id) > currentOrder;
 
-  const loading = checkoutLoading || portalLoading;
+  const loading = checkoutLoading || portalLoading || trialLoading;
   const renewalDate = formatBillingDate(renewsAt);
   const cancellationDate = formatBillingDate(endsAt ?? renewsAt);
   const showProLifecycle = plan.id === "pro" && isActive && hasLsSubscription && !onTrial;
 
+  const trialRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (highlighted && trialAvailable) trialRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+  }, [highlighted, trialAvailable]);
+
   function handleAction() {
-    if (plan.id === "free" || hasLsSubscription) {
+    if (trialAvailable && (plan.id === "pro" || plan.id === "teams")) {
+      onStartTrial(plan.id);
+    } else if (plan.id === "free" || hasLsSubscription) {
       onManage();
     } else {
       onUpgrade(plan.id, seats);
@@ -625,9 +660,11 @@ function PlanCard({
   }
 
   const actionLabel = (() => {
+    if (trialLoading) return "Starting trial…";
     if (loading) return portalLoading ? "Opening…" : "Opening checkout…";
     if (plan.id === "free") return "Cancel subscription";
-    if (isUpgrade) return plan.trial ? `Start free trial — ${plan.name}` : `Upgrade to ${plan.name}`;
+    if (trialAvailable) return `Start free trial — ${plan.name}`;
+    if (isUpgrade) return `Upgrade to ${plan.name}`;
     return `Switch to ${plan.name}`;
   })();
 
@@ -637,7 +674,7 @@ function PlanCard({
         isActive
           ? "border-cyan-500/50 bg-cyan-500/5 shadow-lg shadow-cyan-500/10"
           : "border-[#1e1e2e] bg-[#111118] hover:border-zinc-700"
-      }`}
+      } ${highlighted && trialAvailable && !isActive ? "ring-2 ring-cyan-400/60" : ""}`}
     >
       {isActive && (
         <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-semibold px-3 py-1 rounded-full bg-cyan-500 text-black">
@@ -724,16 +761,15 @@ function PlanCard({
       {/* CTA */}
       {isActive ? (
         <div className="flex flex-col gap-2">
-          {onTrial && plan.id === "pro" ? (
+          {onTrial && (plan.id === "pro" || plan.id === "teams") ? (
             <>
               <button
-                onClick={() => onUpgrade("pro")}
+                onClick={() => onUpgrade(plan.id, seats)}
                 disabled={checkoutLoading}
                 className="w-full py-2.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-black transition-all duration-200 hover:shadow-[0_0_20px_rgba(6,182,212,0.35)] disabled:opacity-50"
               >
-                {checkoutLoading ? "Opening checkout…" : "Upgrade to Pro →"}
+                {checkoutLoading ? "Opening checkout…" : `Upgrade to ${plan.name} →`}
               </button>
-              <p className="-mt-1 text-center text-xs text-zinc-600">no credit card required</p>
             </>
           ) : (
             <>
@@ -784,20 +820,19 @@ function PlanCard({
       ) : (
         <div className="flex flex-col gap-2">
           <button
+            ref={trialRef}
             onClick={handleAction}
             disabled={loading}
             className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-50 disabled:cursor-default ${
-              isUpgrade && plan.id !== "free"
+              (isUpgrade || trialAvailable) && plan.id !== "free"
                 ? "bg-cyan-500 hover:bg-cyan-400 text-black hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
                 : "border border-[#1e1e2e] hover:border-zinc-600 text-zinc-300 hover:text-white"
             }`}
           >
             {actionLabel}
           </button>
-          {plan.trial && (
-            <p className="-mt-1 text-center text-xs text-zinc-600">
-              {plan.trial}{plan.noCreditCard ? " · no credit card required" : ""}
-            </p>
+          {plan.trial && trialAvailable && (
+            <p className="-mt-1 text-center text-xs text-zinc-600">{plan.trial}</p>
           )}
         </div>
       )}
@@ -811,44 +846,6 @@ function PlanCard({
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function TrialExpiredModal({ onUpgrade, onDismiss, loading }: {
-  onUpgrade: (plan: string) => void;
-  onDismiss: () => void;
-  loading: boolean;
-}) {
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
-      onClick={onDismiss}
-    >
-      <div
-        className="w-full max-w-md rounded-2xl border border-[#1e1e2e] bg-[#111118] p-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <p className="text-xl font-bold text-white mb-1">Your trial has ended</p>
-        <p className="text-sm text-zinc-500 mb-6 leading-relaxed">
-          Hope the 14 days were useful. Upgrade to keep Voltius Cloud: sync between devices that are never online together, and an encrypted backup of your vault. Devices on the same network keep syncing directly for free.
-        </p>
-
-        <button
-          onClick={() => onUpgrade("pro")}
-          disabled={loading}
-          className="w-full py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-black font-semibold text-sm transition-all duration-200 hover:shadow-[0_0_20px_rgba(6,182,212,0.35)]"
-        >
-          {loading ? "Opening checkout…" : "Upgrade to Pro — $7/mo"}
-        </button>
-
-        <button
-          onClick={onDismiss}
-          className="mt-4 w-full text-sm text-zinc-600 hover:text-zinc-400 transition-colors py-1"
-        >
-          Maybe later
-        </button>
-      </div>
     </div>
   );
 }

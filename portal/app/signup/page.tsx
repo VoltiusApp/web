@@ -22,6 +22,8 @@ function SignupContent() {
   const params = useSearchParams();
   const returnTo = safeReturnPath(params.get("return"));
   const inviteToken = params.get("invite");
+  const planParam = params.get("plan");
+  const plan = planParam === "pro" || planParam === "teams" ? planParam : null;
   const invitation = useInvitation(inviteToken);
   const meta = useServerMeta();
   const registrationOpen = meta?.registration_enabled !== false;
@@ -54,6 +56,7 @@ function SignupContent() {
     <SignupForm
       invite={inviteToken && invitation ? { token: inviteToken, details: invitation } : null}
       returnTo={returnTo}
+      plan={plan}
     />
   );
 }
@@ -76,9 +79,10 @@ function Notice({ title, body, registrationOpen }: { title: string; body: string
   );
 }
 
-function SignupForm({ invite, returnTo }: {
+function SignupForm({ invite, returnTo, plan }: {
   invite: { token: string; details: InvitationDetails } | null;
   returnTo: string | null;
+  plan: string | null;
 }) {
   const router = useRouter();
   const lockedEmail = invite?.details.email ?? null;
@@ -124,7 +128,7 @@ function SignupForm({ invite, returnTo }: {
       } else if (invite) {
         setAccountNotice(joinedNotice(invite.details.team_name));
       }
-      router.push(invite ? "/account" : (returnTo ?? "/account"));
+      router.push(invite ? "/account" : (returnTo ?? (plan ? `/account?plan=${plan}` : "/account")));
     } catch (err) {
       setError(registerErrorMessage(err));
     } finally {

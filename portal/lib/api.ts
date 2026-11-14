@@ -181,6 +181,7 @@ export function register(account: NewAccount): Promise<RegisterResponse> {
       account_id: account.accountId,
       wrapped_user_secrets: account.wrappedUserSecrets,
       public_key: account.publicKey,
+      supports_trial_activation: true,
       ...(account.invitation && { invitation: account.invitation }),
     }),
   });
@@ -323,6 +324,33 @@ export function getCheckoutUrl(plan: string, token: string, seats?: number, bill
     { method: "POST", body: JSON.stringify({ plan, ...(seats !== undefined && { seats }), ...(billingPeriod && { billing_period: billingPeriod }) }) },
     token,
   );
+}
+
+export interface TrialActivation {
+  plan: string;
+  trial_ends_at: number;
+}
+
+export function activateTrial(plan: "pro" | "teams", token: string): Promise<TrialActivation> {
+  return request<TrialActivation>(
+    "/v1/billing/trial",
+    { method: "POST", body: JSON.stringify({ plan, source: "portal" }) },
+    token,
+  );
+}
+
+export interface Promos {
+  pro_trial_available: boolean;
+  teams_trial_available: boolean;
+  email_verified: boolean;
+  seen: { promo: string; source: string; occurrence: number | null; at: number }[];
+  plan_ended: { kind: "pro_trial" | "teams_trial" | "subscription"; at: number } | null;
+  team_ended: { team_id: string; team_name: string; at: number } | null;
+  payment_issue: { status: "past_due" | "unpaid"; renews_at: number | null } | null;
+}
+
+export function getPromos(token: string): Promise<Promos> {
+  return request<Promos>("/v1/promos", {}, token);
 }
 
 export function getPortalUrl(token: string): Promise<PortalResponse> {
