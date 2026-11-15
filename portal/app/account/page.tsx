@@ -41,6 +41,7 @@ export default function AccountPage() {
   const [highlightPlan, setHighlightPlan] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [teamsSeats, setTeamsSeats] = useState(3);
+  const [seatsUnlimited, setSeatsUnlimited] = useState(false);
   const [hasLsSubscription, setHasLsSubscription] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
   const [subscriptionCancelled, setSubscriptionCancelled] = useState(false);
@@ -205,6 +206,7 @@ export default function AccountPage() {
   function applySubscription(sub: Awaited<ReturnType<typeof getSubscription>>) {
     setHasLsSubscription(sub.has_ls_subscription);
     if (sub.seats !== null) setTeamsSeats(sub.seats);
+    setSeatsUnlimited((PER_SEAT_PLAN_IDS as string[]).includes(sub.tier) && sub.effective_seats === null);
     setTier(sub.tier);
     setSubscriptionStatus(sub.status);
     setSubscriptionCancelled(sub.cancelled);
@@ -534,6 +536,7 @@ export default function AccountPage() {
                   renewsAt={renewsAt}
                   endsAt={endsAt}
                   teamsSeats={teamsSeats}
+                  seatsUnlimited={seatsUnlimited}
                   onChangeTeamsSeats={setTeamsSeats}
                   onUpgrade={handleUpgrade}
                   trialAvailable={
@@ -588,7 +591,7 @@ function formatBillingDate(timestamp: number | null): string | null {
 function PlanCard({
   plan, billingPeriod, activePlanId, onTrial, hasLsSubscription,
   subscriptionStatus, subscriptionCancelled, renewsAt, endsAt,
-  teamsSeats, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
+  teamsSeats, seatsUnlimited, onChangeTeamsSeats, onUpgrade, onManage, onUpdateSeats,
   trialAvailable, trialLoading, highlighted, onStartTrial,
   subscriptionActionLoading, onCancelSubscription, onResumeSubscription,
   checkoutLoading, portalLoading, seatsLoading,
@@ -603,6 +606,7 @@ function PlanCard({
   renewsAt: number | null;
   endsAt: number | null;
   teamsSeats: number;
+  seatsUnlimited: boolean;
   onChangeTeamsSeats: (n: number) => void;
   onUpgrade: (plan: string, seats?: number) => void;
   trialAvailable: boolean;
@@ -637,6 +641,7 @@ function PlanCard({
 
   const currentOrder = planOrder(activePlanId);
   const isActive = plan.id === activePlanId;
+  const unlimitedHere = isPerSeat && isActive && seatsUnlimited;
   const isUpgrade = planOrder(plan.id) > currentOrder;
 
   const loading = checkoutLoading || portalLoading || trialLoading;
@@ -708,8 +713,15 @@ function PlanCard({
         <p className="mt-2 text-xs text-zinc-500 leading-relaxed">{plan.desc}</p>
       </div>
 
+      {unlimitedHere && (
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-zinc-500">Seats</span>
+          <span className="text-sm font-semibold text-white">Unlimited</span>
+        </div>
+      )}
+
       {/* Seat selector for teams */}
-      {isPerSeat && (
+      {isPerSeat && !unlimitedHere && (
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-xs text-zinc-500">Seats</span>
           <div className="flex items-center gap-1.5">

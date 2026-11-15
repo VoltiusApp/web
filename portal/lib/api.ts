@@ -376,6 +376,7 @@ export interface SubscriptionInfo {
   renews_at: number | null;
   ends_at: number | null;
   seats: number | null;
+  effective_seats: number | null;
   used_seats: number | null;
   trial_ends_at: number | null;
   has_ls_subscription: boolean;
