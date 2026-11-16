@@ -112,7 +112,7 @@ export const PLANS: Plan[] = [
     features: [
       "Everything in Teams",
       "Real-time collaboration — 20 sessions · 50 participants each",
-      "Custom roles, per-member & per-object permissions",
+      "Custom roles, per-member & per-object permissions, with View as preview",
       "Team policy — lock any setting for every member",
       "Device enrolment tokens for fleet rollouts",
       "Commercial license for self-hosting",
