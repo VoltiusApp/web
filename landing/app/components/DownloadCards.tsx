@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import Image from "next/image";
 import { Icon } from "@iconify/react";
-import { getAssetsForPlatform, type Asset, type Platform } from "../lib/downloadAssets";
+import { getAssetsForPlatform, type Asset, type Device, type Platform } from "../lib/downloadAssets";
 import { GITHUB_REPO_URL } from "../lib/github";
 import { OBTAINIUM_ADD_URL } from "../lib/obtainium";
 import { APP_STORE_URL, GOOGLE_PLAY_URL } from "../lib/stores";
@@ -28,7 +28,7 @@ const platforms: readonly PlatformCard[] = [
   {
     name: "macOS",
     icon: "wpf:macos",
-    ext: "Apple Silicon",
+    ext: "Homebrew · .dmg",
     platform: "macos",
     experimental: true,
   },
@@ -73,7 +73,6 @@ function CommunityInstall({
   );
 }
 
-type CardId = Platform | "ios";
 
 function StoreBadge({ href, src, alt, width, height, caption }: {
   href: string;
@@ -142,8 +141,8 @@ function Card({ name, icon, ext, experimental, span, open, onToggle, children }:
 }
 
 export default function DownloadCards({ assets }: { assets: Asset[] }) {
-  const [open, setOpen] = useState<CardId | null>(null);
-  const toggle = (id: CardId) => () => setOpen(open === id ? null : id);
+  const [open, setOpen] = useState<Device | null>(null);
+  const toggle = (id: Device) => () => setOpen(open === id ? null : id);
 
   // One 6-col grid so every card is the same width: row 1 = the three desktop
   // platforms (each col-span-2); row 2 = Android + iOS, centered by starting

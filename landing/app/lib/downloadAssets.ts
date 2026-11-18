@@ -1,6 +1,8 @@
 export type Asset = { name: string; browser_download_url: string };
 export type Release = { tag_name: string; assets: Asset[] };
 export type Platform = "windows" | "macos" | "linux" | "android";
+/** Where a visitor installs from: a release asset platform, or the App Store. */
+export type Device = Platform | "ios";
 
 type DownloadOption = {
   asset: Asset;
