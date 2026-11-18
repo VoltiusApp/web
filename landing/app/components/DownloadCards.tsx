@@ -279,10 +279,6 @@ export default function DownloadCards({ assets }: { assets: Asset[] }) {
             height={40}
             caption="iOS 16+, updates through the App Store"
           />
-          <p className="text-[11px] text-zinc-500 mt-2.5 px-1">
-            Not available in France yet: the French encryption declaration is
-            still under review.
-          </p>
         </div>
       </Card>
     </div>
