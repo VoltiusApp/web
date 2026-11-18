@@ -5,11 +5,12 @@ import { useEffect, useState } from "react";
 import { useFadeIn } from "../hooks/useFadeIn";
 import {
   getBestDownloadAsset,
-  type Platform,
+  type Device,
   type Release,
 } from "../lib/downloadAssets";
 import { GITHUB_LATEST_RELEASE_API_URL, GITHUB_REPO_URL } from "../lib/github";
 import { OBTAINIUM_ADD_URL } from "../lib/obtainium";
+import { APP_STORE_URL } from "../lib/stores";
 import CopyCommand from "./CopyCommand";
 
 const LINUX_INSTALL_CMD = "curl -fsSL https://repo.voltius.app/setup.sh | sudo bash";
@@ -20,7 +21,7 @@ type InstallAction =
   | { label: string; command: string }
   | { label: string; href: string; cta: string };
 
-const INSTALL_CMD: Partial<Record<Platform, InstallAction>> = {
+const INSTALL_CMD: Partial<Record<Device, InstallAction>> = {
   windows: { label: "Install on Windows — via winget:", command: WINDOWS_INSTALL_CMD },
   macos: { label: "Install on macOS — via Homebrew:", command: MACOS_INSTALL_CMD },
   linux: {
@@ -31,6 +32,11 @@ const INSTALL_CMD: Partial<Record<Platform, InstallAction>> = {
     label: "Install on Android — via Obtainium, auto-updating:",
     href: OBTAINIUM_ADD_URL,
     cta: "Add to Obtainium",
+  },
+  ios: {
+    label: "Install on iPhone or iPad — from the App Store:",
+    href: APP_STORE_URL,
+    cta: "Open the App Store",
   },
 };
 
@@ -102,16 +108,20 @@ async function getDevice() {
 
   // Android UA is "Linux; Android …", so it must be checked before Linux.
   if (platform.includes("android") || ua.includes("android")) {
-    return { platform: "android" as Platform, isArm: true };
+    return { platform: "android" as Device, isArm: true };
+  }
+  // iPhone UAs say "like Mac OS X" and iPadOS reports a Mac, so both precede macOS.
+  if (/iphone|ipad|ipod/.test(ua) || (platform.includes("mac") && navigator.maxTouchPoints > 1)) {
+    return { platform: "ios" as Device, isArm: true };
   }
   if (platform.includes("win") || ua.includes("windows")) {
-    return { platform: "windows" as Platform, isArm };
+    return { platform: "windows" as Device, isArm };
   }
   if (platform.includes("mac") || ua.includes("mac os")) {
-    return { platform: "macos" as Platform, isArm: macIsAppleSilicon(architecture) };
+    return { platform: "macos" as Device, isArm: macIsAppleSilicon(architecture) };
   }
   if (platform.includes("linux") || ua.includes("linux")) {
-    return { platform: "linux" as Platform, isArm };
+    return { platform: "linux" as Device, isArm };
   }
 
   return null;
@@ -128,7 +138,7 @@ export default function Hero() {
   // Detect OS after mount so visitors get their package-manager command up
   // front instead of a raw asset download. SSR/first paint shows the default
   // Download button (no hydration mismatch); the command swaps in once detected.
-  const [platform, setPlatform] = useState<Platform | null>(null);
+  const [platform, setPlatform] = useState<Device | null>(null);
   useEffect(() => {
     getDevice()
       .then((d) => setPlatform(d?.platform ?? null))
@@ -143,6 +153,10 @@ export default function Hero() {
     try {
       const device = await getDevice();
       if (!device) throw new Error("Unsupported platform");
+      if (device.platform === "ios") {
+        window.location.href = APP_STORE_URL;
+        return;
+      }
 
       const res = await fetch(GITHUB_LATEST_RELEASE_API_URL);
       if (!res.ok) throw new Error("Release unavailable");
